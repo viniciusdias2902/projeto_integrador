@@ -14,6 +14,11 @@ class GlobalDefaultPermission(permissions.BasePermission):
 
         return request.user.has_perm(model_permission_codename)
 
+    def has_object_permission(self, request, view, obj):
+        if hasattr(obj, "user"):
+            return obj.user == request.user
+        return self.has_permission(request, view)
+
     def __get_model_permission_codename(self, method, view):
         try:
             model_name = view.queryset.model._meta.model_name
