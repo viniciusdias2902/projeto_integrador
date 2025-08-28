@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from constants import SHIFT_CHOICES
+from common.constants import SHIFT_CHOICES
+from common.models import Person
 
 UNIVERSITY_CHOICES = (
     ("UESPI", "Universidade Estadual do Piauí"),
@@ -10,10 +11,7 @@ UNIVERSITY_CHOICES = (
 )
 
 
-class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=False, blank=False)
-    name = models.CharField(max_length=200, null=False, blank=False)
-    phone = models.CharField(max_length=11, null=False, blank=False)
+class Student(Person):
     registration_date = models.DateField(auto_now_add=True)
     class_shift = models.CharField(choices=SHIFT_CHOICES, blank=False, null=False)
     university = models.CharField(choices=UNIVERSITY_CHOICES)
