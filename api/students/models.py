@@ -1,11 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-SHIFT_CHOICES = (
-    ("M", "Morning"),
-    ("A", "Afternoon"),
-    ("E", "Evening"),
-)
+from constants import SHIFT_CHOICES
 
 UNIVERSITY_CHOICES = (
     ("UESPI", "Universidade Estadual do Piauí"),
