@@ -6,17 +6,13 @@ from common.permissions import GlobalDefaultPermission
 
 
 class DriverListCreateView(ListCreateAPIView):
+    permission_classes = (IsAuthenticated, GlobalDefaultPermission)
     queryset = Driver.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
             return DriverCreateSerializer
         return DriverSerializer
-
-    def get_permissions(self):
-        if self.request.method == "POST":
-            return [AllowAny()]
-        return [IsAuthenticated(), GlobalDefaultPermission()]
 
 
 class DriverRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
