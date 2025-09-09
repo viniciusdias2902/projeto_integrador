@@ -5,20 +5,24 @@ Seguindo estas práticas, o projeto fica mais **organizado, seguro e fácil de m
 ##  Arquitetura - MVT
 Esse projeto utiliza o padrão MVT(Model-View-Template), arquitetura adotada pelo Django
 ### O que é MVT?
-![imagem do mvt](https://share.google/images/5XSXlEBtoam0XEl2r)
+![imagem do mvt](https://miro.medium.com/v2/resize:fit:1200/1*7g1pR8qJ6Qf7o0Xr7rjVJw.png)
 - Model: É o arquivo que contém a estrutura lógica do projeto e funciona como um intermediário para manipular dados entre o banco de dados e a View. Dentro desse arquivo é determinado quais tipos de dados, e como será armazenado dentro do seu banco e, como será exibido quando for requisitado pela View.
-  - Exemplo: ```python 
+  - Exemplo: 
+   ```python 
     class Student(Person):
         registration_date = models.DateField(auto_now_add=True)
-         class_shift = models.CharField(choices=SHIFT_CHOICES, blank=False, null=False)
+        class_shift = models.CharField(choices=SHIFT_CHOICES, blank=False, null=False)
         university = models.CharField(choices=UNIVERSITY_CHOICES)
     ```
 
 - View: O papel dessa camada é formatar os dados que são vindo do banco através da Model para visualização.
-   - Exemplo: class StudentRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
-    permission_classes = (IsAuthenticated, GlobalDefaultPermission)
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
+   - Exemplo: 
+   ```python
+    class StudentRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
+        permission_classes = (IsAuthenticated, GlobalDefaultPermission)
+        queryset = Student.objects.all()
+        serializer_class = StudentSerializer
+    ```    
 
 - Template: Cuida da parte desta visualização para o usuário final. Ele é como o front-end de sua aplicação.
 
