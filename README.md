@@ -30,3 +30,7 @@ Backend: Django / Django REST Framework
 Banco de Dados: PostgreSQL
 
 Frontend: HTML, CSS,  JavaScript, Vue.js
+
+## 📋 Documentação
+
+[Boas Práticas](BOAS_PRATICAS.md)
