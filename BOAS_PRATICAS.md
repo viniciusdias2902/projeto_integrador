@@ -13,3 +13,8 @@ Seguindo estas práticas, o projeto fica mais **organizado, seguro e fácil de m
 - Execute todos os testes antes de merge
 
 - Cobertura mínima recomendada: ≥80%
+
+## Git e GitHub
+- Repositórios organizados e com nomes **descritivos**
+- Commits pequenos, frequentes e com mensagens **significativas**
+- Uso de **Conventional Commits** para padronização
