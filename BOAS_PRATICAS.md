@@ -5,7 +5,7 @@ Seguindo estas práticas, o projeto fica mais **organizado, seguro e fácil de m
 ##  Arquitetura - MVT
 Esse projeto utiliza o padrão MVT(Model-View-Template), arquitetura adotada pelo Django
 ### O que é MVT?
-![imagem do mvt](https://miro.medium.com/v2/resize:fit:1200/1*7g1pR8qJ6Qf7o0Xr7rjVJw.png)
+![imagem do mvt](arquitetura_mvt.png)
 - Model: É o arquivo que contém a estrutura lógica do projeto e funciona como um intermediário para manipular dados entre o banco de dados e a View. Dentro desse arquivo é determinado quais tipos de dados, e como será armazenado dentro do seu banco e, como será exibido quando for requisitado pela View.
   - Exemplo: 
    ```python 
