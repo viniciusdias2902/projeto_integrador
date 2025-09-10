@@ -67,3 +67,15 @@ class VoteListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Vote.objects.filter(student=self.request.user.student)
+
+
+class PollBoardingListView(APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk):
+        poll = generics.get_object_or_404(Poll, pk=pk)
+        students = poll.votes.select_related("student").all()
+        student_names = [v.student.name for v in students]
+        boarding_list = ", ".join(student_names)
+        return Response({"boarding_list": boarding_list})
