@@ -6,5 +6,5 @@ urlpatterns = [
     path("api/v1/", include("authentication.urls")),
     path("api/v1/", include("students.urls")),
     path("api/v1/", include("drivers.urls")),
-    path("api/v1/", include("poll.urls")),
+    path("api/v1/", include("polls.urls")),
 ]
