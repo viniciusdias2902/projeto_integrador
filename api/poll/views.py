@@ -4,22 +4,29 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Poll, Vote
 from .serializers import PollSerializer, VoteSerializer
+from common.permissions import GlobalDefaultPermission
+from datetime import date, timedelta
 
 
 class PollListView(generics.ListAPIView):
     queryset = Poll.objects.all().order_by("date")
     serializer_class = PollSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), GlobalDefaultPermission()]
 
 
 class PollDetailView(generics.RetrieveAPIView):
     queryset = Poll.objects.all()
     serializer_class = PollSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), GlobalDefaultPermission()]
 
 
 class PollBoardingListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), GlobalDefaultPermission()]
 
     def get(self, request, pk):
         poll = generics.get_object_or_404(Poll, pk=pk)
@@ -28,18 +35,46 @@ class PollBoardingListView(APIView):
         return Response(data)
 
 
+class CreateTestPollsView(APIView):
+    """
+    Create 5 consecutive polls starting from today.
+    Only for testing purposes.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]  # or admin only
+
+    def post(self, request):
+        created_polls = []
+        today = date.today()
+
+        for i in range(5):
+            poll_date = today + timedelta(days=i)
+            poll, created = Poll.objects.get_or_create(
+                date=poll_date, defaults={"status": "open"}
+            )
+            if created:
+                created_polls.append(str(poll_date))
+
+        return Response(
+            {"message": "Polls successfully created", "created_polls": created_polls}
+        )
+
+
 class VoteCreateView(generics.CreateAPIView):
     serializer_class = VoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), GlobalDefaultPermission()]
 
     def perform_create(self, serializer):
         serializer.save(student=self.request.user.student)
 
 
-# Lista votos do aluno logado
 class VoteListView(generics.ListAPIView):
     serializer_class = VoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), GlobalDefaultPermission()]
 
     def get_queryset(self):
         return Vote.objects.filter(student=self.request.user.student)
