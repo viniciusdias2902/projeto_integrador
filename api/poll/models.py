@@ -1,4 +1,6 @@
 from django.db import models
+from students.models import Student
+
 
 STATUS = (("open", "Open"), ("closed", "Closed"))
 OPTIONS = (
@@ -18,7 +20,7 @@ class Poll(models.Model):
 
 
 class Vote(models.Model):
-    student = models.ForeignKey("Student", on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     poll = models.ForeignKey("Poll", on_delete=models.CASCADE, related_name="votes")
     option = models.CharField(
         max_length=20,
