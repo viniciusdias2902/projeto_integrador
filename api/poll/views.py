@@ -53,9 +53,6 @@ class CreateTestPollsView(APIView):
         )
 
 
-# --- Vote Views --- #
-
-
 class VoteCreateView(generics.CreateAPIView):
     serializer_class = VoteSerializer
     permission_classes = [permissions.IsAuthenticated]

@@ -1,12 +1,21 @@
 from rest_framework import serializers
 from .models import Poll, Vote
+from students.models import Student
+
+
+class StudentNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = ["id", "name"]
 
 
 class VoteSerializer(serializers.ModelSerializer):
+    student = StudentNestedSerializer(read_only=True)
+
     class Meta:
         model = Vote
-        fields = ["id", "poll", "option"]
-        read_only_fields = ["id"]
+        fields = ["id", "poll", "option", "student"]
+        read_only_fields = ["id", "student"]
 
 
 class PollSerializer(serializers.ModelSerializer):
