@@ -2,17 +2,17 @@ version: '3.9'
 
 services:
   postgres:
-    image: postgres:16       # versão do PostgreSQL
+    image: postgres:16      
     container_name: postgres_db
     restart: always
     environment:
-      POSTGRES_USER: admin       # usuário
+      POSTGRES_USER: admin # usuário
       POSTGRES_PASSWORD: admin123  # senha
-      POSTGRES_DB: projetointegrador       # banco inicial
+      POSTGRES_DB: projetointegrador      
     ports:
-      - "5432:5432"               # mapeia a porta local 5432
+      - "5432:5432"             
     volumes:
-      - pgdata:/var/lib/postgresql/data   # persiste os dados
+      - pgdata:/var/lib/postgresql/data  
 
 volumes:
   pgdata:
