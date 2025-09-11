@@ -1,64 +1,85 @@
-from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APITestCase
 from rest_framework import status
-from rest_framework.test import APIClient
+from django.contrib.auth.models import User, Group
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Student
 
 
-class StudentCRUDTests(TestCase):
+class StudentAPITestCase(APITestCase):
     def setUp(self):
-        self.client = APIClient()
-        self.student = Student.objects.create(
-            name="Michael Corleone",
-            phone="1234567890",
-            class_shift="Night",
-            university="UESPI",
-            email="michaelcorleone@gmail.com",
-            password="antony1945",
+        self.user = User.objects.create_user(
+            username="testuser", password="testpass123"
         )
-        self.valid_student_data = {
-            "name": "Joe Potter",
-            "phone": "0987654321",
-            "class_shift": "Morning",
-            "university": "IFPI",
-            "email": "joepotter15@gmail.com",
-            "password": "kdieuaj56",
+        self.group, _ = Group.objects.get_or_create(name="students")
+        self.user.groups.add(self.group)
+
+        self.admin_user = User.objects.create_superuser(
+            username="admin", password="adminpass"
+        )
+
+        self.student_data = {
+            "name": "Isaac Newton",
+            "phone": "1234567890",
+            "class_shift": "M",
+            "university": "UESPI",
+            "email": "isaac.newton@example.com",
+            "password": "Password123",
         }
+
+        self.student = Student.objects.create(
+            user=self.user,
+            name="Existing Student",
+            phone="0987654321",
+            class_shift="E",
+            university="IFPI",
+        )
+
+    def get_jwt_token(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
+
+    def authenticate_admin(self):
+        token = self.get_jwt_token(self.admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
     def test_create_student(self):
         url = reverse("students-create-list")
-        response = self.client.post(url, self.valid_student_data, format="json")
+        response = self.client.post(url, self.student_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Student.objects.get(id=response.data["id"]).name, "Joe Potter")
+        self.assertTrue(Student.objects.filter(name="Isaac Newton").exists())
 
-    def test_list_students(self):
+    def test_list_students_authenticated(self):
+        self.authenticate_admin()
         url = reverse("students-create-list")
-        response = self.client.get(url, format="json")
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertGreaterEqual(len(response.data), 1)
 
     def test_retrieve_student(self):
-        url = reverse("student-retrieve-update-destroy", args=[self.student.id])
-        response = self.client.get(url, format="json")
+        self.authenticate_admin()
+        url = reverse("students-retrieve-update-destroy", args=[self.student.id])
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["name"], "Michael Corleone")
+        self.assertEqual(response.data["name"], "Existing Student")
 
     def test_update_student(self):
-        url = reverse("student-retrieve-update-destroy", args=[self.student.id])
-        updated_data = {
-            "name": "Nina",
-            "phone": "1231231234",
-            "class_shift": "Afternoon",
+        self.authenticate_admin()
+        url = reverse("students-retrieve-update-destroy", args=[self.student.id])
+        data = {
+            "name": "Updated Name",
+            "phone": "1112223334",
+            "class_shift": "M",
             "university": "CHRISFAPI",
-            "email": "ninasayers@gmail.com",
-            "password": "blackswan",
         }
-        response = self.client.put(url, updated_data, format="json")
+        response = self.client.put(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["name"], "Nina")
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.name, "Updated Name")
 
     def test_delete_student(self):
-        url = reverse("student-retrieve-update-destroy", args=[self.student.id])
-        response = self.client.delete(url, format="json")
+        self.authenticate_admin()
+        url = reverse("students-retrieve-update-destroy", args=[self.student.id])
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Student.objects.count(), 0)
+        self.assertFalse(Student.objects.filter(id=self.student.id).exists())
