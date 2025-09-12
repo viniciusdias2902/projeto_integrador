@@ -23,7 +23,4 @@ urlpatterns = [
     ),
     path("votes/", VoteListView.as_view(), name="vote-list"),
     path("votes/create/", VoteCreateView.as_view(), name="vote-create"),
-    path(
-        "polls/<int:pk>/boarding/", PollBoardingListView.as_view(), name="poll-boarding"
-    ),
 ]
