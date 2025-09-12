@@ -37,3 +37,15 @@ class PollsAPITestCase(APITestCase):
         )
 
         self.poll = Poll.objects.create(date=date.today())
+
+    def get_jwt_token(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
+
+    def authenticate_as_student(self, student_user):
+        token = self.get_jwt_token(student_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def authenticate_as_admin(self):
+        token = self.get_jwt_token(self.admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
