@@ -49,3 +49,17 @@ class PollsAPITestCase(APITestCase):
     def authenticate_as_admin(self):
         token = self.get_jwt_token(self.admin_user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_student_can_create_vote(self):
+        self.authenticate_as_student(self.student_user_1)
+
+        url = reverse("vote-create")
+        payload = {"poll": self.poll.id, "option": "round_trip"}
+
+        response = self.client.post(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        vote = Vote.objects.get(id=response.data["id"])
+        self.assertEqual(vote.student, self.student_1)
+        self.assertEqual(vote.poll, self.poll)
