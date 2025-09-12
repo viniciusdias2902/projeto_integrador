@@ -95,3 +95,21 @@ class PollsAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
 
         self.assertEqual(response.data[0]["student"]["name"], self.student_1.name)
+
+    def test_authenticated_user_can_get_boarding_list(self):
+        Vote.objects.create(student=self.student_1, poll=self.poll, option="round_trip")
+        Vote.objects.create(
+            student=self.student_2, poll=self.poll, option="one_way_outbound"
+        )
+
+        self.authenticate_as_admin()
+
+        url = reverse("poll-boarding-list", args=[self.poll.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        boarding_list_string = response.data["boarding_list"]
+        self.assertIn(self.student_1.name, boarding_list_string)
+        self.assertIn(self.student_2.name, boarding_list_string)
+        self.assertEqual(boarding_list_string.count(","), 1)
