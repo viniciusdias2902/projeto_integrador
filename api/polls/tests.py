@@ -63,3 +63,35 @@ class PollsAPITestCase(APITestCase):
         vote = Vote.objects.get(id=response.data["id"])
         self.assertEqual(vote.student, self.student_1)
         self.assertEqual(vote.poll, self.poll)
+
+    def test_student_cannot_vote_twice_on_same_poll(self):
+        self.authenticate_as_student(self.student_user_1)
+        url = reverse("vote-create")
+        payload = {"poll": self.poll.id, "option": "round_trip"}
+
+        response1 = self.client.post(url, payload, format="json")
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+
+        payload["option"] = "absent"
+        response2 = self.client.post(url, payload, format="json")
+
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(
+            Vote.objects.filter(student=self.student_1, poll=self.poll).count(), 1
+        )
+
+    def test_student_can_list_only_own_votes(self):
+        Vote.objects.create(
+            student=self.student_1, poll=self.poll, option="one_way_outbound"
+        )
+        Vote.objects.create(student=self.student_2, poll=self.poll, option="absent")
+        self.authenticate_as_student(self.student_user_1)
+        url = reverse("vote-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(len(response.data), 1)
+
+        self.assertEqual(response.data[0]["student"]["name"], self.student_1.name)
