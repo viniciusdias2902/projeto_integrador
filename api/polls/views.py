@@ -1,6 +1,7 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import IntegrityError, transaction
 from .models import Poll, Vote
 from .serializers import PollSerializer, VoteSerializer
 from datetime import date, timedelta
@@ -59,6 +60,17 @@ class VoteCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(student=self.request.user.student)
+    
+    def create(self, request, *args):
+        try:
+            with transaction.atomic():
+                return super().create(request, *args)
+        except IntegrityError:
+            return Response(
+                {"detail": "Você já votou nesta enquete."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 
 class VoteListView(generics.ListAPIView):

@@ -33,4 +33,5 @@ Frontend: HTML, CSS,  JavaScript, Vue.js
 
 ## 📋 Documentação
 
-[Boas Práticas](BOAS_PRATICAS.md)
+[Normas do Projeto](NORMAS.md)
+
