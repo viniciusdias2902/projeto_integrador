@@ -1,6 +1,6 @@
 # Casos de Testes - CRUD de Students 
 
-CT-01 - Criar Students
+## CT-01 - Criar Students
 Dado que o usuário envie uma requisição POST /students/ com dados válidos
 
 
