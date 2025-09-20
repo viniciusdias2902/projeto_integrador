@@ -91,3 +91,11 @@ class PollBoardingListView(APIView):
         student_names = [v.student.name for v in students]
         boarding_list = ", ".join(student_names)
         return Response({"boarding_list": boarding_list})
+
+class VoteUpdateView(generics.UpdateAPIView):
+    serializer_class = VoteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Só permite que o usuário atual atualize seus próprios votos
+        return Vote.objects.filter(student=self.request.user.student)
