@@ -6,7 +6,7 @@
     <input type="email" class="input" placeholder="Email" />
 
     <label class="label">Senha</label>
-    <input type="password" class="input" placeholder="Password" />
+    <input type="password" class="input" placeholder="Senha" />
 
     <button class="btn btn-neutral mt-4">Login</button>
     <button class="btn btn-outline mt-4">Cadastro</button>
