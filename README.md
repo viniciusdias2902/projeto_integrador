@@ -1,4 +1,4 @@
-﻿# projeto_integrador
+﻿# UniBus
 
 Um sistema desenvolvido para gerenciar informações relacionadas ao transporte de ônibus de estudantes universitários para outras cidades, incluindo quantidade de estudantes que irão por meio de enquetes e pontos de parada.
 
@@ -34,4 +34,5 @@ Frontend: HTML, CSS,  JavaScript, Vue.js
 ## 📋 Documentação
 
 [Normas do Projeto](NORMAS.md)
+
 
