@@ -18,9 +18,9 @@ export async function refreshToken() {
   const refresh = localStorage.getItem('refresh')
   if (!refresh) throw new Error('No refresh token')
 
-  const response = await axios.post(`${API_URL}refresh`, { token: refresh })
+  const response = await axios.post(`${API_URL}refresh`, { refresh })
   localStorage.setItem('access', response.data.access)
-  return response.data
+  return { access: response.data.access }
 }
 
 export async function verifyToken() {
