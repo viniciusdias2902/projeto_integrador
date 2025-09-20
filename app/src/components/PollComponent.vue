@@ -2,14 +2,12 @@
 import { reactive, onMounted } from 'vue'
 import api from '../services/api'
 
-// Props (somente leitura)
 const props = defineProps({
   day: Object,
-  votedPolls: Object, // { [dayId]: { voteId, option } }
+  votedPolls: Object,
   responses: Object,
 })
 
-// Map das opções do radio para os valores da API
 const OPTIONS_MAP = {
   vou_e_volto: 'round_trip',
   apenas_vou: 'one_way_outbound',
@@ -17,7 +15,6 @@ const OPTIONS_MAP = {
   nao_vou: 'absent',
 }
 
-// Map para exibir a label legível
 const LABEL_MAP = {
   vou_e_volto: 'Vou e volto',
   apenas_vou: 'Apenas vou',
@@ -25,10 +22,8 @@ const LABEL_MAP = {
   nao_vou: 'Não vou',
 }
 
-// Criar uma cópia reativa local
 const localResponses = reactive({})
 
-// Inicializa votedPolls e localResponses a partir do localStorage
 onMounted(() => {
   const storedVotes = localStorage.getItem('votedPolls')
   if (storedVotes) {
