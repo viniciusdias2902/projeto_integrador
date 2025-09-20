@@ -1,8 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
+import LoginPage from '@/pages/LoginPage.vue'
+import PollsPage from '@/pages/PollsPage.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [],
+  routes: [
+    {
+      path: '/',
+      name: 'login',
+      component: LoginPage,
+    },
+    {
+      path: '/enquetes',
+      name: 'polls',
+      component: PollsPage,
+    },
+  ],
 })
 
 export default router
