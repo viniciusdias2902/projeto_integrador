@@ -6,6 +6,7 @@ from .views import (
     VoteCreateView,
     VoteListView,
     CreateTestPollsView,
+    VoteUpdateView
 )
 
 urlpatterns = [
@@ -23,4 +24,6 @@ urlpatterns = [
     ),
     path("votes/", VoteListView.as_view(), name="vote-list"),
     path("votes/create/", VoteCreateView.as_view(), name="vote-create"),
+    path('votes/<int:pk>/update/', VoteUpdateView.as_view(), name='vote-update')
+
 ]
