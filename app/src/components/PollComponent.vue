@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import api from '../services/api'
 
 // Props (somente leitura)
@@ -9,9 +9,6 @@ const props = defineProps({
   responses: Object,
 })
 
-// Criar uma cópia reativa local
-const localResponses = reactive({ ...props.responses })
-
 // Map das opções do radio para os valores da API
 const OPTIONS_MAP = {
   vou_e_volto: 'round_trip',
@@ -20,7 +17,7 @@ const OPTIONS_MAP = {
   nao_vou: 'absent',
 }
 
-// Inverter o map para mostrar a label
+// Map para exibir a label legível
 const LABEL_MAP = {
   vou_e_volto: 'Vou e volto',
   apenas_vou: 'Apenas vou',
@@ -28,19 +25,32 @@ const LABEL_MAP = {
   nao_vou: 'Não vou',
 }
 
+// Criar uma cópia reativa local
+const localResponses = reactive({})
+
+// Inicializa votedPolls e localResponses a partir do localStorage
+onMounted(() => {
+  const storedVotes = localStorage.getItem('votedPolls')
+  if (storedVotes) {
+    const parsed = JSON.parse(storedVotes)
+    Object.assign(props.votedPolls, parsed)
+    for (const dayId in parsed) {
+      localResponses[dayId] = parsed[dayId].option
+    }
+  }
+})
+
 async function submitResponse(dayId) {
   const choice = localResponses[dayId]
   if (!choice) return
 
   try {
     if (props.votedPolls[dayId]?.voteId) {
-      // Atualiza voto existente
       await api.patch(`votes/${props.votedPolls[dayId].voteId}/update/`, {
         option: OPTIONS_MAP[choice],
       })
       props.votedPolls[dayId].option = choice
     } else {
-      // Cria novo voto
       const response = await api.post('votes/create/', {
         poll: dayId,
         option: OPTIONS_MAP[choice],
@@ -49,10 +59,10 @@ async function submitResponse(dayId) {
         voteId: response.data.id,
         option: choice,
       }
-      localStorage.setItem('votedPolls', JSON.stringify(props.votedPolls))
     }
 
-    // Mantém o radio selecionado
+    // Atualiza o localStorage
+    localStorage.setItem('votedPolls', JSON.stringify(props.votedPolls))
     localResponses[dayId] = choice
   } catch (err) {
     console.error(err)
@@ -61,7 +71,7 @@ async function submitResponse(dayId) {
 </script>
 
 <template>
-  <div class="max-w-md bg-base-100 shadow-md rounded-box p-6 mb-4 lg:w-96 w-60">
+  <div class="w-full max-w-md sm:max-w-md bg-base-100 shadow-md rounded-box p-6 mb-4">
     <h2 class="text-xl font-bold mb-4">
       {{
         (() => {
@@ -117,10 +127,12 @@ async function submitResponse(dayId) {
         <span class="label-text">Não vou</span>
       </label>
 
-      <!-- Badge mostrando a opção votada -->
-      <span class="badge badge-accent mt-4" v-if="votedPolls[day.id]">
-        Voto computado: {{ LABEL_MAP[votedPolls[day.id].option] }}
-      </span>
+      <!-- Badge responsiva mostrando a opção votada -->
+      <div class="mt-4 w-full flex flex-wrap">
+        <span class="badge badge-accent break-words w-full sm:w-auto" v-if="votedPolls[day.id]">
+          Voto computado: {{ LABEL_MAP[votedPolls[day.id].option] }}
+        </span>
+      </div>
 
       <button type="submit" class="btn btn-success btn-block mt-4">Enviar resposta</button>
     </form>
