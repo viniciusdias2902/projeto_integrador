@@ -4,8 +4,8 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-8">
-      <PollComponent v-for="n in 6"></PollComponent>
+    <div class="grid grid-cols-1 place-center gap-4 my-8">
+      <PollComponent></PollComponent>
     </div>
   </DefaultLayout>
 </template>

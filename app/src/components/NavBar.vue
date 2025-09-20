@@ -13,7 +13,6 @@ const appRoutes = ['/enquetes', '/lista-embarque']
     </div>
     <div class="flex-none">
       <ul class="menu menu-horizontal px-1">
-        <!-- Grupo de autenticação -->
         <template v-if="authRoutes.includes(route.path)">
           <li>
             <RouterLink to="/" class="btn mr-2">Login</RouterLink>
@@ -23,7 +22,6 @@ const appRoutes = ['/enquetes', '/lista-embarque']
           </li>
         </template>
 
-        <!-- Grupo de app -->
         <template v-else-if="appRoutes.includes(route.path)">
           <li>
             <RouterLink to="/enquetes" class="btn mr-2">Enquetes</RouterLink>
