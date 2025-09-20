@@ -1,8 +1,9 @@
 import axios from 'axios'
 
-const API_URL = 'http://localhost:8000/api/v1/authentication/'
+const API_URL = 'http://127.0.0.1:8000//api/v1/authentication/'
 
 export async function login(email, password) {
+  console.log('Teste')
   const response = await axios.post(`${API_URL}token/`, {
     email,
     password,

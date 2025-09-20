@@ -1,4 +1,4 @@
-<script>
+<script setup>
 import { login } from '../services/auth'
 
 const email = ref('')
@@ -17,7 +17,10 @@ async function handleLogin(e) {
 </script>
 
 <template>
-  <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+  <fieldset
+    class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4"
+    @submit.prevent
+  >
     <legend class="fieldset-legend">Login</legend>
 
     <label class="label">Email</label>
@@ -26,7 +29,7 @@ async function handleLogin(e) {
     <label class="label">Senha</label>
     <input type="password" class="input" placeholder="Senha" />
 
-    <button class="btn btn-neutral mt-4" @click="handleLogin()">Login</button>
+    <button class="btn btn-neutral mt-4" type="submit" @click="handleLogin">Login</button>
     <button class="btn btn-outline mt-4">Cadastro</button>
   </fieldset>
 </template>
