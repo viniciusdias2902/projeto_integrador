@@ -68,7 +68,7 @@ async function submitResponse(dayId) {
           <input
             type="radio"
             :name="'day-' + day.id"
-            class="radio checked:bg-green-500"
+            class="radio checked"
             value="vou_e_volto"
             v-model="responses[day.id]"
           />
@@ -79,7 +79,7 @@ async function submitResponse(dayId) {
           <input
             type="radio"
             :name="'day-' + day.id"
-            class="radio checked:bg-green-500"
+            class="radio checked"
             value="apenas_vou"
             v-model="responses[day.id]"
           />
@@ -90,7 +90,7 @@ async function submitResponse(dayId) {
           <input
             type="radio"
             :name="'day-' + day.id"
-            class="radio checked:bg-green-500"
+            class="radio checked"
             value="apenas_volto"
             v-model="responses[day.id]"
           />
@@ -101,7 +101,7 @@ async function submitResponse(dayId) {
           <input
             type="radio"
             :name="'day-' + day.id"
-            class="radio checked:bg-green-500"
+            class="radio checked"
             value="nao_vou"
             v-model="responses[day.id]"
           />
