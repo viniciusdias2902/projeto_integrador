@@ -4,7 +4,7 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8 lg:mt-0">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 my-8">
       <PollComponent v-for="n in 6"></PollComponent>
     </div>
   </DefaultLayout>
