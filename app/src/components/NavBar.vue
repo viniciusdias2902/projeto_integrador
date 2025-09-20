@@ -5,9 +5,8 @@
     </div>
     <div class="flex-none">
       <ul class="menu menu-horizontal px-1">
-        <li><a>Enquetes</a></li>
-        <li><a>Login</a></li>
-        <li><a>Cadastro</a></li>
+        <li><a class="btn mr-2">Login</a></li>
+        <li><a class="btn mr-2">Cadastro</a></li>
       </ul>
     </div>
   </div>
