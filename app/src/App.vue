@@ -3,12 +3,11 @@ import DefaultLayout from './templates/DefaultLayout.vue'
 </script>
 
 <template>
-  <div class="flex h-screen flex-col items-center">
-    <DefaultLayout />
+  <DefaultLayout>
     <main class="flex-1 flex items-center justify-center">
       <LoginComponent />
     </main>
-  </div>
+  </DefaultLayout>
 </template>
 
 <style scoped></style>
