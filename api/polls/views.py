@@ -97,5 +97,4 @@ class VoteUpdateView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Só permite que o usuário atual atualize seus próprios votos
         return Vote.objects.filter(student=self.request.user.student)

@@ -1,28 +1,59 @@
 <script setup>
+import { reactive } from 'vue'
 import api from '../services/api'
 
-defineProps({
+// Props (somente leitura)
+const props = defineProps({
   day: Object,
-  votedPolls: Object,
+  votedPolls: Object, // { [dayId]: { voteId, option } }
   responses: Object,
 })
 
+// Criar uma cópia reativa local
+const localResponses = reactive({ ...props.responses })
+
+// Map das opções do radio para os valores da API
+const OPTIONS_MAP = {
+  vou_e_volto: 'round_trip',
+  apenas_vou: 'one_way_outbound',
+  apenas_volto: 'one_way_return',
+  nao_vou: 'absent',
+}
+
+// Inverter o map para mostrar a label
+const LABEL_MAP = {
+  vou_e_volto: 'Vou e volto',
+  apenas_vou: 'Apenas vou',
+  apenas_volto: 'Apenas volto',
+  nao_vou: 'Não vou',
+}
+
 async function submitResponse(dayId) {
-  const choice = responses[dayId]
+  const choice = localResponses[dayId]
   if (!choice) return
 
   try {
-    await api.post('votes/create/', {
-      poll: dayId,
-      option: {
-        vou_e_volto: 'round_trip',
-        apenas_vou: 'one_way_outbound',
-        apenas_volto: 'one_way_return',
-        nao_vou: 'absent',
-      }[choice],
-    })
-    votedPolls[dayId] = true
-    localStorage.setItem('votedPolls', JSON.stringify(votedPolls))
+    if (props.votedPolls[dayId]?.voteId) {
+      // Atualiza voto existente
+      await api.patch(`votes/${props.votedPolls[dayId].voteId}/update/`, {
+        option: OPTIONS_MAP[choice],
+      })
+      props.votedPolls[dayId].option = choice
+    } else {
+      // Cria novo voto
+      const response = await api.post('votes/create/', {
+        poll: dayId,
+        option: OPTIONS_MAP[choice],
+      })
+      props.votedPolls[dayId] = {
+        voteId: response.data.id,
+        option: choice,
+      }
+      localStorage.setItem('votedPolls', JSON.stringify(props.votedPolls))
+    }
+
+    // Mantém o radio selecionado
+    localResponses[dayId] = choice
   } catch (err) {
     console.error(err)
   }
@@ -51,7 +82,7 @@ async function submitResponse(dayId) {
           :name="'day-' + day.id"
           class="radio checked"
           value="vou_e_volto"
-          v-model="responses[day.id]"
+          v-model="localResponses[day.id]"
         />
         <span class="label-text">Vou e volto</span>
       </label>
@@ -61,7 +92,7 @@ async function submitResponse(dayId) {
           :name="'day-' + day.id"
           class="radio checked"
           value="apenas_vou"
-          v-model="responses[day.id]"
+          v-model="localResponses[day.id]"
         />
         <span class="label-text">Apenas vou</span>
       </label>
@@ -71,7 +102,7 @@ async function submitResponse(dayId) {
           :name="'day-' + day.id"
           class="radio checked"
           value="apenas_volto"
-          v-model="responses[day.id]"
+          v-model="localResponses[day.id]"
         />
         <span class="label-text">Apenas volto</span>
       </label>
@@ -81,11 +112,16 @@ async function submitResponse(dayId) {
           :name="'day-' + day.id"
           class="radio checked"
           value="nao_vou"
-          v-model="responses[day.id]"
+          v-model="localResponses[day.id]"
         />
         <span class="label-text">Não vou</span>
       </label>
-      <span class="badge badge-accent mt-4" v-if="votedPolls[day.id]">Voto computado</span>
+
+      <!-- Badge mostrando a opção votada -->
+      <span class="badge badge-accent mt-4" v-if="votedPolls[day.id]">
+        Voto computado: {{ LABEL_MAP[votedPolls[day.id].option] }}
+      </span>
+
       <button type="submit" class="btn btn-success btn-block mt-4">Enviar resposta</button>
     </form>
   </div>
