@@ -3,5 +3,9 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 </script>
 
 <template>
-  <DefaultLayout> Teste </DefaultLayout>
+  <DefaultLayout>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8 lg:mt-0">
+      <PollComponent v-for="n in 6"></PollComponent>
+    </div>
+  </DefaultLayout>
 </template>
