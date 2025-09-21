@@ -1,0 +1,63 @@
+[33m45202822[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m docs: adding test cases documentation
+[33m49cb4e9e[m Merge branch 'main' of github.com:viniciusdias2902/projeto_integrador
+[33m19483ccd[m[33m ([m[1;32mbackup-main[m[33m)[m docs: start adding test cases documentation
+[33mbcf5b074[m docs: start adding test cases documentation
+[33m885eae1e[m chore: adds gitignore
+[33m3dd9d666[m chore: removes venv
+[33ma897f7f9[m Update README.md
+[33mec822462[m refactor: remove unnecessary url routes
+[33m33f964a0[m feat: make migrations and adds a super user
+[33mec0cce4b[m[33m ([m[1;31morigin/develop[m[33m)[m test(polls): add test for admin user can be able to see the boarding list
+[33me7249b02[m fix(polls): addd error handling to postgres Bad request return
+[33m4061c672[m test(polls): adds tests to verify vote list integrity
+[33m6c214972[m test(polls):adds test to check if student can vote
+[33m6efc7c58[m test(polls): adds helpers for jwt authentication
+[33m4d6dfec8[m test(polls): configures initial environment for testing
+[33mdd3c29b2[m test(drivers): add tests for Driver CRUD API
+[33mc40d95dc[m test(students): fix existing tests and add JWT authentication
+[33m4f285546[m test(students): add unit tests for CRUD operations
+[33m96d54be8[m chore: concluida migracao para banco postgresql
+[33m71f4ecf0[m fix: removidas configuracoes antigas do banco sqlite
+[33m67d8d996[m chore: alteradas configurações do banco de dados
+[33m29428c53[m chore: configuracoes iniciais do container postgresql
+[33m13b369ea[m refactor: rename app from polls to poll and update AppConfig
+[33m9e1a6306[m feat(polls): add management command to create weekly polls automatically
+[33m8b99d5b1[m feat: adds a simple boarding list
+[33m9cf1440f[m feat: adds students to the serializer of the pool
+[33mff883a5d[m refactor: simplify vote and poll permissions
+[33mecd5bb7a[m feat: adds a poll generator to test the API
+[33m9261a623[m feat: adds vote views
+[33ma60b23b3[m feat: adds pool views
+[33m66e16ec9[m feat: adds poll serializer
+[33m02221a02[m feat: adds poll app and poll model
+[33m69b97805[m docs: add MVT diagram image to project norms
+[33maf4bd272[m docs(project): add MVT architecture examples to project norms
+[33m69cee5b7[m docs: add detailed MVT architecture explanation with examples and Conventional Commits section
+[33mfad5c4e6[m docs: add Git/GitHub guidelines to best practices
+[33m2bf0b096[m docs: add project best practices file
+[33md6b33e91[m Update README.md
+[33mede952f7[m chore: add initial test data to database
+[33mffb54a32[m refactor: improvements in offerings for user groups
+[33mf817f394[m allows users to retrieve information from others
+[33m3dd4b423[m feat: set permissions using django admin
+[33m0bfec1b2[m gives permission for registration
+[33m67595e83[m feat: prevents a user from editing another user's information, making it possible to edit only their own data.
+[33m1833cdc0[m feat: Adds default permission settings for user groups
+[33m53397deb[m feat: requires authentication to use the API
+[33m08d4d117[m feat: adds authentication
+[33ma6da0c91[m feat: adds drivers to the installed apps
+[33m935830f2[m feat: adds drivers urls
+[33me1045841[m feat: adds driver views
+[33m932ad3e8[m refactor: adds the person serializer class to avoid code duplication
+[33me2e293cb[m feat: adds driver serializer
+[33mda2c0d6e[m refactor: adds the person base class to avoid code duplication
+[33mce4a5bac[m adds driver model
+[33m23b78c81[m refactor: add more shift choices and create a file for the constants
+[33m7625ae9e[m feat: adds students to the installed apps in settings
+[33m597cd373[m feat: adds API versioning
+[33m44da29b0[m feat: adds students urls to the students app
+[33m92934138[m feat: adds students views to the API
+[33m96d0f0af[m feat: adds a serializer that creates user and student at the same time
+[33m7f644d42[m feat: adds student model
+[33m3085ee8b[m chore: adds requirements.txt
+[33m86fcd492[m chore: initial setup

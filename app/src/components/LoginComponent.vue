@@ -46,6 +46,6 @@ async function handleLogin() {
       <span>{{ error }}</span>
     </div>
     <button class="btn btn-neutral mt-4" type="submit" @click="handleLogin">Login</button>
-    <button class="btn btn-outline mt-4">Cadastro</button>
+    <button class="btn btn-outline mt-4" @click="$router.push('/cadastro')">Cadastro</button>
   </fieldset>
 </template>
