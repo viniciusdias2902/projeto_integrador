@@ -1,11 +1,12 @@
 <template>
-    <div class="max-w-md mx-auto mt-10 p-6 bg-base-100 rounded-xl shadow-lg">
+    <div class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="w-full max-w-[500px] p-6 bg-gray-100 rounded-xl shadow-lg">
         <h2 class="text-2xl font-bold text-center mb-6">Cadastro de Alunos</h2>
        
         <form @submit.prevent="submitForm" class="space-y-4">
             <div class="form-control">
                 <label for="name" class="label">
-                <span class="label-text">Nome:</span>
+                <span class="label-text">Nome</span>
                 </label>
                 <input id="name" v-model="form.name" required class="input input-bordered w-full" />
             </div>
@@ -48,8 +49,9 @@
                     <option value="Noite">Noite</option>
                 </select>
             </div>
-            <button type="submit">Cadastrar</button>
+            <button type="submit" class="btn bg-black text-white hover:bg-gray-800 w-full">Cadastrar</button>
         </form>
+    </div>
     </div>
 </template>
 
