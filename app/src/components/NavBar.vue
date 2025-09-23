@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const authRoutes = ['/']
+const authRoutes = ['/', '/cadastro']
 const appRoutes = ['/enquetes', '/lista-embarque']
 </script>
 
