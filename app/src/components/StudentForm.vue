@@ -1,12 +1,24 @@
 <template>
   <form @submit.prevent="submitForm" class="space-y-4">
-    <InputField id="name" label="Nome" v-model="form.name" />
+    <div>
+      <InputField id="name" label="Nome" v-model="form.name" />
+      <ValidationMessage :message="errors.name" />
+    </div>
+
     <div>
       <InputField id="email" label="E-mail" type="email" v-model="form.email" />
-      <p v-if="emailError" class="text-red-600 text-sm mt-1">{{ emailError }}</p>
+      <ValidationMessage :message="errors.email" />
     </div>
-    <InputField id="password" label="Senha" type="password" v-model="form.password" />
-    <InputField id="phone" label="Telefone" v-model="form.phone" />
+
+    <div>
+      <InputField id="password" label="Senha" type="password" v-model="form.password" />
+      <ValidationMessage :message="errors.password" />
+    </div>
+
+    <div>
+      <InputField id="phone" label="Telefone" v-model="form.phone" />
+      <ValidationMessage :message="errors.phone" />
+    </div>
 
     <SelectField
       id="university"
@@ -14,14 +26,15 @@
       :options="universities"
       v-model="form.university"
     />
+
     <SelectField id="class_shift" label="Turno" :options="shifts" v-model="form.class_shift" />
 
     <button type="submit" class="btn bg-black text-white hover:bg-gray-800 w-full">
       Cadastrar
     </button>
 
-    <p v-if="sucessMessage" class="mt-4 text-green-600 text-center">
-      {{ sucessMessage }}
+    <p v-if="successMessage" class="mt-4 text-green-600 text-center">
+      {{ successMessage }}
     </p>
     <p v-if="errorMessage" class="mt-4 text-red-600 text-center">{{ errorMessage }}</p>
   </form>
@@ -30,12 +43,14 @@
 <script>
 import InputField from './InputField.vue'
 import SelectField from './SelectField.vue'
+import ValidationMessage from './ValidationMessage.vue'
 
 export default {
   name: 'StudentForm',
   components: {
     InputField,
     SelectField,
+    ValidationMessage,
   },
   data() {
     return {
@@ -47,9 +62,14 @@ export default {
         university: '',
         class_shift: '',
       },
-      sucessMessage: '',
+      errors: {
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+      },
+      successMessage: '',
       errorMessage: '',
-      emailError: '',
       universities: [
         { value: 'UESPI', label: 'UESPI' },
         { value: 'IFPI', label: 'IFPI' },
@@ -65,9 +85,60 @@ export default {
     }
   },
   methods: {
+    clearErrors() {
+      this.errors = {
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+      }
+    },
+    resetForm() {
+      this.form = {
+        name: '',
+        email: '',
+        password: '',
+        phone: '',
+        university: '',
+        class_shift: '',
+      }
+      this.clearErrors()
+      this.errorMessage = ''
+    },
+    validateForm() {
+      let valid = true
+
+      this.clearErrors()
+
+      if (!this.form.name || this.form.name.length < 3) {
+        this.errors.name = 'Nome deve ter pelo menos 3 caracteres.'
+        valid = false
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!this.form.email || !emailRegex.test(this.form.email)) {
+        this.errors.email = 'Insira um e-mail válido.'
+        valid = false
+      }
+
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
+      if (!this.form.password || !passwordRegex.test(this.form.password)) {
+        this.errors.password = 'A senha deve conter pelo menos 8 caracteres, uma letra e um número.'
+        valid = false
+      }
+
+      const phoneDigits = this.form.phone.replace(/\D/g, '')
+      if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11) {
+        this.errors.phone = 'Telefone deve conter 10 ou 11 números.'
+        valid = false
+      }
+
+      return valid
+    },
     async submitForm() {
+      if (!this.validateForm()) return
+
       try {
-        this.emailError = ''
         const response = await fetch('http://localhost:8000/api/v1/students/', {
           method: 'POST',
           headers: {
@@ -76,41 +147,28 @@ export default {
           body: JSON.stringify(this.form),
         })
 
+        const result = await response.json()
+
         if (!response.ok) {
-          const errorData = await response.json()
-
-          // 💡 Se há erro no campo email
-          if (errorData.email && Array.isArray(errorData.email)) {
-            const message = errorData.email[0]
-
-            // Verifica se é a mensagem esperada e traduz
+          if (result.email && Array.isArray(result.email)) {
+            const message = result.email[0]
             if (message === 'This email is already in use') {
-              this.emailError = 'Esse email já está sendo usado por outro usuário.'
+              this.errors.email = 'Esse email já está sendo usado por outro usuário.'
             } else {
-              this.emailError = message // fallback: mostra o que vier da API
+              this.errors.email = message
             }
           }
-
-          throw new Error('Erro ao cadastrar aluno')
+          throw new Error('Erro ao cadastrar')
         }
 
-        this.sucessMessage = 'Cadastro realizado com sucesso!'
-        this.errorMessage = ''
-        this.form = {
-          name: '',
-          email: '',
-          password: '',
-          phone: '',
-          university: '',
-          class_shift: '',
-        }
-        this.emailError = ''
+        this.successMessage = 'Cadastro realizado com sucesso!'
+        this.resetForm()
       } catch (error) {
         console.error(error)
-        if (!this.emailError) {
+        if (!this.errors.email) {
           this.errorMessage = 'Erro ao cadastrar aluno. Tente novamente.'
         }
-        this.sucessMessage = ''
+        this.successMessage = ''
       }
     },
   },

@@ -6,9 +6,9 @@
     <select
       :id="id"
       :value="modelValue"
+      class="select select-bordered w-full"
       @change="$emit('update:modelValue', $event.target.value)"
       required
-      class="select select-bordered w-full"
     >
       <option disabled value="">Selecione</option>
       <option v-for="option in options" :key="option.value" :value="option.value">

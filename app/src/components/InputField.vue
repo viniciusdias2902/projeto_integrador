@@ -7,9 +7,9 @@
       :id="id"
       :type="type"
       :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
       required
       class="input input-bordered w-full"
+      @input="$emit('update:modelValue', $event.target.value)"
     />
   </div>
 </template>
