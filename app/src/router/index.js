@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '@/pages/LoginPage.vue'
 import PollsPage from '@/pages/PollsPage.vue'
 import BoardingPage from '@/pages/BoardingPage.vue'
-import StudentRegistration from '@/pages/StudentRegistration.vue'
+import RegistrationPage from '@/pages/RegistrationPage.vue'
 import { verifyToken, refreshToken } from '@/services/auth'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,8 +26,8 @@ const router = createRouter({
     },
     {
       path: '/cadastro',
-      name: 'student-registration',
-      component: StudentRegistration,
+      name: 'registration-page',
+      component: RegistrationPage,
     }
   ],
 })

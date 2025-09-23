@@ -44,20 +44,24 @@
                 <label for="shift">Turno:</label>
                 <select id="shift" v-model="form.shift" required>
                     <option value="" disabled>Selecione</option>
-                    <option value="Manhã">Manhã</option>
-                    <option value="Tarde">Tarde</option>
-                    <option value="Noite">Noite</option>
+                    <option value="M">Manhã</option>
+                    <option value="A">Tarde</option>
+                    <option value="E">Noite</option>
+                    <option value="M-A">Manhã e Tarde</option>
+                    <option value="A-E">Tarde e Noite</option>
                 </select>
             </div>
             <button type="submit" class="btn bg-black text-white hover:bg-gray-800 w-full">Cadastrar</button>
         </form>
+        <p v-if="sucessMessage" class="mt-4 text-green-600 text-center">Bem-vindo, {{ sucessMessage }}!</p>
+        <p v-if="errorMessage" class="mt-4 text-red-600 text-center">{{ errorMessage }}</p>
     </div>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'StudentRegistration',
+    name: 'RegistrationPage',
     data() {
         return {
             form: {
@@ -71,8 +75,25 @@ export default {
         };
     },
     methods: {
-        submitForm() {
-            alert('Cadastro realizado com sucesso!');
+        async submitForm() {
+            try{
+            const response = await fetch('https://localhost:8000/api/v1/students/1/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(this.form)
+            });
+
+            if(!response.ok) {
+                throw new Error('Erro ao cadastrar aluno');
+            }
+
+            const data = await response.json();
+            console.log('Success:', data);
+
+            this.sucessMessage = "Cadastro realizado com sucesso!";
+            this.errorMessage = '';
 
             this.form = {
                 name: '',
@@ -82,7 +103,12 @@ export default {
                 university: '',
                 shift: ''
             };
+        } catch (error) {
+            console.error('Error:', error);
+            this.errorMessage = 'Erro ao cadastrar aluno. Tente novamente.';
+            this.sucessMessage = '';
         }
-    }
+        },
+    },
 };
 </script>
