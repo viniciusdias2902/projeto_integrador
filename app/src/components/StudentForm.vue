@@ -1,7 +1,10 @@
 <template>
   <form @submit.prevent="submitForm" class="space-y-4">
     <InputField id="name" label="Nome" v-model="form.name" />
-    <InputField id="email" label="E-mail" type="email" v-model="form.email" />
+    <div>
+      <InputField id="email" label="E-mail" type="email" v-model="form.email" />
+      <p v-if="emailError" class="text-red-600 text-sm mt-1">{{ emailError }}</p>
+    </div>
     <InputField id="password" label="Senha" type="password" v-model="form.password" />
     <InputField id="phone" label="Telefone" v-model="form.phone" />
 
@@ -46,6 +49,7 @@ export default {
       },
       sucessMessage: '',
       errorMessage: '',
+      emailError: '',
       universities: [
         { value: 'UESPI', label: 'UESPI' },
         { value: 'IFPI', label: 'IFPI' },
@@ -63,6 +67,7 @@ export default {
   methods: {
     async submitForm() {
       try {
+        this.emailError = ''
         const response = await fetch('http://localhost:8000/api/v1/students/', {
           method: 'POST',
           headers: {
@@ -71,7 +76,23 @@ export default {
           body: JSON.stringify(this.form),
         })
 
-        if (!response.ok) throw new Error('Erro ao cadastrar aluno')
+        if (!response.ok) {
+          const errorData = await response.json()
+
+          // 💡 Se há erro no campo email
+          if (errorData.email && Array.isArray(errorData.email)) {
+            const message = errorData.email[0]
+
+            // Verifica se é a mensagem esperada e traduz
+            if (message === 'This email is already in use') {
+              this.emailError = 'Esse email já está sendo usado por outro usuário.'
+            } else {
+              this.emailError = message // fallback: mostra o que vier da API
+            }
+          }
+
+          throw new Error('Erro ao cadastrar aluno')
+        }
 
         this.sucessMessage = 'Cadastro realizado com sucesso!'
         this.errorMessage = ''
@@ -83,9 +104,12 @@ export default {
           university: '',
           class_shift: '',
         }
+        this.emailError = ''
       } catch (error) {
         console.error(error)
-        this.errorMessage = 'Erro ao cadastrar aluno. Tente novamente.'
+        if (!this.emailError) {
+          this.errorMessage = 'Erro ao cadastrar aluno. Tente novamente.'
+        }
         this.sucessMessage = ''
       }
     },
