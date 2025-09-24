@@ -12,6 +12,7 @@ async function handleLogin() {
     router.push('/enquetes')
   } catch (err) {
     error.value = 'Email ou senha inválidos'
+    throw err
   }
 }
 </script>
