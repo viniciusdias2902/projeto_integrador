@@ -1,5 +1,6 @@
 <script setup>
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
+import PollComponent from '@/components/PollComponent.vue'
 import { verifyAndRefreshToken } from '@/services/auth'
 
 const polls = ref([])
@@ -16,135 +17,29 @@ async function getPolls() {
       throw new Error('Erro')
     }
     console.log(polls.value)
+    console.log(polls.value[0].date)
   }
 }
+
+function getDiaSemana(dateString) {
+  const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+  const date = new Date(dateString)
+  return diasSemana[date.getDay()]
+}
+
 onMounted(() => getPolls())
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 </script>
 
 <template>
   <DefaultLayout>
-    <div class="flex gap-4 flex-wrap w-full justify-center">
-      <form action="">
-        <fieldset
-          class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4"
-        >
-          <legend class="fieldset-legend">Segunda-feira</legend>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <button class="btn btn-primary mt-1">Enviar esposta</button>
-        </fieldset>
-      </form>
-      <form action="">
-        <fieldset
-          class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4"
-        >
-          <legend class="fieldset-legend">Segunda-feira</legend>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <button class="btn btn-primary mt-1">Enviar esposta</button>
-        </fieldset>
-      </form>
-      <form action="">
-        <fieldset
-          class="fieldset bg-base-100 border-base-300 rounded-box lg:w-200 sm:w-64 border p-4"
-        >
-          <legend class="fieldset-legend">Segunda-feira</legend>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <button class="btn btn-primary mt-1">Enviar esposta</button>
-        </fieldset>
-      </form>
-      <form action="">
-        <fieldset
-          class="fieldset bg-base-100 border-base-300 rounded-box lg:w-200 sm:w-64 border p-4"
-        >
-          <legend class="fieldset-legend">Segunda-feira</legend>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <button class="btn btn-primary mt-1">Enviar esposta</button>
-        </fieldset>
-      </form>
-      <form action="">
-        <fieldset
-          class="fieldset bg-base-100 border-base-300 rounded-box lg:w-200 sm:w-64 border p-4"
-        >
-          <legend class="fieldset-legend">Segunda-feira</legend>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <label class="label text-lg">
-            <input type="radio" class="radio radio-primary" name="Teste" />
-            Apenas ida
-          </label>
-          <button class="btn btn-primary mt-1">Enviar esposta</button>
-        </fieldset>
-      </form>
+    <div class="flex gap-4 flex-wrap justify-center">
+      <PollComponent
+        v-for="poll in polls"
+        :day="getDiaSemana(poll.date)"
+        :key="poll.id"
+        :name="poll.id"
+      ></PollComponent>
     </div>
   </DefaultLayout>
 </template>
