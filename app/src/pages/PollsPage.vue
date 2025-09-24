@@ -35,13 +35,13 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <div class="flex gap-4 flex-wrap justify-center mb-4">
+    <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
       <PollComponent
         v-for="poll in polls"
         :day="getDiaSemana(poll.date)"
         :key="poll.id"
         :name="poll.id"
-      ></PollComponent>
+      />
     </div>
   </DefaultLayout>
 </template>

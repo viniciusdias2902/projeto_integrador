@@ -50,7 +50,7 @@ async function fetchPoll() {
     }
   } catch (error) {
     console.error(error)
-    errorMessage.value = 'Falha ao carregar a enquete. Tente novamente.'
+    errorMessage.value = 'Falha ao carregar a enquete. Tente atualizar a página.'
   }
 }
 
