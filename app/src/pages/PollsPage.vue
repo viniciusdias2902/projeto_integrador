@@ -24,9 +24,107 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <div>
+    <div class="flex gap-4 flex-wrap w-full justify-center">
       <form action="">
-        <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+        <fieldset
+          class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4"
+        >
+          <legend class="fieldset-legend">Segunda-feira</legend>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <button class="btn btn-primary mt-1">Enviar esposta</button>
+        </fieldset>
+      </form>
+      <form action="">
+        <fieldset
+          class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4"
+        >
+          <legend class="fieldset-legend">Segunda-feira</legend>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <button class="btn btn-primary mt-1">Enviar esposta</button>
+        </fieldset>
+      </form>
+      <form action="">
+        <fieldset
+          class="fieldset bg-base-100 border-base-300 rounded-box lg:w-200 sm:w-64 border p-4"
+        >
+          <legend class="fieldset-legend">Segunda-feira</legend>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <button class="btn btn-primary mt-1">Enviar esposta</button>
+        </fieldset>
+      </form>
+      <form action="">
+        <fieldset
+          class="fieldset bg-base-100 border-base-300 rounded-box lg:w-200 sm:w-64 border p-4"
+        >
+          <legend class="fieldset-legend">Segunda-feira</legend>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <button class="btn btn-primary mt-1">Enviar esposta</button>
+        </fieldset>
+      </form>
+      <form action="">
+        <fieldset
+          class="fieldset bg-base-100 border-base-300 rounded-box lg:w-200 sm:w-64 border p-4"
+        >
           <legend class="fieldset-legend">Segunda-feira</legend>
           <label class="label text-lg">
             <input type="radio" class="radio radio-primary" name="Teste" />
