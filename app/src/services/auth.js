@@ -52,12 +52,19 @@ export async function verifyToken() {
   const access = localStorage.getItem('access')
   if (!access) return null
 
-  try {
-    await axios.post(`${API_URL}verify`, { token: access })
-    return true
-  } catch {
-    return false
+  const response = fetch(`${API_URL}verify`, {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify({ access }),
+  })
+
+  const data = response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message)
   }
+
+  return data.message
 }
 
 export function logout() {
