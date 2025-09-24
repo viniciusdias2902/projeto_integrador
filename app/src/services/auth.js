@@ -38,8 +38,13 @@ export async function refreshToken() {
   const refresh = localStorage.getItem('refresh')
   if (!refresh) throw new Error('No refresh token')
 
-  const response = await axios.post(`${API_URL}refresh`, { refresh })
-  localStorage.setItem('access', response.data.access)
+  const response = await fetch(`${API_URL}refresh`, {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify({ refresh: refresh }),
+  })
+  const data = await response.json()
+  localStorage.setItem('access', data.access)
   return { access: response.data.access }
 }
 
