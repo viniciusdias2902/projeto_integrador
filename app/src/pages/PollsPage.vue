@@ -1,3 +1,7 @@
+<script setup>
+import DefaultLayout from '@/templates/DefaultLayout.vue'
+</script>
+
 <!-- <template>
   <DefaultLayout>
     <div class="flex flex-wrap justify-center gap-6 my-8">
@@ -53,5 +57,7 @@ function updatePollData(updatedPoll) {
 </script> -->
 
 <template>
-  <p>Refactoring</p>
+  <DefaultLayout>
+    <p>Refactoring</p>
+  </DefaultLayout>
 </template>

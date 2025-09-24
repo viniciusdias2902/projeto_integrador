@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-undef
 const URL = import.meta.env.VITE_APP_AUTHENTICATION_URL
 
 export async function login(email, password) {
@@ -42,7 +41,7 @@ export async function refreshToken() {
 
 export async function verifyToken() {
   const access = localStorage.getItem('access')
-  if (!access) return null
+  if (!access) return false
 
   const response = await fetch(`${URL}verify`, {
     method: 'POST',
@@ -50,10 +49,8 @@ export async function verifyToken() {
     body: JSON.stringify({ token: access }),
   })
 
-  const data = await response.json()
-
   if (!response.ok) {
-    throw new Error(data.message)
+    return false
   }
 
   return true
