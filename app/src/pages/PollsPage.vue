@@ -33,7 +33,7 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <div class="flex gap-4 flex-wrap justify-center">
+    <div class="flex gap-4 flex-wrap justify-center mb-4">
       <PollComponent
         v-for="poll in polls"
         :day="getDiaSemana(poll.date)"
