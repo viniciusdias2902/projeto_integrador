@@ -24,8 +24,8 @@ async function handleLogin() {
     <label class="label" for="email">Email</label>
     <input type="email" class="input" placeholder="Email" v-model="email" id="email" />
 
-    <label class="label">Senha</label>
-    <input type="password" class="input" placeholder="Senha" v-model="password" />
+    <label class="label" for="password">Senha</label>
+    <input type="password" class="input" placeholder="Senha" v-model="password" id="password" />
     <AlertComponent v-if="error" class="mt-4">{{ error }}</AlertComponent>
     <ButtonNeutral @click="handleLogin" class="mt-4">Login</ButtonNeutral>
     <OutlineButton @click="router.push('/cadastro')">Cadastro</OutlineButton>
