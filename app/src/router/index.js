@@ -28,7 +28,7 @@ const router = createRouter({
       path: '/cadastro',
       name: 'registration-page',
       component: RegistrationPage,
-    }
+    },
   ],
 })
 
