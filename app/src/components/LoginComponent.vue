@@ -1,9 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { login } from '../services/auth'
-import AlertComponent from './AlertComponent.vue'
-import OutlineButton from './OutlineButton.vue'
-import FieldsetComponent from './FieldsetComponent.vue'
 const router = useRouter()
 const email = ref('')
 const password = ref('')
@@ -21,10 +18,9 @@ async function handleLogin() {
 
 <template>
   <FieldsetComponent title="Login">
-    <label class="label" for="email">Email</label>
+    <LabelComponent for="email">Email</LabelComponent>
     <input type="email" class="input" placeholder="Email" v-model="email" id="email" />
-
-    <label class="label" for="password">Senha</label>
+    <LabelComponent for="password">Senha</LabelComponent>
     <input type="password" class="input" placeholder="Senha" v-model="password" id="password" />
     <AlertComponent v-if="error" class="mt-4">{{ error }}</AlertComponent>
     <ButtonNeutral @click="handleLogin" class="mt-4">Login</ButtonNeutral>
