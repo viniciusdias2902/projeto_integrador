@@ -116,7 +116,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4">
+  <fieldset
+    class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4 flex flex-col"
+  >
     <legend class="fieldset-legend">{{ day }}</legend>
 
     <LabelComponent :for="`${name}-1`" class="text-lg">
@@ -167,13 +169,13 @@ onMounted(() => {
       Não vou
     </LabelComponent>
 
-    <button class="btn btn-primary mt-1" @click="submitVote">Enviar resposta</button>
+    <button class="btn btn-primary mt-1 btn-lg" @click="submitVote">Enviar Resposta</button>
 
     <AlertComponent v-if="errorMessage" class="mt-2">
       {{ errorMessage }}
     </AlertComponent>
 
-    <SuccessComponent v-if="successMessage" class="mt-2">
+    <SuccessComponent v-if="successMessage" class="mt-2 flex self-start">
       {{ successMessage }}
     </SuccessComponent>
   </fieldset>
