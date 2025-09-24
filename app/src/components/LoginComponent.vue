@@ -29,8 +29,8 @@ async function handleLogin() {
 
     <label class="label">Senha</label>
     <input type="password" class="input" placeholder="Senha" v-model="password" />
-    <AlertComponent v-if="error">{{ error }}</AlertComponent>
-    <button class="btn btn-neutral mt-4" type="submit" @click="handleLogin">Login</button>
-    <button class="btn btn-outline mt-4" @click="$router.push('/cadastro')">Cadastro</button>
+    <AlertComponent v-if="error" class="mt-4">{{ error }}</AlertComponent>
+    <ButtonNeutral @click="handleLogin" class="mt-4">Login</ButtonNeutral>
+    <button class="btn btn-outline mt-4" @click="router.push('/cadastro')">Cadastro</button>
   </fieldset>
 </template>
