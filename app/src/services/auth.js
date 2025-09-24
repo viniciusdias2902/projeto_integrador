@@ -33,7 +33,8 @@ export async function refreshToken() {
   const data = await response.json()
 
   if (!response.ok) {
-    throw new Error(data.message)
+    logout()
+    throw new Error(data.message || 'Invalid refresh token ')
   }
 
   localStorage.setItem('access', data.access)
@@ -60,4 +61,19 @@ export function logout() {
   localStorage.removeItem('access')
   localStorage.removeItem('refresh')
   localStorage.removeItem('email')
+}
+
+export async function verifyAndRefreshToken() {
+  let isValid = await verifyToken()
+
+  if (!isValid) {
+    try {
+      await refreshToken()
+      isValid = true
+    } catch {
+      isValid = false
+    }
+  }
+
+  return isValid
 }

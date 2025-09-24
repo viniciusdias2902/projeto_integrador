@@ -1,7 +1,7 @@
 <script setup>
 import ListRow from './ListRow.vue'
 
-const props = defineProps({
+defineProps({
   boardingType: String,
 })
 </script>

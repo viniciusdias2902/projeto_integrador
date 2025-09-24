@@ -3,7 +3,7 @@ import LoginPage from '@/pages/LoginPage.vue'
 import PollsPage from '@/pages/PollsPage.vue'
 import BoardingPage from '@/pages/BoardingPage.vue'
 import RegistrationPage from '@/pages/RegistrationPage.vue'
-import { verifyToken, refreshToken } from '@/services/auth'
+import { verifyAndRefreshToken } from '@/services/auth'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -34,16 +34,7 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   if (to.meta.requiresAuth) {
-    let isValid = await verifyToken()
-
-    if (!isValid) {
-      try {
-        await refreshToken()
-        isValid = true
-      } catch {
-        isValid = false
-      }
-    }
+    let isValid = await verifyAndRefreshToken()
 
     if (!isValid) return next({ name: 'login' })
   }

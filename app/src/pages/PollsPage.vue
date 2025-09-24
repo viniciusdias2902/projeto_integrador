@@ -1,6 +1,32 @@
 <script setup>
+const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
+import { verifyAndRefreshToken, verifyToken } from '@/services/auth'
+
+const polls = ref([])
+
+async function getPolls() {
+  let isValid = verifyAndRefreshToken()
+  if (isValid) {
+    const response = await fetch(POLLS_URL, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access')}` },
+    })
+    const data = await response.json()
+    polls.value = data
+    if (!response.ok) {
+      throw new Error('Erro')
+    }
+    console.log(polls.value)
+  }
+}
+onMounted(() => getPolls())
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 </script>
+
+<template>
+  <DefaultLayout>
+    <p>Refactoring</p>
+  </DefaultLayout>
+</template>
 
 <!-- <template>
   <DefaultLayout>
@@ -55,9 +81,3 @@ function updatePollData(updatedPoll) {
   }
 }
 </script> -->
-
-<template>
-  <DefaultLayout>
-    <p>Refactoring</p>
-  </DefaultLayout>
-</template>
