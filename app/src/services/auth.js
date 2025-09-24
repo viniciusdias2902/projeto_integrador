@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-undef
-const URL = process.env.VUE_APP_AUTHENTICATION_URL
+const URL = import.meta.env.VUE_APP_AUTHENTICATION_URL
 
 export async function login(email, password) {
   const response = await fetch(`${URL}`, {

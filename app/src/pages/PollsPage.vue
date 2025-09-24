@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <DefaultLayout>
     <div class="flex flex-wrap justify-center gap-6 my-8">
       <div v-if="isLoading" class="text-center w-full">
@@ -50,4 +50,8 @@ function updatePollData(updatedPoll) {
     days.value[index] = updatedPoll
   }
 }
-</script>
+</script> -->
+
+<template>
+  <p>Refactoring</p>
+</template>
