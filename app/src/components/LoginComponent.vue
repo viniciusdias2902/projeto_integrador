@@ -8,7 +8,6 @@ const error = ref(null)
 
 async function handleLogin() {
   try {
-    console.log(email.value)
     await login(email.value, password.value)
     router.push('/enquetes')
   } catch (err) {

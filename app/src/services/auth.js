@@ -2,16 +2,36 @@ import axios from 'axios'
 
 const API_URL = 'http://127.0.0.1:8000/api/v1/authentication/token/'
 
+// export async function login(email, password) {
+//   const response = await axios.post(`${API_URL}`, {
+//     username: email,
+//     password,
+//   })
+
+//   localStorage.setItem('access', response.data.access)
+//   localStorage.setItem('refresh', response.data.refresh)
+
+//   return response.data
+// }
+
 export async function login(email, password) {
-  const response = await axios.post(`${API_URL}`, {
-    username: email,
-    password,
+  const response = await fetch(`${API_URL}`, {
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify({ username: email, password: password }),
   })
 
-  localStorage.setItem('access', response.data.access)
-  localStorage.setItem('refresh', response.data.refresh)
+  const data = await response.json()
 
-  return response.data
+  if (!response.ok) {
+    throw new Error(data.message)
+  }
+
+  localStorage.setItem('email', email)
+  localStorage.setItem('access', data.access)
+  localStorage.setItem('refresh', data.refresh)
+
+  return data
 }
 
 export async function refreshToken() {
