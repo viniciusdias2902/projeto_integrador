@@ -70,4 +70,5 @@ export async function verifyToken() {
 export function logout() {
   localStorage.removeItem('access')
   localStorage.removeItem('refresh')
+  localStorage.removeItem('email')
 }
