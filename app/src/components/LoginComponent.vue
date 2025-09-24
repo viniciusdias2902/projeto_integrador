@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { login } from '../services/auth'
 import AlertComponent from './AlertComponent.vue'
 import OutlineButton from './OutlineButton.vue'
+import FieldsetComponent from './FieldsetComponent.vue'
 const router = useRouter()
 const email = ref('')
 const password = ref('')
@@ -19,19 +20,14 @@ async function handleLogin() {
 </script>
 
 <template>
-  <fieldset
-    class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4"
-    @submit.prevent
-  >
-    <legend class="fieldset-legend">Login</legend>
-
-    <label class="label">Email</label>
-    <input type="email" class="input" placeholder="Email" v-model="email" />
+  <FieldsetComponent title="Login">
+    <label class="label" for="email">Email</label>
+    <input type="email" class="input" placeholder="Email" v-model="email" id="email" />
 
     <label class="label">Senha</label>
     <input type="password" class="input" placeholder="Senha" v-model="password" />
     <AlertComponent v-if="error" class="mt-4">{{ error }}</AlertComponent>
     <ButtonNeutral @click="handleLogin" class="mt-4">Login</ButtonNeutral>
     <OutlineButton @click="router.push('/cadastro')">Cadastro</OutlineButton>
-  </fieldset>
+  </FieldsetComponent>
 </template>
