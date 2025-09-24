@@ -1,21 +1,8 @@
-import axios from 'axios'
-
-const API_URL = 'http://127.0.0.1:8000/api/v1/authentication/token/'
-
-// export async function login(email, password) {
-//   const response = await axios.post(`${API_URL}`, {
-//     username: email,
-//     password,
-//   })
-
-//   localStorage.setItem('access', response.data.access)
-//   localStorage.setItem('refresh', response.data.refresh)
-
-//   return response.data
-// }
+// eslint-disable-next-line no-undef
+const URL = process.env.VUE_APP_AUTHENTICATION_URL
 
 export async function login(email, password) {
-  const response = await fetch(`${API_URL}`, {
+  const response = await fetch(`${URL}`, {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ username: email, password: password }),
@@ -38,7 +25,7 @@ export async function refreshToken() {
   const refresh = localStorage.getItem('refresh')
   if (!refresh) throw new Error('No refresh token')
 
-  const response = await fetch(`${API_URL}refresh`, {
+  const response = await fetch(`${URL}refresh`, {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ refresh: refresh }),
@@ -52,7 +39,7 @@ export async function verifyToken() {
   const access = localStorage.getItem('access')
   if (!access) return null
 
-  const response = fetch(`${API_URL}verify`, {
+  const response = fetch(`${URL}verify`, {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ access }),
