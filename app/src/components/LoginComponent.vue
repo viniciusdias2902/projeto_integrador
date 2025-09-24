@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { login } from '../services/auth'
 import AlertComponent from './AlertComponent.vue'
+import OutlineButton from './OutlineButton.vue'
 const router = useRouter()
 const email = ref('')
 const password = ref('')
@@ -31,6 +32,6 @@ async function handleLogin() {
     <input type="password" class="input" placeholder="Senha" v-model="password" />
     <AlertComponent v-if="error" class="mt-4">{{ error }}</AlertComponent>
     <ButtonNeutral @click="handleLogin" class="mt-4">Login</ButtonNeutral>
-    <button class="btn btn-outline mt-4" @click="router.push('/cadastro')">Cadastro</button>
+    <OutlineButton @click="router.push('/cadastro')">Cadastro</OutlineButton>
   </fieldset>
 </template>
