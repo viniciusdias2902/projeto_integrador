@@ -1,6 +1,6 @@
 <script setup>
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
-import { verifyAndRefreshToken, verifyToken } from '@/services/auth'
+import { verifyAndRefreshToken } from '@/services/auth'
 
 const polls = ref([])
 
@@ -24,7 +24,30 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <p>Refactoring</p>
+    <div>
+      <form action="">
+        <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+          <legend class="fieldset-legend">Segunda-feira</legend>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <label class="label text-lg">
+            <input type="radio" class="radio radio-primary" name="Teste" />
+            Apenas ida
+          </label>
+          <button class="btn btn-primary mt-1">Enviar esposta</button>
+        </fieldset>
+      </form>
+    </div>
   </DefaultLayout>
 </template>
 
