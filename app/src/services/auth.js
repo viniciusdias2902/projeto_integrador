@@ -13,7 +13,6 @@ export async function login(email, password) {
     throw new Error(data.message)
   }
 
-  localStorage.setItem('email', email)
   localStorage.setItem('access', data.access)
   localStorage.setItem('refresh', data.refresh)
 
@@ -60,7 +59,6 @@ export async function verifyToken() {
 export function logout() {
   localStorage.removeItem('access')
   localStorage.removeItem('refresh')
-  localStorage.removeItem('email')
 }
 
 export async function verifyAndRefreshToken() {
@@ -76,4 +74,10 @@ export async function verifyAndRefreshToken() {
   }
 
   return isValid
+}
+
+export function decodeJwt(token) {
+  const payload = token.split('.')[1]
+  const decoded = atob(payload)
+  return JSON.parse(decoded)
 }
