@@ -1,9 +1,7 @@
 <script setup>
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
 import PollComponent from '@/components/PollComponent.vue'
-import { verifyAndRefreshToken, decodeJwt } from '@/services/auth'
-const token = localStorage.getItem('access')
-const decoded = decodeJwt(token)
+import { verifyAndRefreshToken } from '@/services/auth'
 const polls = ref([])
 
 async function getPolls() {
@@ -19,7 +17,6 @@ async function getPolls() {
     }
     console.log(polls.value)
     console.log(polls.value[0].date)
-    console.log(decoded.user_id)
   }
 }
 
@@ -35,7 +32,7 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 <template>
   <DefaultLayout>
-    <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
+    <div class="flex flex-wrap gap-4 items-center justify-center max-w-200">
       <PollComponent
         v-for="poll in polls"
         :day="getDiaSemana(poll.date)"

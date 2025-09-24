@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { verifyAndRefreshToken } from '@/services/auth'
 
 const props = defineProps({ name: [String, Number], day: String })
 
@@ -26,6 +27,7 @@ const userId = token ? getUserIdFromDecodedToken() : null
 let existingVoteId = null
 
 async function fetchPoll() {
+  verifyAndRefreshToken()
   errorMessage.value = ''
   try {
     const response = await fetch(`${POLLS_URL}${props.name}`, {
@@ -102,7 +104,7 @@ async function submitVote() {
     }
   } catch (error) {
     console.error(error)
-    errorMessage.value = 'Um erro aconteceu ao enviar seu voto. Tente novamente'
+    errorMessage.value = 'Um erro aconteceu ao enviar seu voto. Recarregue a página'
   }
 }
 
@@ -116,9 +118,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <fieldset
-    class="fieldset bg-base-100 border-base-300 rounded-box border lg:w-200 sm:w-64 p-4 flex flex-col"
-  >
+  <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border w-64 p-4 flex flex-col">
     <legend class="fieldset-legend">{{ day }}</legend>
 
     <LabelComponent :for="`${name}-1`" class="text-lg">
@@ -169,14 +169,14 @@ onMounted(() => {
       Não vou
     </LabelComponent>
 
-    <button class="btn btn-primary mt-1 btn-lg" @click="submitVote">Enviar Resposta</button>
+    <button class="btn btn-primary mt-1" @click="submitVote">Enviar Resposta</button>
 
-    <AlertComponent v-if="errorMessage" class="mt-2">
-      {{ errorMessage }}
-    </AlertComponent>
+    <div v-if="errorMessage" class="mt-2 max-w-xs">
+      <span class="badge badge-error badge-lg text-white">{{ errorMessage }}</span>
+    </div>
 
-    <SuccessComponent v-if="successMessage" class="mt-2 flex self-start">
-      {{ successMessage }}
-    </SuccessComponent>
+    <div v-if="successMessage" class="mt-2 max-w-xs">
+      <span class="badge badge-success badge-lg text-white">{{ successMessage }}</span>
+    </div>
   </fieldset>
 </template>
