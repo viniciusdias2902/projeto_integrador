@@ -49,3 +49,19 @@ class BoardingPointAPITests(APITestCase):
         payload = {"name": "Ponto Proibido", "route_order": 3}
         response = self.client.post(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_can_list_boarding_points(self):
+        self.authenticate_as_admin()
+        url = reverse("boarding-point-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.data), 1)
+        
+    def test_admin_can_update_boarding_point(self):
+        self.authenticate_as_admin()
+        url = reverse("boarding-point-detail", args=[self.boarding_point.id])
+        payload = {"name": "Ponto Teste Atualizado", "route_order": 99}
+        response = self.client.patch(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.boarding_point.refresh_from_db()
+        self.assertEqual(self.boarding_point.name, "Ponto Teste Atualizado")
