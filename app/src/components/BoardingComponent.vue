@@ -35,7 +35,15 @@ onMounted(() => {
 <template>
   <div class="shadow-md rounded-box p-6 w-full flex-col">
     <h2 class="text-xl font-bold mb-4">{{ boardingType }}</h2>
-   
+
+    <div v-if="isLoading">
+      <p>Carregando...</p>
+    </div>
+    
+    <div v-else-if="error">
+      <p class="text-red-500">Erro: {{ error }}</p>
+    </div>
+    
     <div v-else-if="boardingPoints.length === 0">
       <p>Nenhum aluno confirmado para esta viagem.</p>
     </div>
