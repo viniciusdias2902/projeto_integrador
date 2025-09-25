@@ -29,3 +29,15 @@ class BoardingPointAPITests(APITestCase):
     def authenticate_as_student(self):
         token = self.get_jwt_token(self.student_user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_admin_can_create_boarding_point(self):
+       
+        self.authenticate_as_admin()
+        url = reverse("boarding-point-list")
+        payload = {
+            "name": "Ponto Novo Criado por Admin",
+            "route_order": 2
+        }
+        response = self.client.post(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(BoardingPoint.objects.filter(name="Ponto Novo Criado por Admin").exists())
