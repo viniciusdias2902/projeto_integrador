@@ -114,3 +114,41 @@
 **Quando** um usuário autenticado (`motorista`/`admin`) fizer uma requisição **GET** para `/api/v1/polls/{id}/boarding_list/` com um `trip_type` válido.  
 
 **Então** a API deve retornar o status **200 OK** e uma **lista vazia (`[]`)**, indicando que não há alunos para aquela viagem.  
+
+---
+
+# Casos de testes - Ponto de Embarque
+
+## CT-07 - Criar Ponto de Embarque (Admin)
+**Dado que** um usuário com permissões de **administrador (admin)** está autenticado.  
+
+**Quando** ele enviar uma requisição **POST** para `/api/v1/boarding-points/` com dados válidos (`nome`, `ordem`, etc.).  
+
+**Então** a API deve criar um novo **BoardingPoint** no banco de dados e retornar o status **201 Created**.  
+
+---
+
+## CT-08 - Impedir Criação de Ponto de Embarque (Não Admin)
+**Dado que** um usuário comum (**estudante**) está autenticado.  
+
+**Quando** ele tentar enviar uma requisição **POST** para `/api/v1/boarding-points/`.  
+
+**Então** a API deve bloquear a ação e retornar o status **403 Forbidden**, indicando **falta de permissão**.  
+
+---
+
+## CT-09 - Listar Pontos de Embarque (Admin)
+**Dado que** existem vários **pontos de embarque** cadastrados no sistema.  
+
+**Quando** um usuário com permissões de **administrador (admin)** fizer uma requisição **GET** para `/api/v1/boarding-points/`.  
+
+**Então** a API deve retornar o status **200 OK** e uma lista com **todos os pontos de embarque**.  
+
+---
+
+## CT-10 - Atualizar Ponto de Embarque (Admin)
+**Dado que** um **ponto de embarque** com um `id` específico existe.  
+
+**Quando** um usuário com permissões de **administrador (admin)** enviar uma requisição **PUT** ou **PATCH** para `/api/v1/boarding-points/{id}/` com dados atualizados.  
+
+**Então** a API deve **atualizar** o registro correspondente no banco de dados e retornar o status **200 OK**.
