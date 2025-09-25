@@ -144,3 +144,12 @@ class PollsAPITestCase(APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_boarding_list_empty_if_no_votes(self):
+        self.authenticate_as_admin()
+        url = reverse("poll-boarding-list", args=[self.poll.id])
+        url += "?trip_type=round_trip"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
