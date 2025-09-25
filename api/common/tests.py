@@ -42,3 +42,10 @@ class BoardingPointAPITests(APITestCase):
         response = self.client.post(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(BoardingPoint.objects.filter(name="Ponto Novo Criado por Admin").exists())
+
+    def test_non_admin_cannot_create_boarding_point(self):
+        self.authenticate_as_student()
+        url = reverse("boarding-point-list")
+        payload = {"name": "Ponto Proibido", "route_order": 3}
+        response = self.client.post(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
