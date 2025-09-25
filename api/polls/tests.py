@@ -117,7 +117,7 @@ class PollsAPITestCase(APITestCase):
         self.authenticate_as_admin()
 
         url = reverse("poll-boarding-list", args=[self.poll.id])
-        url = "?trip_type=one_way_outbound" 
+        url += "?trip_type=one_way_outbound" 
 
         response = self.client.get(url)
 
