@@ -35,8 +35,12 @@ class PollBoardingListView(APIView):
             )
 
         valid_options = []
-        if 'outbound' in trip_type or 'round_trip' in trip_type:
-             valid_options.extend(["round_trip", "one_way_outbound"])
+        if 'outbound' in trip_type:
+            valid_options = ["round_trip", "one_way_outbound"]
+        elif 'return' in trip_type:
+            valid_options = ["round_trip", "one_way_return"]
+        
+        
         
         votes = poll.votes.filter(option__in=valid_options).select_related(
             'student', 'student__boarding_point'
