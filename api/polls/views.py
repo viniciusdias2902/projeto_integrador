@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.db import IntegrityError, transaction
 from .models import Poll, Vote
-from .serializers import PollSerializer, VoteSerializer
+from .serializers import PollSerializer, VoteSerializer, BoardingListSerializer
+from common.models import BoardingPoint
+
 from datetime import date, timedelta
 
 
@@ -24,9 +26,34 @@ class PollBoardingListView(APIView):
 
     def get(self, request, pk):
         poll = generics.get_object_or_404(Poll, pk=pk)
-        votes = poll.votes.select_related("student").all()
-        data = [{"student": v.student.user.username, "option": v.option} for v in votes]
-        return Response(data)
+        
+        trip_type = request.query_params.get('trip_type')
+        if not trip_type:
+            return Response(
+                {"error": "O parâmetro 'trip_type' é obrigatório (ex: round_trip, one_way_outbound)."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        valid_options = []
+        
+        votes = poll.votes.filter(option__in=valid_options).select_related(
+            'student', 'student__boarding_point'
+        )
+
+        points_data = {}
+        for vote in votes:
+            point = vote.student.boarding_point
+            if point:
+                if point.id not in points_data:
+                    points_data[point.id] = {
+                        'boarding_point': point,
+                        'students': []
+                    }
+                points_data[point.id]['students'].append(vote.student)
+
+
+        serializer = BoardingListSerializer(sorted_points, many=True)
+        return Response(serializer.data)
 
 
 class CreateTestPollsView(APIView):
