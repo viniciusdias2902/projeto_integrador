@@ -51,6 +51,7 @@ class PollBoardingListView(APIView):
                     }
                 points_data[point.id]['students'].append(vote.student)
 
+        sorted_points = sorted(points_data.values(), key=lambda p: p['boarding_point'].route_order)
 
         serializer = BoardingListSerializer(sorted_points, many=True)
         return Response(serializer.data)
