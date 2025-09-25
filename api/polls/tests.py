@@ -107,3 +107,32 @@ class PollsAPITestCase(APITestCase):
 
         self.assertEqual(response.data[0]["student"]["name"], self.student_1.name)
 
+   
+    def test_get_boarding_list_grouped_by_point(self):
+        Vote.objects.create(student=self.student_1, poll=self.poll, option="round_trip")
+        Vote.objects.create(
+            student=self.student_2, poll=self.poll, option="one_way_outbound"
+        )
+
+        self.authenticate_as_admin()
+
+        url = reverse("poll-boarding-list", args=[self.poll.id])
+        url = "?trip_type=one_way_outbound" 
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(len(response.data), 2)
+
+        ponto_a_data = response.data[0]
+        self.assertEqual(ponto_a_data["point"]["name"], "Ponto A - Praça Central")
+        self.assertEqual(len(ponto_a_data["students"]), 1) 
+
+        nomes_ponto_a = sorted([s["name"] for s in ponto_a_data["students"]])
+        self.assertEqual(nomes_ponto_a, ["Ana Silva"])
+
+        ponto_b_data = response.data[1]
+        self.assertEqual(ponto_b_data["point"]["name"], "Ponto B - Posto Shell")
+        self.assertEqual(len(ponto_b_data["students"]), 1) 
+        self.assertEqual(ponto_b_data["students"][0]["name"], "Bruno Costa")
