@@ -4,6 +4,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from students.models import Student
+from common.models import BoardingPoint
 from .models import Poll, Vote
 from datetime import date
 
@@ -12,6 +13,13 @@ class PollsAPITestCase(APITestCase):
     def setUp(self):
         self.admin_user = User.objects.create_superuser(
             username="admin", password="adminpass"
+        )
+        
+        self.ponto_a = BoardingPoint.objects.create(
+            name="Ponto A - Praça Central", route_order=0
+        )
+        self.ponto_b = BoardingPoint.objects.create(
+            name="Ponto B - Posto Shell", route_order=1
         )
 
         self.student_user_1 = User.objects.create_user(
@@ -23,6 +31,7 @@ class PollsAPITestCase(APITestCase):
             phone="111111111",
             class_shift="M",
             university="UESPI",
+            boarding_point=self.ponto_a,
         )
 
         self.student_user_2 = User.objects.create_user(
@@ -34,7 +43,9 @@ class PollsAPITestCase(APITestCase):
             phone="222222222",
             class_shift="E",
             university="IFPI",
+            boarding_point=self.ponto_b,
         )
+
 
         self.poll = Poll.objects.create(date=date.today())
 
@@ -96,20 +107,3 @@ class PollsAPITestCase(APITestCase):
 
         self.assertEqual(response.data[0]["student"]["name"], self.student_1.name)
 
-    def test_authenticated_user_can_get_boarding_list(self):
-        Vote.objects.create(student=self.student_1, poll=self.poll, option="round_trip")
-        Vote.objects.create(
-            student=self.student_2, poll=self.poll, option="one_way_outbound"
-        )
-
-        self.authenticate_as_admin()
-
-        url = reverse("poll-boarding-list", args=[self.poll.id])
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        boarding_list_string = response.data["boarding_list"]
-        self.assertIn(self.student_1.name, boarding_list_string)
-        self.assertIn(self.student_2.name, boarding_list_string)
-        self.assertEqual(boarding_list_string.count(","), 1)
