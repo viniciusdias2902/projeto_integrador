@@ -31,3 +31,7 @@ class BoardingListStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ['id', 'name']
+
+class BoardingListSerializer(serializers.Serializer):
+    point = BoardingPointSerializer(source='boarding_list')
+    students = BoardingListStudentSerializer(many=True)
