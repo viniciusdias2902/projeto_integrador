@@ -33,5 +33,5 @@ class BoardingListStudentSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class BoardingListSerializer(serializers.Serializer):
-    point = BoardingPointSerializer(source='boarding_list')
+    point = BoardingPointSerializer(source='boarding_point')
     students = BoardingListStudentSerializer(many=True)
