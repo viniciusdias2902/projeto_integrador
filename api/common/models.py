@@ -16,7 +16,7 @@ class BoardingPoint(models.Model):
     route_order = models.PositiveIntegerField(default=0, help_text="Ordem em que o motorista passa no ponto (0, 1, 2...)")
 
     class Meta:
-        ordering = ['route_order'] # Ordena os pontos por padrão
+        ordering = ['route_order']
 
     def __str__(self):
         return f"{self.route_order}: {self.name}"
