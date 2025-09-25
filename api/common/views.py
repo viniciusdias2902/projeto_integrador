@@ -8,4 +8,5 @@ class BoardingPointViewSet(viewsets.ModelViewSet):
     Only accessible by admin users.
     """
     queryset = BoardingPoint.objects.all()
+    serializer_class = BoardingPointSerializer
     permission_classes = [permissions.IsAdminUser]
