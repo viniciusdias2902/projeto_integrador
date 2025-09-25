@@ -1,5 +1,27 @@
 <script setup>
+import {ref, onMounted} from 'vue'
+import { verifyAndRefreshToken } from '@/services/auth'
 import RegisterLayout from '@/templates/RegisterLayout.vue'
+import StudentForm from '@/components/StudentForm.vue'
+
+const BOARDING_POINTS_URL = ${import.meta.env.VITE_APP_API_URL}boarding-points/
+
+const boardingPoints = ref([])
+
+async function getBoardingPoints() {
+  let isValid = verifyAndRefreshToken()
+  if (isValid) {
+    const response = await fetch(BOARDING_POINTS_URL, {
+      headers: { Authorization: Bearer ${localStorage.getItem('access')} },
+    })
+    const data = await response.json()
+    boardingPoints.value = data
+    if (!response.ok) {
+      throw new Error('Erro')
+    }
+    console.log(boardingPoints.value)
+  }
+}
 </script>
 
 <template>
