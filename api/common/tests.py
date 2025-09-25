@@ -36,6 +36,7 @@ class BoardingPointAPITests(APITestCase):
         url = reverse("boarding-point-list")
         payload = {
             "name": "Ponto Novo Criado por Admin",
+            "address_reference": "Rua Teste, 123",
             "route_order": 2
         }
         response = self.client.post(url, payload, format="json")
