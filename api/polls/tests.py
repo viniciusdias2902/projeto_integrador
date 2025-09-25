@@ -136,3 +136,11 @@ class PollsAPITestCase(APITestCase):
         self.assertEqual(ponto_b_data["point"]["name"], "Ponto B - Posto Shell")
         self.assertEqual(len(ponto_b_data["students"]), 1) 
         self.assertEqual(ponto_b_data["students"][0]["name"], "Bruno Costa")
+
+    def test_get_boarding_list_requires_trip_type_param(self):
+        self.authenticate_as_admin()
+        url = reverse(
+            "boarding-list", args=[self.poll.id]
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
