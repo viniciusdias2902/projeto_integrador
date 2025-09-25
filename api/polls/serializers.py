@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Poll, Vote
 from students.models import Student
+from common.serializer import BoardingPointSerializer 
 
 
 class StudentNestedSerializer(serializers.ModelSerializer):
@@ -25,3 +26,8 @@ class PollSerializer(serializers.ModelSerializer):
         model = Poll
         fields = ["id", "date", "status", "votes"]
         read_only_fields = ["id", "votes"]
+
+class BoardingListStudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = ['id', 'name']
