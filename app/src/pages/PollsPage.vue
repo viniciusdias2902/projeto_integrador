@@ -2,6 +2,8 @@
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
 import PollComponent from '@/components/PollComponent.vue'
 import { verifyAndRefreshToken } from '@/services/auth'
+import { ref, onMounted } from 'vue';
+
 const polls = ref([])
 
 async function getPolls() {
