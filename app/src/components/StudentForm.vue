@@ -19,7 +19,14 @@
       <InputField id="phone" label="Telefone" v-model="form.phone" />
       <ValidationMessage :message="errors.phone" />
     </div>
-
+    <div>
+      <SelectField
+        id="boarding_point"
+        label="Ponto de Embarque"
+        :options="boardingPoints"
+        v-model="form.boarding_point"
+      />
+    </div>
     <SelectField
       id="university"
       label="Universidade"
@@ -61,6 +68,7 @@ export default {
         phone: '',
         university: '',
         class_shift: '',
+        boarding_point: 1,
       },
       errors: {
         name: '',
@@ -82,6 +90,11 @@ export default {
         { value: 'M-A', label: 'Manhã e Tarde' },
         { value: 'A-E', label: 'Tarde e Noite' },
       ],
+      boardingPoints: [
+        { value: 1, label: 'Ponto 1' },
+        { value: 2, label: 'Ponto 2' },
+        { value: 3, label: 'Ponto 3' },
+      ],
     }
   },
   methods: {
@@ -101,6 +114,7 @@ export default {
         phone: '',
         university: '',
         class_shift: '',
+        boarding_point: 1,
       }
       this.clearErrors()
       this.errorMessage = ''

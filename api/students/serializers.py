@@ -11,7 +11,15 @@ class StudentCreateSerializer(PersonSerializer):
 
     class Meta:
         model = Student
-        fields = ["name", "phone", "class_shift", "university", "email", "password"]
+        fields = [
+            "name",
+            "phone",
+            "class_shift",
+            "university",
+            "email",
+            "password",
+            "boarding_point",
+        ]
 
     def create(self, validated_data):
         email = validated_data.pop("email")
