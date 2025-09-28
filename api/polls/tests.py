@@ -4,7 +4,7 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from students.models import Student
-from common.models import BoardingPoint
+from boarding_points.models import BoardingPoint
 from .models import Poll, Vote
 from datetime import date
 
