@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Poll, Vote
 from students.models import Student
-from common.serializer import BoardingPointSerializer 
+from boarding_points.serializers import BoardingPointSerializer 
 
 
 class StudentNestedSerializer(serializers.ModelSerializer):

@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from django.db import IntegrityError, transaction
 from .models import Poll, Vote
 from .serializers import PollSerializer, VoteSerializer, BoardingListSerializer
-from common.models import BoardingPoint
+from boarding_points.models import BoardingPoint
 
 from datetime import date, timedelta
 
