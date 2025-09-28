@@ -19,7 +19,7 @@ onMounted(async () => {
   } catch (err) {
     error.value = err.message;
   } finally {
-    isLoading.value = true;
+    isLoading.value = false;
   }
 });
 </script>
