@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from common.constants import SHIFT_CHOICES
 from common.models import Person
-from common.models import BoardingPoint
+from boarding_points.models import BoardingPoint
 
 UNIVERSITY_CHOICES = (
     ("UESPI", "Universidade Estadual do Piauí"),
