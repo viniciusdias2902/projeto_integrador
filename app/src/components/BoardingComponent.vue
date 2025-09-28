@@ -19,11 +19,16 @@ const loadBoardingData = async () => {
     return;
   }
 
+  try {
     const tripType = props.boardingType === 'Ida' ? 'one_way_outbound' : 'one_way_return';
 
     const data = await getBoardingList(props.pollId, tripType);
     boardingPoints.value = data;
- 
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(() => {
