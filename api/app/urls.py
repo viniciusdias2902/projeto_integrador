@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from common.views import BoardingPointViewSet
+from boarding_points.views import BoardingPointViewSet
 
 router = DefaultRouter()
 
