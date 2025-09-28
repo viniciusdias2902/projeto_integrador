@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "students",
     "drivers",
     "common",
+    "boarding_points",
     "polls",
     "corsheaders",
 ]
