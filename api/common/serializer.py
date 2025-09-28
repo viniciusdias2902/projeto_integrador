@@ -1,8 +1,6 @@
 from rest_framework import serializers
 import re
 from django.contrib.auth.models import User
-from .models import BoardingPoint
-
 
 class PersonSerializer(serializers.ModelSerializer):
 
@@ -32,8 +30,3 @@ class PersonSerializer(serializers.ModelSerializer):
                 "Password must contain at least one letter"
             )
         return value
-
-class BoardingPointSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BoardingPoint
-        fields = ['id', 'name', 'address_reference', 'route_order']
