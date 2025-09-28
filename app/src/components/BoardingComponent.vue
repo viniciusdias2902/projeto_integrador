@@ -13,9 +13,11 @@ const isLoading = ref(true);
 const error = ref(null);
 
 const loadBoardingData = async () => {
+  if (!props.pollId) {
     error.value = 'ID da enquete não fornecido.';
     isLoading.value = false;
-  
+    return;
+  }
 
     const tripType = props.boardingType === 'Ida' ? 'one_way_outbound' : 'one_way_return';
 
