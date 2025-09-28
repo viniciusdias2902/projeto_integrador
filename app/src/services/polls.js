@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1/';
 
 export async function getTodaysPoll() {
-  const accessToken = localStorage.getItem('refresh');
+  const accessToken = localStorage.getItem('access');
   if (!accessToken) {
     throw new Error('Usuário não autenticado.');
   }
