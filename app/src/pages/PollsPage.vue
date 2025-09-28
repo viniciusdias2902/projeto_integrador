@@ -24,8 +24,8 @@ async function getPolls() {
 
 function getDiaSemana(dateString) {
   const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-  const date = new Date(dateString)
-  return diasSemana[date.getDay()]
+  const date = new Date(`${dateString}T00:00:00`);
+  return diasSemana[date.getDay()];
 }
 
 onMounted(() => getPolls())
