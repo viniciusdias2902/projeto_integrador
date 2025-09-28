@@ -5,27 +5,24 @@ import ListRow from './ListRow.vue';
 
 const props = defineProps({
   boardingType: String,
+  pollId: Number,
 });
 
-const boardingPoints = ref([]); 
-const isLoading = ref(true);    
-const error = ref(null); 
+const boardingPoints = ref([]);
+const isLoading = ref(true);
+const error = ref(null);
 
 const loadBoardingData = async () => {
-  try {
-    const pollId = 1;
-    
+    error.value = 'ID da enquete não fornecido.';
+    isLoading.value = false;
+  
+
     const tripType = props.boardingType === 'Ida' ? 'one_way_outbound' : 'one_way_return';
 
-    const data = await getBoardingList(pollId, tripType);
-    boardingPoints.value = data; 
-  } catch (err) {
-    error.value = err.message; 
-  } finally {
-    isLoading.value = false; 
-  }
+    const data = await getBoardingList(props.pollId, tripType);
+    boardingPoints.value = data;
+ 
 };
-
 
 onMounted(() => {
   loadBoardingData();
