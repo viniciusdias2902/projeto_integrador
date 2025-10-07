@@ -62,4 +62,12 @@ class StudentCreateSerializer(PersonSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ["id", "name", "phone", "class_shift", "university", "boarding_point"]
+        fields = [
+            "id",
+            "name",
+            "phone",
+            "class_shift",
+            "university",
+            "boarding_point",
+            "role",
+        ]

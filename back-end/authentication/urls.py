@@ -4,7 +4,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from views import CustomTokenObtainPairView
+from authentication.views import CustomTokenObtainPairView
+
 
 urlpatterns = [
     path(

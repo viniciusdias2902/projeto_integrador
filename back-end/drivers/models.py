@@ -6,3 +6,4 @@ from common.models import Person
 
 class Driver(Person):
     shift = models.CharField(choices=SHIFT_CHOICES)
+    dailyPaymentCents = models.IntegerField()

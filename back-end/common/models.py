@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 ROLE_CHOICES = (
     ("student", "Student"),
-    ("employee", "Employee"),
+    ("driver", "Driver"),
     ("admin", "Administrator"),
 )
 
