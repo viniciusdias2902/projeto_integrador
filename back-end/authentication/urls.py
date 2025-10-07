@@ -4,11 +4,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from views import CustomTokenObtainPairView
 
 urlpatterns = [
     path(
         "authentication/token/",
-        TokenObtainPairView.as_view(),
+        CustomTokenObtainPairView.as_view(),
         name="token_obtain_pair",
     ),
     path(
