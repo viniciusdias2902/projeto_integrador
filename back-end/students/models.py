@@ -18,9 +18,14 @@ class Student(Person):
     university = models.CharField(choices=UNIVERSITY_CHOICES)
 
     boarding_point = models.ForeignKey(
-        BoardingPoint, 
+        BoardingPoint,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="students"
+        related_name="students",
     )
+
+    def save(self, *args, **kwargs):
+        if not self.role:
+            self.role = "student"
+        super().save(*args, **kwargs)
