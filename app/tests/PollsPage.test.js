@@ -31,4 +31,19 @@ describe('PollsPage', () => {
     const pollComponents = wrapper.findAllComponents(PollComponent);
     expect(pollComponents.length).toBe(3);
   });
+
+  it('não deve renderizar nenhuma enquete se a API retornar um erro', async () => {
+    vi.stubGlobal('fetch', vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        json: async () => ({ detail: 'Erro de autenticação' }),
+      })
+    ));
+
+    const wrapper = mount(PollsPage);
+    await flushPromises();
+
+    const pollComponents = wrapper.findAllComponents(PollComponent);
+    expect(pollComponents.length).toBe(0);
+  });
 });
