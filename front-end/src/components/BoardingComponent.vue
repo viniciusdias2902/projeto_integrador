@@ -104,7 +104,7 @@ defineExpose({ refresh: loadBoardingData })
       <!-- Cabeçalho -->
       <div class="flex items-center justify-between mb-4">
         <h2 class="card-title text-2xl">
-         {{ boardingType }}
+          {{ boardingType }}
         </h2>
         <button 
           class="btn btn-ghost btn-sm btn-circle"
@@ -147,33 +147,31 @@ defineExpose({ refresh: loadBoardingData })
       </div>
 
       <!-- Boarding points list -->
-      <div v-else class="space-y-6">
+      <div v-else class="space-y-4">
         <!-- Points ou Universities -->
         <div 
           v-for="item in boardingPoints" 
           :key="item.point?.id || item.group_name" 
-          class="collapse collapse-arrow bg-base-200"
+          class="bg-base-200 rounded-box p-4"
         >
-          <input type="radio" :name="`accordion-${boardingType}`" checked="checked" />
-          <div class="collapse-title text-lg font-semibold flex items-center gap-2">
+          <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
              {{ item.point?.name || item.group_name }}
             <span v-if="item.point?.address_reference" class="text-sm font-normal opacity-60">
               ({{ item.point.address_reference }})
             </span>
-          </div>
-          <div class="collapse-content">
-            <ul class="menu bg-base-100 rounded-box mt-2">
-              <li 
-                v-for="student in item.students" 
-                :key="student.id"
-                class="border-b border-base-300 last:border-0"
-              >
-                <div class="py-3 hover:bg-base-200">
-                  <span class="font-medium">{{ student.name }}</span>
-                </div>
-              </li>
-            </ul>
-          </div>
+          </h3>
+          
+          <ul class="menu bg-base-100 rounded-box">
+            <li 
+              v-for="student in item.students" 
+              :key="student.id"
+              class="border-b border-base-300 last:border-0"
+            >
+              <div class="py-3 hover:bg-base-200">
+                <span class="font-medium">{{ student.name }}</span>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
