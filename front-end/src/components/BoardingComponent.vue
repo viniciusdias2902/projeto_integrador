@@ -104,7 +104,7 @@ defineExpose({ refresh: loadBoardingData })
       <!-- Cabeçalho -->
       <div class="flex items-center justify-between mb-4">
         <h2 class="card-title text-2xl">
-           {{ boardingType }}
+          {{ boardingType === 'Ida' ? '🚌' : '🏠' }} {{ boardingType }}
         </h2>
         <button 
           class="btn btn-ghost btn-sm btn-circle"
@@ -157,7 +157,7 @@ defineExpose({ refresh: loadBoardingData })
           <input type="radio" :name="`accordion-${boardingType}`" checked="checked" />
           <div class="collapse-title text-lg font-semibold flex items-center gap-2">
             <span class="badge badge-sm badge-neutral">{{ item.students.length }}</span>
-             {{ item.point?.name || item.group_name }}
+            📍 {{ item.point?.name || item.group_name }}
             <span v-if="item.point?.address_reference" class="text-sm font-normal opacity-60">
               ({{ item.point.address_reference }})
             </span>
@@ -165,12 +165,12 @@ defineExpose({ refresh: loadBoardingData })
           <div class="collapse-content">
             <ul class="menu bg-base-100 rounded-box mt-2">
               <li 
-                v-for="(student, index) in item.students" 
+                v-for="(student, studentIndex) in item.students" 
                 :key="student.id"
                 class="border-b border-base-300 last:border-0"
               >
                 <div class="py-3 hover:bg-base-200">
-                  <span class="font-medium">{{ index + 1 }}. {{ student.name }}</span>
+                  <span class="font-medium">{{ studentIndex + 1 }}. {{ student.name }}</span>
                 </div>
               </li>
             </ul>
