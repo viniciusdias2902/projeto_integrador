@@ -55,5 +55,15 @@ describe('BoardingComponent', () => {
 
     expect(wrapper.text()).toContain('Erro: Falha de rede');
   });
+  
+  it('deve mostrar "nenhum aluno" se a API retornar uma lista vazia', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: async () => [] })));
+    
+    const wrapper = mount(BoardingComponent, {
+      props: { boardingType: 'Ida', pollId: 5 },
+    });
+    await flushPromises();
 
+    expect(wrapper.text()).toContain('Nenhum aluno confirmado para esta viagem.');
+  });
 });
