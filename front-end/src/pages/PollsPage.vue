@@ -1,13 +1,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
+import { useDelayedLoading } from '@/useDelayedLoading'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
 
 const polls = ref([])
-const isLoading = ref(true)
 const errorMessage = ref('')
+const { isLoading, executeWithLoading } = useDelayedLoading(500)
+const isInitialLoad = ref(true)
 
 const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
@@ -23,48 +25,46 @@ function formatDate(dateString) {
   return `${day}/${month}`
 }
 
-async function getPolls() {
+async function fetchPolls() {
   errorMessage.value = ''
-  isLoading.value = true
   
   const isValid = verifyAndRefreshToken()
   
   if (!isValid) {
     errorMessage.value = 'Sessão expirada. Faça login novamente.'
-    isLoading.value = false
-    return
+    throw new Error('Sessão expirada')
   }
 
+  const response = await fetch(POLLS_URL, {
+    headers: { 
+      Authorization: `Bearer ${localStorage.getItem('access')}` 
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || 'Erro ao carregar enquetes')
+  }
+
+  const data = await response.json()
+  polls.value = data
+  
+  console.log('Polls loaded:', polls.value)
+}
+
+async function getPolls(withDelay = false) {
   try {
-    // Delay mínimo de 1 segundo para animação não ser muito rápida
-    const [response] = await Promise.all([
-      fetch(POLLS_URL, {
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('access')}` 
-        },
-      }),
-      new Promise(resolve => setTimeout(resolve, 1000))
-    ])
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Erro ao carregar enquetes')
-    }
-
-    const data = await response.json()
-    polls.value = data
-    
-    console.log('Polls loaded:', polls.value)
+    await executeWithLoading(() => fetchPolls(), withDelay)
   } catch (error) {
     console.error('Error fetching polls:', error)
     errorMessage.value = error.message || 'Erro ao carregar enquetes. Tente novamente.'
   } finally {
-    isLoading.value = false
+    isInitialLoad.value = false
   }
 }
 
 onMounted(() => {
-  getPolls()
+  getPolls(false) // Sem delay no mount inicial
 })
 </script>
 
@@ -80,7 +80,7 @@ onMounted(() => {
       </div>
 
       <!-- Loading state -->
-      <div v-if="isLoading" class="flex flex-wrap gap-4 items-center justify-center">
+      <div v-if="showLoadingSkeleton" class="flex flex-wrap gap-4 items-center justify-center">
         <div v-for="n in 5" :key="n" class="w-64 h-96">
           <div class="skeleton h-full w-full rounded-box"></div>
         </div>
@@ -96,7 +96,7 @@ onMounted(() => {
             <h3 class="font-bold">Erro ao carregar</h3>
             <div class="text-sm">{{ errorMessage }}</div>
           </div>
-          <button class="btn btn-sm btn-ghost" @click="getPolls">Tentar novamente</button>
+          <button class="btn btn-sm btn-ghost" @click="getPolls(false)">Tentar novamente</button>
         </div>
       </div>
 
@@ -131,7 +131,7 @@ onMounted(() => {
       <div v-if="polls.length > 0" class="mt-8 text-center">
         <button 
           class="btn btn-outline btn-sm"
-          @click="getPolls"
+          @click="getPolls(true)"
           :disabled="isLoading"
         >
           <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
