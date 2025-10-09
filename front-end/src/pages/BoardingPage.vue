@@ -2,12 +2,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
-
+import { useDelayedLoading } from '@/useDelayedLoading'
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
 
 const polls = ref([])
-const isLoading = ref(true)
 const errorMessage = ref('')
+const { isLoading, executeWithLoading } = useDelayedLoading(500)
 
 const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
@@ -22,53 +22,45 @@ const todayWeekday = computed(() => {
   return diasSemana[new Date().getDay()]
 })
 
-async function getPolls(showDelay = false) {
+async function fetchPolls() {
   errorMessage.value = ''
-  isLoading.value = true
   
   const isValid = verifyAndRefreshToken()
   
   if (!isValid) {
     errorMessage.value = 'Sessão expirada. Faça login novamente.'
-    isLoading.value = false
-    return
+    throw new Error('Sessão expirada')
   }
 
+  const response = await fetch(POLLS_URL, {
+    headers: { 
+      Authorization: `Bearer ${localStorage.getItem('access')}` 
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.detail || 'Erro ao carregar enquetes')
+  }
+
+  const data = await response.json()
+  polls.value = data
+  
+  console.log('Polls loaded:', polls.value)
+  console.log('Today\'s poll:', todaysPoll.value)
+}
+
+async function getPolls(withDelay = false) {
   try {
-    const promises = [
-      fetch(POLLS_URL, {
-        headers: { 
-          Authorization: `Bearer ${localStorage.getItem('access')}` 
-        },
-      })
-    ]
-    
-    if (showDelay) {
-      promises.push(new Promise(resolve => setTimeout(resolve, 500)))
-    }
-    
-    const [response] = await Promise.all(promises)
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Erro ao carregar enquetes')
-    }
-
-    const data = await response.json()
-    polls.value = data
-    
-    console.log('Polls loaded:', polls.value)
-    console.log('Today\'s poll:', todaysPoll.value)
+    await executeWithLoading(() => fetchPolls(), withDelay)
   } catch (error) {
     console.error('Error fetching polls:', error)
     errorMessage.value = error.message || 'Erro ao carregar dados. Tente novamente.'
-  } finally {
-    isLoading.value = false
   }
 }
 
 onMounted(() => {
-  getPolls()
+  getPolls(false) // Sem delay no mount inicial
 })
 </script>
 
@@ -101,7 +93,7 @@ onMounted(() => {
             <h3 class="font-bold">Erro ao carregar</h3>
             <div class="text-sm">{{ errorMessage }}</div>
           </div>
-          <button class="btn btn-sm btn-ghost" @click="getPolls">Tentar novamente</button>
+          <button class="btn btn-sm btn-ghost" @click="getPolls(false)">Tentar novamente</button>
         </div>
       </div>
 
