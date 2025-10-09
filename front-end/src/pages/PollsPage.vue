@@ -70,7 +70,9 @@ onMounted(() => {
       <!-- Cabeçalho -->
       <div class="mb-8 text-center">
         <h1 class="text-4xl font-bold mb-2">Enquetes de Transporte</h1>
-        <p class="text-base-content/70">Vote nas enquetes da semana</p>
+        <p class="text-base-content/70">
+          Hoje é {{ diasSemana[new Date().getDay()] }} - Vote nas enquetes da semana
+        </p>
       </div>
 
       <!-- Loading state -->
