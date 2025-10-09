@@ -11,7 +11,6 @@ from .views import (
 )
 
 urlpatterns = [
-    # Polls
     path("polls/", PollListView.as_view(), name="poll-list"),
     path("polls/<int:pk>/", PollDetailView.as_view(), name="poll-detail"),
     path(
@@ -19,7 +18,6 @@ urlpatterns = [
         PollBoardingListView.as_view(),
         name="poll-boarding-list",
     ),
-    # Gerenciamento de enquetes
     path(
         "polls/create_weekly/",
         CreateWeeklyPollsView.as_view(),
@@ -30,7 +28,6 @@ urlpatterns = [
         CleanOldPollsView.as_view(),
         name="clean-old-polls",
     ),
-    # Votes
     path("votes/", VoteListView.as_view(), name="vote-list"),
     path("votes/create/", VoteCreateView.as_view(), name="vote-create"),
     path("votes/<int:pk>/update/", VoteUpdateView.as_view(), name="vote-update"),
