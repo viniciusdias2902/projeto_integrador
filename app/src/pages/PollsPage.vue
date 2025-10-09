@@ -5,20 +5,24 @@ import { verifyAndRefreshToken } from '@/services/auth'
 import { ref, onMounted } from 'vue';
 
 const polls = ref([])
+const error = ref(null);
 
 async function getPolls() {
-  let isValid = verifyAndRefreshToken()
-  if (isValid) {
-    const response = await fetch(POLLS_URL, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('access')}` },
-    })
-    const data = await response.json()
-    polls.value = data
-    if (!response.ok) {
-      throw new Error('Erro')
+  try {
+    let isValid = await verifyAndRefreshToken();
+    if (isValid) {
+      const response = await fetch(POLLS_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access')}` },
+      });
+      if (!response.ok) {
+        throw new Error('Falha ao buscar enquetes.');
+      }
+      const data = await response.json();
+      polls.value = data;
     }
-    console.log(polls.value)
-    console.log(polls.value[0].date)
+  } catch (err) {
+    console.error(err);
+    error.value = err.message;
   }
 }
 
