@@ -104,7 +104,7 @@ defineExpose({ refresh: loadBoardingData })
       <!-- Cabeçalho -->
       <div class="flex items-center justify-between mb-4">
         <h2 class="card-title text-2xl">
-          {{ boardingType === 'Ida' ? '🚌' : '🏠' }} {{ boardingType }}
+         {{ boardingType }}
         </h2>
         <button 
           class="btn btn-ghost btn-sm btn-circle"
@@ -156,7 +156,7 @@ defineExpose({ refresh: loadBoardingData })
         >
           <input type="radio" :name="`accordion-${boardingType}`" checked="checked" />
           <div class="collapse-title text-lg font-semibold flex items-center gap-2">
-            📍 {{ item.point?.name || item.group_name }}
+             {{ item.point?.name || item.group_name }}
             <span v-if="item.point?.address_reference" class="text-sm font-normal opacity-60">
               ({{ item.point.address_reference }})
             </span>
