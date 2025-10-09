@@ -45,4 +45,15 @@ describe('BoardingComponent', () => {
     expect(componentText).not.toContain('Nenhum aluno confirmado');
   });
 
+  it('deve mostrar uma mensagem de erro se a API falhar', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Falha de rede'))));
+
+    const wrapper = mount(BoardingComponent, {
+      props: { boardingType: 'Ida', pollId: 5 },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Erro: Falha de rede');
+  });
+
 });
