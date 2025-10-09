@@ -3,13 +3,15 @@ from .views import (
     PollListView,
     PollDetailView,
     PollBoardingListView,
+    CreateWeeklyPollsView,
+    CleanOldPollsView,
     VoteCreateView,
     VoteListView,
-    CreateTestPollsView,
-    VoteUpdateView
+    VoteUpdateView,
 )
 
 urlpatterns = [
+    # Polls
     path("polls/", PollListView.as_view(), name="poll-list"),
     path("polls/<int:pk>/", PollDetailView.as_view(), name="poll-detail"),
     path(
@@ -17,13 +19,19 @@ urlpatterns = [
         PollBoardingListView.as_view(),
         name="poll-boarding-list",
     ),
+    # Gerenciamento de enquetes
     path(
-        "polls/create_test_polls/",
-        CreateTestPollsView.as_view(),
-        name="create-test-polls",
+        "polls/create_weekly/",
+        CreateWeeklyPollsView.as_view(),
+        name="create-weekly-polls",
     ),
+    path(
+        "polls/clean_old/",
+        CleanOldPollsView.as_view(),
+        name="clean-old-polls",
+    ),
+    # Votes
     path("votes/", VoteListView.as_view(), name="vote-list"),
     path("votes/create/", VoteCreateView.as_view(), name="vote-create"),
-    path('votes/<int:pk>/update/', VoteUpdateView.as_view(), name='vote-update')
-
+    path("votes/<int:pk>/update/", VoteUpdateView.as_view(), name="vote-update"),
 ]
