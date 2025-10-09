@@ -36,11 +36,15 @@ async function getPolls() {
   }
 
   try {
-    const response = await fetch(POLLS_URL, {
-      headers: { 
-        Authorization: `Bearer ${localStorage.getItem('access')}` 
-      },
-    })
+    // Delay mínimo de 1 segundo para animação não ser muito rápida
+    const [response] = await Promise.all([
+      fetch(POLLS_URL, {
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem('access')}` 
+        },
+      }),
+      new Promise(resolve => setTimeout(resolve, 1000))
+    ])
 
     if (!response.ok) {
       const error = await response.json()
@@ -130,10 +134,11 @@ onMounted(() => {
           @click="getPolls"
           :disabled="isLoading"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          Atualizar enquetes
+          {{ isLoading ? 'Atualizando...' : 'Atualizar enquetes' }}
         </button>
       </div>
     </div>
