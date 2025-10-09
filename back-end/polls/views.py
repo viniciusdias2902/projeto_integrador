@@ -48,7 +48,7 @@ class PollBoardingListView(APIView):
         )
 
         if "return" in trip_type:
-
+            # Para VOLTA: agrupar por universidade
             university_order = {
                 "IFPI": 0,
                 "CHRISFAPI": 1,
@@ -68,20 +68,22 @@ class PollBoardingListView(APIView):
                     }
                 university_data[university]["students"].append(student)
 
+            # Ordenar universidades
             sorted_universities = sorted(
                 university_data.values(),
                 key=lambda u: university_order.get(u["university"], 999),
             )
 
+            # Ordenar estudantes dentro de cada universidade por nome
             for uni_data in sorted_universities:
                 uni_data["students"].sort(key=lambda s: s.name)
 
+            # Serializar de forma consistente
             result = []
             for uni_data in sorted_universities:
                 result.append(
                     {
                         "group_name": uni_data["university"],
-                        "group_type": "university",
                         "students": [
                             {"id": s.id, "name": s.name} for s in uni_data["students"]
                         ],
@@ -90,7 +92,7 @@ class PollBoardingListView(APIView):
 
             return Response(result)
         else:
-
+            # Para IDA: agrupar por ponto de embarque
             points_data = {}
             for vote in votes:
                 point = vote.student.boarding_point
@@ -106,8 +108,24 @@ class PollBoardingListView(APIView):
                 points_data.values(), key=lambda p: p["boarding_point"].route_order
             )
 
-            serializer = BoardingListSerializer(sorted_points, many=True)
-            return Response(serializer.data)
+            # Serializar de forma consistente com a volta
+            result = []
+            for point_data in sorted_points:
+                point = point_data["boarding_point"]
+                result.append(
+                    {
+                        "point": {
+                            "id": point.id,
+                            "name": point.name,
+                            "address_reference": point.address_reference,
+                        },
+                        "students": [
+                            {"id": s.id, "name": s.name} for s in point_data["students"]
+                        ],
+                    }
+                )
+
+            return Response(result)
 
 
 class CreateWeeklyPollsView(APIView):
@@ -118,17 +136,17 @@ class CreateWeeklyPollsView(APIView):
         created_polls = []
         today = timezone.localtime(timezone.now()).date()
 
-        weekday = today.weekday()
+        weekday = today.weekday()  # 0=Monday, 6=Sunday
 
-        if weekday == 5:
+        if weekday == 5:  # Sábado
             start_date = today + timedelta(days=2)
-        elif weekday == 6:
+        elif weekday == 6:  # Domingo
             start_date = today + timedelta(days=1)
-        else:
+        else:  # Segunda a sexta
             start_date = today
 
         current_date = start_date
-        while current_date.weekday() <= 4:
+        while current_date.weekday() <= 4:  # 0-4 = Segunda a Sexta
             poll, created = Poll.objects.get_or_create(
                 date=current_date, defaults={"status": "open"}
             )
@@ -172,6 +190,7 @@ class VoteCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        # Valida se o horário permite votar na opção escolhida
         poll = serializer.validated_data["poll"]
         option = serializer.validated_data["option"]
 
