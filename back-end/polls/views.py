@@ -32,7 +32,7 @@ class PollBoardingListView(APIView):
         if not trip_type:
             return Response(
                 {
-                    "error": "O parâmetro 'trip_type' é obrigatório (ex: round_trip, one_way_outbound)."
+                    "error": "O parâmetro 'trip_type' é obrigatório (ex: outbound, return)."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -55,9 +55,45 @@ class PollBoardingListView(APIView):
                     points_data[point.id] = {"boarding_point": point, "students": []}
                 points_data[point.id]["students"].append(vote.student)
 
-        sorted_points = sorted(
-            points_data.values(), key=lambda p: p["boarding_point"].route_order
-        )
+        # Ordenação diferente para ida e volta
+        if "return" in trip_type:
+            # Para VOLTA: ordenar por universidade (IFPI, CHRISFAPI, UESPI)
+            university_order = {
+                "IFPI": 0,
+                "CHRISFAPI": 1,
+                "UESPI": 2,
+                "ETC": 3,  # Outros por último
+            }
+
+            # Agrupar estudantes por universidade dentro de cada ponto
+            for point_id, point_data in points_data.items():
+                # Ordenar estudantes por universidade
+                point_data["students"].sort(
+                    key=lambda s: (
+                        university_order.get(s.university, 999),
+                        s.name,  # Nome como critério secundário
+                    )
+                )
+
+            # Ordenar pontos pela universidade do primeiro aluno
+            sorted_points = sorted(
+                points_data.values(),
+                key=lambda p: (
+                    (
+                        university_order.get(p["students"][0].university, 999)
+                        if p["students"]
+                        else 999
+                    ),
+                    p[
+                        "boarding_point"
+                    ].route_order,  # route_order como critério secundário
+                ),
+            )
+        else:
+            # Para IDA: ordenar por route_order (ordem normal dos pontos)
+            sorted_points = sorted(
+                points_data.values(), key=lambda p: p["boarding_point"].route_order
+            )
 
         serializer = BoardingListSerializer(sorted_points, many=True)
         return Response(serializer.data)
