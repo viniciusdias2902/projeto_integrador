@@ -16,6 +16,13 @@ export default defineConfig([
     languageOptions: {
       globals: {
         ...globals.browser,
+        cy: 'readonly',          // global do Cypress
+        describe: 'readonly',    // Mocha
+        it: 'readonly',
+        before: 'readonly',
+        beforeEach: 'readonly',
+        after: 'readonly',
+        afterEach: 'readonly',
       },
     },
   },
