@@ -430,7 +430,7 @@ onMounted(() => {
     <!-- Todos os pontos (resumo) -->
     <div v-if="tripDetails?.boarding_points" class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <h3 class="card-title text-xl mb-4">🗺️ Todos os Pontos</h3>
+        <h3 class="card-title text-xl mb-4">Todos os Pontos</h3>
 
         <div class="space-y-3">
           <div
