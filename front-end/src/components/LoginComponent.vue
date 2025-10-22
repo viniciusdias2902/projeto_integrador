@@ -19,10 +19,13 @@ async function handleLogin() {
 
     if (isStudent.value) {
       router.push('/enquetes')
+      console.log('teste 1')
     } else if (isDriver.value) {
       router.push('/viagens')
+      console.log('teste 2')
     } else {
       router.push('/enquetes')
+      console.log('teste 3')
     }
   } catch (err) {
     error.value = 'Email ou senha inválidos'
