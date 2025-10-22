@@ -27,7 +27,6 @@ const driverRoutes = ['/viagens', '/lista-embarque']
           </li>
         </template>
 
-        <!-- Rotas para estudantes -->
         <template v-else-if="isStudent && isAuthenticated">
           <li>
             <RouterLink to="/enquetes" class="btn mr-2">Enquetes</RouterLink>

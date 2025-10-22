@@ -1,7 +1,12 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../services/auth'
+import { useAuth } from '@/useAuth'
+
 const router = useRouter()
+const { updateRole, isStudent, isDriver } = useAuth()
+
 const email = ref('')
 const password = ref('')
 const error = ref(null)
@@ -9,7 +14,16 @@ const error = ref(null)
 async function handleLogin() {
   try {
     await login(email.value, password.value)
-    router.push('/enquetes')
+
+    updateRole()
+
+    if (isStudent.value) {
+      router.push('/enquetes')
+    } else if (isDriver.value) {
+      router.push('/viagens')
+    } else {
+      router.push('/enquetes')
+    }
   } catch (err) {
     error.value = 'Email ou senha inválidos'
     throw err
