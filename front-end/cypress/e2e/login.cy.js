@@ -13,7 +13,7 @@ describe('Funcionalidade de Login', () => {
     cy.contains('button', 'Login').click();
 
     cy.url().should('include', '/enquetes');
-    cy.window().its('localStorage').invoke('getItem', 'refresh').should('exist');
+    cy.window().its('localStorage').invoke('getItem', 'access').should('exist');
   });
 
 });
