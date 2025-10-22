@@ -22,4 +22,21 @@ describe('Funcionalidade de Votação nas Enquetes', () => {
         .and('contain.text', 'Voto atualizado com sucesso!');
     });
   });
+
+  it('Deve permitir que o aluno altere o voto', () => {
+     cy.contains('fieldset', 'Sexta', { timeout: 10000 }).should('be.visible').within(() => {
+        cy.contains('label', 'Apenas ida').find('input[type="radio"]').check();
+        cy.contains('button', 'Atualizar Voto').click(); 
+        cy.get('.alert-success', { timeout: 10000 })
+          .should('be.visible')
+          .and('contain.text', 'Voto atualizado com sucesso!');
+
+        cy.contains('label', 'Não vou').find('input[type="radio"]').check();
+        cy.contains('button', 'Atualizar Voto').click();
+
+        cy.get('.alert-success', { timeout: 10000 })
+          .should('be.visible')
+          .and('contain.text', 'Voto atualizado com sucesso!'); 
+     });
+  });
 });
