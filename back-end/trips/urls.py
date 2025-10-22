@@ -16,7 +16,6 @@ urlpatterns = [
         views.TripCompleteView.as_view(),
         name="trip-complete",
     ),
-    # Status atual
     path(
         "trips/<int:pk>/status/",
         views.TripCurrentStatusView.as_view(),
