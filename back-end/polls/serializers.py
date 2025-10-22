@@ -5,9 +5,11 @@ from boarding_points.serializers import BoardingPointSerializer
 
 
 class StudentNestedSerializer(serializers.ModelSerializer):
+    user_id = serializers.ReadOnlyField(source='user.id')
+    
     class Meta:
         model = Student
-        fields = ["id", "name"]
+        fields = ["id", "name", "user_id"]
 
 
 class VoteSerializer(serializers.ModelSerializer):

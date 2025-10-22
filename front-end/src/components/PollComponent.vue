@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { verifyAndRefreshToken } from '@/services/auth'
 
 const props = defineProps({ 
   name: [String, Number], 
@@ -102,7 +101,6 @@ function getUserIdFromDecodedToken() {
 const userId = token ? getUserIdFromDecodedToken() : null
 
 async function fetchPoll() {
-  verifyAndRefreshToken()
   errorMessage.value = ''
   isLoading.value = true
   
@@ -119,7 +117,7 @@ async function fetchPoll() {
     }
 
     const poll = await response.json()
-    const userVote = poll.votes.find((vote) => Number(vote.student.id) === Number(userId))
+    const userVote = poll.votes.find((vote) => Number(vote.student.user_id) === Number(userId))
 
     if (userVote) {
       existingVoteId.value = userVote.id
