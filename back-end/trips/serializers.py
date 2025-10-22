@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Trip
 from boarding_points.serializers import BoardingPointSerializer
-from students.serializers import StudentNestedSerializer
+from polls.serializers import StudentNestedSerializer
 
 
 class TripSerializer(serializers.ModelSerializer):

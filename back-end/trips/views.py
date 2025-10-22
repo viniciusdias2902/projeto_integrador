@@ -6,7 +6,7 @@ from .models import Trip
 from .serializers import TripSerializer, TripDetailSerializer
 from polls.models import Poll
 from boarding_points.serializers import BoardingPointSerializer
-from students.serializers import StudentNestedSerializer
+from polls.serializers import StudentNestedSerializer
 
 
 class TripListView(generics.ListAPIView):

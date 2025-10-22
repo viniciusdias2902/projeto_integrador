@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "common",
     "boarding_points",
     "polls",
-    "trips" "corsheaders",
+    "trips",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
