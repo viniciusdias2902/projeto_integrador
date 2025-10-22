@@ -5,7 +5,7 @@ from boarding_points.views import BoardingPointViewSet
 
 router = DefaultRouter()
 
-router.register(r'boarding-points', BoardingPointViewSet, basename='boarding-point')
+router.register(r"boarding-points", BoardingPointViewSet, basename="boarding-point")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -13,6 +13,6 @@ urlpatterns = [
     path("api/v1/", include("students.urls")),
     path("api/v1/", include("drivers.urls")),
     path("api/v1/", include("polls.urls")),
-    
+    path("api/v1/", include("trips.urls")),
     path("api/v1/", include(router.urls)),
 ]
