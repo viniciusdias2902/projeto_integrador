@@ -15,11 +15,11 @@ describe('Funcionalidade de Votação nas Enquetes', () => {
   it('Deve permitir que um aluno vote em uma opção e mostrar sucesso', () => {
     cy.contains('fieldset', 'Sexta', { timeout: 10000 }).should('be.visible').within(() => {
       cy.contains('label', 'Ida e volta').find('input[type="radio"]').check();
-      cy.contains('button', 'Enviar Voto').click();
+      cy.contains('button', 'Atualizar Voto').click();
 
       cy.get('.alert-success', { timeout: 10000 })
         .should('be.visible')
-        .and('contain.text', 'Voto enviado com sucesso!');
+        .and('contain.text', 'Voto atualizado com sucesso!');
     });
   });
 });
