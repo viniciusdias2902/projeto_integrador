@@ -7,10 +7,18 @@ from common.serializer import PersonSerializer
 class DriverCreateSerializer(PersonSerializer):
     email = serializers.EmailField(write_only=True)
     password = serializers.CharField(write_only=True)
+    dailyPaymentCents = serializers.IntegerField(required=False, default=0)
 
     class Meta:
         model = Driver
-        fields = ["name", "phone", "shift", "email", "password"]
+        fields = [
+            "name",
+            "phone",
+            "shift",
+            "email",
+            "password",
+            "dailyPaymentCents",
+        ]
 
     def create(self, validated_data):
         email = validated_data.pop("email")
