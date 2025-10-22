@@ -8,13 +8,12 @@ const password = ref('')
 const error = ref(null)
 
 async function handleLogin() {
-  error.value = null;
   try {
-    await login(email.value, password.value);
-    router.push('/enquetes');
+    await login(email.value, password.value)
+    router.push('/enquetes')
   } catch (err) {
-    error.value = 'Email ou senha inválidos';
-    console.error("Erro no login:", err);
+    error.value = 'Email ou senha inválidos'
+    throw err
   }
 }
 </script>
