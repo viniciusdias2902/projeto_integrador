@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
+    "cy:open": "cypress open",
     "test": "vitest"
   },
   "dependencies": {

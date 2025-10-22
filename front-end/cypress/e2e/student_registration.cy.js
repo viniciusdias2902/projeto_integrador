@@ -1,5 +1,3 @@
-/* eslint-env cypress */
-
 describe('Cadastro de estudante', () => {
   const baseUrl = 'http://localhost:5173/cadastro' 
 
