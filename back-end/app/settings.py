@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "common",
     "boarding_points",
     "polls",
-    "corsheaders",
+    "trips" "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -60,7 +60,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite
-    "http://127.0.0.1:5173", # se você usar esse também
+    "http://127.0.0.1:5173",  # se você usar esse também
 ]
 
 ROOT_URLCONF = "app.urls"
