@@ -3,7 +3,9 @@ import LoginPage from '@/pages/LoginPage.vue'
 import PollsPage from '@/pages/PollsPage.vue'
 import BoardingPage from '@/pages/BoardingPage.vue'
 import RegistrationPage from '@/pages/RegistrationPage.vue'
-import { verifyAndRefreshToken } from '@/services/auth'
+import TripsPage from '@/pages/TripsPage.vue'
+import { verifyAndRefreshToken, getUserRole } from '@/services/auth'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -16,13 +18,19 @@ const router = createRouter({
       path: '/enquetes',
       name: 'polls',
       component: PollsPage,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, allowedRoles: ['student'] },
     },
     {
       path: '/lista-embarque',
       name: 'boarding-list',
       component: BoardingPage,
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, allowedRoles: ['student', 'driver'] },
+    },
+    {
+      path: '/viagens',
+      name: 'trips',
+      component: TripsPage,
+      meta: { requiresAuth: true, allowedRoles: ['driver'] },
     },
     {
       path: '/cadastro',
@@ -33,10 +41,27 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
+  // Verificar se a rota requer autenticação
   if (to.meta.requiresAuth) {
-    let isValid = await verifyAndRefreshToken()
+    const isValid = await verifyAndRefreshToken()
 
-    if (!isValid) return next({ name: 'login' })
+    if (!isValid) {
+      return next({ name: 'login' })
+    }
+
+    if (to.meta.allowedRoles) {
+      const userRole = getUserRole()
+
+      if (!userRole || !to.meta.allowedRoles.includes(userRole)) {
+        if (userRole === 'student') {
+          return next({ name: 'polls' })
+        } else if (userRole === 'driver') {
+          return next({ name: 'trips' })
+        } else {
+          return next({ name: 'login' })
+        }
+      }
+    }
   }
 
   next()
