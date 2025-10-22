@@ -15,6 +15,7 @@ export async function login(email, password) {
 
   localStorage.setItem('access', data.access)
   localStorage.setItem('refresh', data.refresh)
+  localStorage.setItem('role', data.role)
 
   return data
 }
@@ -59,6 +60,7 @@ export async function verifyToken() {
 export function logout() {
   localStorage.removeItem('access')
   localStorage.removeItem('refresh')
+  localStorage.removeItem('role')
 }
 
 export async function verifyAndRefreshToken() {
@@ -80,4 +82,21 @@ export function decodeJwt(token) {
   const payload = token.split('.')[1]
   const decoded = atob(payload)
   return JSON.parse(decoded)
+}
+
+export function getUserRole() {
+  const role = localStorage.getItem('role')
+  if (role) return role
+
+  const token = localStorage.getItem('access')
+  if (token) {
+    try {
+      const decoded = decodeJwt(token)
+      return decoded.role
+    } catch {
+      return null
+    }
+  }
+
+  return null
 }
