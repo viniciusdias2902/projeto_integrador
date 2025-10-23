@@ -10,7 +10,6 @@ from polls.serializers import StudentNestedSerializer
 
 
 class TripListView(generics.ListAPIView):
-
     serializer_class = TripSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -31,14 +30,12 @@ class TripListView(generics.ListAPIView):
 
 
 class TripDetailView(generics.RetrieveAPIView):
-
     queryset = Trip.objects.all()
     serializer_class = TripDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
 class TripCreateView(generics.CreateAPIView):
-
     serializer_class = TripSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -48,76 +45,116 @@ class TripCreateView(generics.CreateAPIView):
 
         if Trip.objects.filter(poll=poll, trip_type=trip_type).exists():
             raise serializers.ValidationError(
-                f"Já existe uma viagem do tipo '{trip_type}' para esta enquete."
+                f"Trip of type '{trip_type}' already exists for this poll"
             )
 
         serializer.save()
 
 
 class TripStartView(APIView):
-
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         trip = get_object_or_404(Trip, pk=pk)
 
         try:
-            first_point = trip.start_trip()
-            students = trip.get_students_at_point(first_point)
+            result = trip.start_trip()
 
-            return Response(
-                {
-                    "message": "Viagem iniciada com sucesso",
-                    "trip": TripSerializer(trip).data,
-                    "current_boarding_point": BoardingPointSerializer(first_point).data,
-                    "students": StudentNestedSerializer(students, many=True).data,
-                    "student_count": len(students),
-                }
-            )
+            if trip.trip_type == "outbound":
+                students = trip.get_students_at_point(result)
+                return Response(
+                    {
+                        "message": "Outbound trip started",
+                        "trip": TripSerializer(trip).data,
+                        "current_boarding_point": BoardingPointSerializer(result).data,
+                        "students": StudentNestedSerializer(students, many=True).data,
+                        "student_count": len(students),
+                    }
+                )
+            else:
+                students = trip.get_students_at_university(result)
+                return Response(
+                    {
+                        "message": "Return trip started",
+                        "trip": TripSerializer(trip).data,
+                        "current_university": result,
+                        "students": StudentNestedSerializer(students, many=True).data,
+                        "student_count": len(students),
+                    }
+                )
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TripNextPointView(APIView):
-
+class TripNextStopView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
         trip = get_object_or_404(Trip, pk=pk)
 
         try:
-            next_point = trip.next_boarding_point()
+            next_stop = trip.next_stop()
 
-            if next_point is None:
-                # Viagem finalizada
-                return Response(
-                    {
-                        "message": "Viagem finalizada com sucesso",
-                        "trip": TripSerializer(trip).data,
-                        "completed": True,
-                    }
-                )
+            if next_stop is None:
+                if trip.trip_type == "outbound":
+                    return_trip, created = Trip.objects.get_or_create(
+                        poll=trip.poll,
+                        trip_type="return",
+                        defaults={"status": "pending"},
+                    )
+
+                    return Response(
+                        {
+                            "message": "Outbound trip completed, return trip ready",
+                            "trip": TripSerializer(trip).data,
+                            "return_trip": TripSerializer(return_trip).data,
+                            "completed": True,
+                        }
+                    )
+                else:
+                    return Response(
+                        {
+                            "message": "Return trip completed",
+                            "trip": TripSerializer(trip).data,
+                            "completed": True,
+                        }
+                    )
             else:
-                # Próximo ponto
-                students = trip.get_students_at_point(next_point)
-                return Response(
-                    {
-                        "message": "Avançado para o próximo ponto",
-                        "trip": TripSerializer(trip).data,
-                        "current_boarding_point": BoardingPointSerializer(
-                            next_point
-                        ).data,
-                        "students": StudentNestedSerializer(students, many=True).data,
-                        "student_count": len(students),
-                        "completed": False,
-                    }
-                )
+                if trip.trip_type == "outbound":
+                    students = trip.get_students_at_point(next_stop)
+                    return Response(
+                        {
+                            "message": "Moved to next stop",
+                            "trip": TripSerializer(trip).data,
+                            "current_boarding_point": BoardingPointSerializer(
+                                next_stop
+                            ).data,
+                            "students": StudentNestedSerializer(
+                                students, many=True
+                            ).data,
+                            "student_count": len(students),
+                            "completed": False,
+                        }
+                    )
+                else:
+                    students = trip.get_students_at_university(next_stop)
+                    return Response(
+                        {
+                            "message": "Moved to next university",
+                            "trip": TripSerializer(trip).data,
+                            "current_university": next_stop,
+                            "students": StudentNestedSerializer(
+                                students, many=True
+                            ).data,
+                            "student_count": len(students),
+                            "completed": False,
+                        }
+                    )
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TripCompleteView(APIView):
-
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
@@ -125,18 +162,31 @@ class TripCompleteView(APIView):
 
         try:
             trip.complete_trip()
-            return Response(
-                {
-                    "message": "Viagem finalizada com sucesso",
-                    "trip": TripSerializer(trip).data,
-                }
-            )
+
+            if trip.trip_type == "outbound":
+                return_trip, created = Trip.objects.get_or_create(
+                    poll=trip.poll, trip_type="return", defaults={"status": "pending"}
+                )
+
+                return Response(
+                    {
+                        "message": "Outbound trip completed manually, return trip ready",
+                        "trip": TripSerializer(trip).data,
+                        "return_trip": TripSerializer(return_trip).data,
+                    }
+                )
+            else:
+                return Response(
+                    {
+                        "message": "Return trip completed",
+                        "trip": TripSerializer(trip).data,
+                    }
+                )
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TripCurrentStatusView(APIView):
-
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
@@ -146,8 +196,8 @@ class TripCurrentStatusView(APIView):
             "trip": TripDetailSerializer(trip).data,
         }
 
-        if trip.current_boarding_point and trip.status == "in_progress":
-            students = trip.get_students_at_point(trip.current_boarding_point)
+        if trip.status == "in_progress":
+            students = trip.get_current_students()
             response_data["current_students"] = StudentNestedSerializer(
                 students, many=True
             ).data
