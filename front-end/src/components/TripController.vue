@@ -18,14 +18,14 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const tripTypeLabel = computed(() => {
-  return props.trip.trip_type === 'outbound' ? 'Ida' : 'Volta'
+  return props.trip.trip_type === 'outbound' ? 'Outbound' : 'Return'
 })
 
 const statusLabel = computed(() => {
   const labels = {
-    pending: 'Pendente',
-    in_progress: 'Em Andamento',
-    completed: 'Concluída',
+    pending: 'Pending',
+    in_progress: 'In Progress',
+    completed: 'Completed',
   }
   return labels[props.trip.status] || props.trip.status
 })
@@ -39,23 +39,20 @@ const statusColor = computed(() => {
   return colors[props.trip.status] || 'badge-ghost'
 })
 
-const currentStudents = computed(() => {
-  if (!tripDetails.value?.boarding_points) return []
-
-  const currentPoint = tripDetails.value.boarding_points.find((bp) => bp.is_current)
-  return currentPoint?.students || []
+const currentStop = computed(() => {
+  if (!tripDetails.value?.stops) return null
+  return tripDetails.value.stops.find((stop) => stop.is_current)
 })
 
-const currentBoardingPoint = computed(() => {
-  if (!tripDetails.value?.boarding_points) return null
-  return tripDetails.value.boarding_points.find((bp) => bp.is_current)
+const currentStudents = computed(() => {
+  return currentStop.value?.students || []
 })
 
 const progressPercentage = computed(() => {
   if (!tripDetails.value || props.trip.status !== 'in_progress') return 0
 
-  const total = tripDetails.value.total_boarding_points || 0
-  const current = tripDetails.value.current_point_index ?? 0
+  const total = tripDetails.value.total_stops || 0
+  const current = tripDetails.value.current_stop_index ?? 0
 
   if (total === 0) return 0
   return Math.round(((current + 1) / total) * 100)
@@ -73,13 +70,13 @@ async function fetchTripDetails() {
     })
 
     if (!response.ok) {
-      throw new Error('Erro ao carregar detalhes da viagem')
+      throw new Error('Error loading trip details')
     }
 
     tripDetails.value = await response.json()
   } catch (error) {
     console.error('Error fetching trip details:', error)
-    errorMessage.value = 'Erro ao carregar detalhes. Tente novamente.'
+    errorMessage.value = 'Error loading details. Please try again.'
   } finally {
     isLoading.value = false
   }
@@ -87,7 +84,7 @@ async function fetchTripDetails() {
 
 async function startTrip() {
   if (props.trip.status !== 'pending') {
-    errorMessage.value = 'A viagem já foi iniciada'
+    errorMessage.value = 'Trip already started'
     return
   }
 
@@ -106,26 +103,25 @@ async function startTrip() {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Erro ao iniciar viagem')
+      throw new Error(error.error || 'Error starting trip')
     }
 
     const data = await response.json()
     emit('trip-updated', data.trip)
-    successMessage.value = 'Viagem iniciada com sucesso!'
+    successMessage.value = 'Trip started successfully'
 
-    // Recarregar detalhes
     await fetchTripDetails()
   } catch (error) {
     console.error('Error starting trip:', error)
-    errorMessage.value = error.message || 'Erro ao iniciar viagem'
+    errorMessage.value = error.message || 'Error starting trip'
   } finally {
     isLoading.value = false
   }
 }
 
-async function nextPoint() {
+async function nextStop() {
   if (props.trip.status !== 'in_progress') {
-    errorMessage.value = 'A viagem não está em andamento'
+    errorMessage.value = 'Trip is not in progress'
     return
   }
 
@@ -134,7 +130,7 @@ async function nextPoint() {
   successMessage.value = ''
 
   try {
-    const response = await fetch(`${API_BASE_URL}trips/${props.trip.id}/next_point/`, {
+    const response = await fetch(`${API_BASE_URL}trips/${props.trip.id}/next_stop/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -144,22 +140,26 @@ async function nextPoint() {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Erro ao avançar para próximo ponto')
+      throw new Error(error.error || 'Error moving to next stop')
     }
 
     const data = await response.json()
 
     if (data.completed) {
       successMessage.value = data.message
-      emit('trip-completed')
+      if (data.return_trip) {
+        emit('trip-completed', data.return_trip)
+      } else {
+        emit('trip-completed', null)
+      }
     } else {
       emit('trip-updated', data.trip)
-      successMessage.value = 'Avançado para o próximo ponto!'
+      successMessage.value = 'Moved to next stop'
       await fetchTripDetails()
     }
   } catch (error) {
-    console.error('Error moving to next point:', error)
-    errorMessage.value = error.message || 'Erro ao avançar para próximo ponto'
+    console.error('Error moving to next stop:', error)
+    errorMessage.value = error.message || 'Error moving to next stop'
   } finally {
     isLoading.value = false
   }
@@ -167,11 +167,11 @@ async function nextPoint() {
 
 async function completeTrip() {
   if (props.trip.status !== 'in_progress') {
-    errorMessage.value = 'A viagem não está em andamento'
+    errorMessage.value = 'Trip is not in progress'
     return
   }
 
-  if (!confirm('Deseja realmente encerrar esta viagem?')) {
+  if (!confirm('Do you really want to complete this trip?')) {
     return
   }
 
@@ -190,15 +190,20 @@ async function completeTrip() {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Erro ao encerrar viagem')
+      throw new Error(error.error || 'Error completing trip')
     }
 
     const data = await response.json()
     successMessage.value = data.message
-    emit('trip-completed')
+
+    if (data.return_trip) {
+      emit('trip-completed', data.return_trip)
+    } else {
+      emit('trip-completed', null)
+    }
   } catch (error) {
     console.error('Error completing trip:', error)
-    errorMessage.value = error.message || 'Erro ao encerrar viagem'
+    errorMessage.value = error.message || 'Error completing trip'
   } finally {
     isLoading.value = false
   }
@@ -211,7 +216,6 @@ onMounted(() => {
 
 <template>
   <div class="space-y-6">
-    <!-- Cabeçalho da viagem -->
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <div class="flex items-center justify-between mb-4">
@@ -219,17 +223,16 @@ onMounted(() => {
             <h2 class="card-title text-2xl">
               {{ tripTypeLabel }}
             </h2>
-            <p class="text-base-content/70 text-sm">Viagem #{{ trip.id }}</p>
+            <p class="text-base-content/70 text-sm">Trip #{{ trip.id }}</p>
           </div>
           <div class="badge badge-lg" :class="statusColor">
             {{ statusLabel }}
           </div>
         </div>
 
-        <!-- Barra de progresso -->
         <div v-if="trip.status === 'in_progress' && tripDetails" class="mb-4">
           <div class="flex justify-between text-sm mb-2">
-            <span>Progresso</span>
+            <span>Progress</span>
             <span class="font-bold">{{ progressPercentage }}%</span>
           </div>
           <progress
@@ -238,12 +241,10 @@ onMounted(() => {
             max="100"
           ></progress>
           <div class="text-xs text-base-content/70 mt-1">
-            Ponto {{ (tripDetails.current_point_index ?? 0) + 1 }} de
-            {{ tripDetails.total_boarding_points }}
+            Stop {{ (tripDetails.current_stop_index ?? 0) + 1 }} of {{ tripDetails.total_stops }}
           </div>
         </div>
 
-        <!-- Mensagens -->
         <div v-if="errorMessage" class="alert alert-error mb-4">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -278,7 +279,6 @@ onMounted(() => {
           <span>{{ successMessage }}</span>
         </div>
 
-        <!-- Ações -->
         <div class="card-actions justify-end">
           <button
             v-if="trip.status === 'pending'"
@@ -308,13 +308,13 @@ onMounted(() => {
               />
             </svg>
             <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
-            {{ isLoading ? 'Iniciando...' : 'Iniciar Viagem' }}
+            {{ isLoading ? 'Starting...' : 'Start Trip' }}
           </button>
 
           <button
             v-if="trip.status === 'in_progress'"
             class="btn btn-primary"
-            @click="nextPoint"
+            @click="nextStop"
             :disabled="isLoading"
           >
             <svg
@@ -333,7 +333,7 @@ onMounted(() => {
               />
             </svg>
             <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
-            {{ isLoading ? 'Avançando...' : 'Próximo Ponto' }}
+            {{ isLoading ? 'Moving...' : 'Next Stop' }}
           </button>
 
           <button
@@ -342,7 +342,7 @@ onMounted(() => {
             @click="completeTrip"
             :disabled="isLoading"
           >
-            Encerrar Viagem
+            Complete Trip
           </button>
 
           <button class="btn btn-ghost" @click="fetchTripDetails" :disabled="isLoading">
@@ -370,29 +370,29 @@ onMounted(() => {
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
-    <div
-      v-if="trip.status === 'in_progress' && currentBoardingPoint"
-      class="card bg-base-100 shadow-xl"
-    >
+    <div v-if="trip.status === 'in_progress' && currentStop" class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <h3 class="card-title text-xl mb-4">📍 Ponto Atual</h3>
+        <h3 class="card-title text-xl mb-4">Current Stop</h3>
 
         <div class="bg-primary/10 rounded-box p-4 mb-4">
-          <h4 class="font-bold text-lg">{{ currentBoardingPoint.boarding_point.name }}</h4>
+          <h4 class="font-bold text-lg">
+            {{
+              trip.trip_type === 'outbound'
+                ? currentStop.boarding_point.name
+                : currentStop.university_name
+            }}
+          </h4>
           <p
-            v-if="currentBoardingPoint.boarding_point.address_reference"
+            v-if="trip.trip_type === 'outbound' && currentStop.boarding_point.address_reference"
             class="text-sm opacity-70"
           >
-            {{ currentBoardingPoint.boarding_point.address_reference }}
+            {{ currentStop.boarding_point.address_reference }}
           </p>
-          <div class="badge badge-primary mt-2">
-            {{ currentBoardingPoint.student_count }} aluno(s)
-          </div>
+          <div class="badge badge-primary mt-2">{{ currentStop.student_count }} student(s)</div>
         </div>
 
-        <!-- Lista de alunos -->
         <div v-if="currentStudents.length > 0">
-          <h4 class="font-semibold mb-3">Alunos neste ponto:</h4>
+          <h4 class="font-semibold mb-3">Students at this stop:</h4>
           <ul class="menu bg-base-200 rounded-box">
             <li
               v-for="student in currentStudents"
@@ -419,42 +419,50 @@ onMounted(() => {
             </li>
           </ul>
         </div>
-        <div v-else class="text-center py-6 opacity-60">Nenhum aluno neste ponto</div>
+        <div v-else class="text-center py-6 opacity-60">No students at this stop</div>
       </div>
     </div>
 
-    <div v-if="tripDetails?.boarding_points" class="card bg-base-100 shadow-xl">
+    <div v-if="tripDetails?.stops" class="card bg-base-100 shadow-xl">
       <div class="card-body">
-        <h3 class="card-title text-xl mb-4">Todos os Pontos</h3>
+        <h3 class="card-title text-xl mb-4">All Stops</h3>
 
         <div class="space-y-3">
           <div
-            v-for="(point, index) in tripDetails.boarding_points"
-            :key="point.boarding_point.id"
+            v-for="(stop, index) in tripDetails.stops"
+            :key="trip.trip_type === 'outbound' ? stop.boarding_point.id : stop.university"
             class="p-4 rounded-box transition-all"
             :class="{
-              'bg-primary/20 border-2 border-primary': point.is_current,
-              'bg-base-200': !point.is_current,
+              'bg-primary/20 border-2 border-primary': stop.is_current,
+              'bg-base-200': !stop.is_current,
             }"
           >
             <div class="flex items-start justify-between">
               <div class="flex items-start gap-3">
-                <div class="badge" :class="point.is_current ? 'badge-primary' : 'badge-ghost'">
+                <div class="badge" :class="stop.is_current ? 'badge-primary' : 'badge-ghost'">
                   {{ index + 1 }}
                 </div>
                 <div>
-                  <h4 class="font-bold">{{ point.boarding_point.name }}</h4>
-                  <p v-if="point.boarding_point.address_reference" class="text-sm opacity-70">
-                    {{ point.boarding_point.address_reference }}
+                  <h4 class="font-bold">
+                    {{
+                      trip.trip_type === 'outbound'
+                        ? stop.boarding_point.name
+                        : stop.university_name
+                    }}
+                  </h4>
+                  <p
+                    v-if="trip.trip_type === 'outbound' && stop.boarding_point.address_reference"
+                    class="text-sm opacity-70"
+                  >
+                    {{ stop.boarding_point.address_reference }}
                   </p>
                 </div>
               </div>
-              <div class="badge badge-ghost">{{ point.student_count }} aluno(s)</div>
+              <div class="badge badge-ghost">{{ stop.student_count }} student(s)</div>
             </div>
 
-            <!-- Indicador de ponto atual -->
             <div
-              v-if="point.is_current"
+              v-if="stop.is_current"
               class="mt-2 text-sm font-semibold text-primary flex items-center gap-2"
             >
               <svg
@@ -477,7 +485,7 @@ onMounted(() => {
                   d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                 />
               </svg>
-              Você está aqui
+              You are here
             </div>
           </div>
         </div>
