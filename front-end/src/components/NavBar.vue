@@ -7,7 +7,7 @@ const route = useRoute()
 const { isStudent, isDriver, isAuthenticated } = useAuth()
 
 const authRoutes = ['/', '/cadastro']
-const studentRoutes = ['/enquetes', '/lista-embarque']
+const studentRoutes = ['/enquetes', '/lista-embarque', '/acompanhar-viagem']
 const driverRoutes = ['/viagens', '/lista-embarque']
 </script>
 
@@ -30,6 +30,9 @@ const driverRoutes = ['/viagens', '/lista-embarque']
         <template v-else-if="isStudent && isAuthenticated">
           <li>
             <RouterLink to="/enquetes" class="btn mr-2">Enquetes</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/acompanhar-viagem" class="btn mr-2">Acompanhar Viagem</RouterLink>
           </li>
           <li>
             <RouterLink to="/lista-embarque" class="btn mr-2">Lista de embarque</RouterLink>
