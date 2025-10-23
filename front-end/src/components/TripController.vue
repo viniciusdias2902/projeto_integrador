@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { usePolling } from '@/composables/usePolling'
 import TripHeader from '@/components/TripHeader.vue'
 import TripMessages from '@/components/TripMessages.vue'
 import TripActions from '@/components/TripActions.vue'
@@ -21,6 +22,12 @@ const tripDetails = ref(null)
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+const { startPolling, stopPolling } = usePolling(async () => {
+  if (props.trip.status === 'in_progress') {
+    await fetchTripDetails()
+  }
+}, 5000)
 
 async function fetchTripDetails() {
   isLoading.value = true
@@ -94,7 +101,7 @@ async function nextPoint() {
   successMessage.value = ''
 
   try {
-    const response = await fetch(`${API_BASE_URL}trips/${props.trip.id}/next_point/`, {
+    const response = await fetch(`${API_BASE_URL}trips/${props.trip.id}/next_stop/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -164,6 +171,18 @@ async function completeTrip() {
   }
 }
 
+watch(
+  () => props.trip.status,
+  (newStatus) => {
+    if (newStatus === 'in_progress') {
+      startPolling()
+    } else {
+      stopPolling()
+    }
+  },
+  { immediate: true },
+)
+
 onMounted(() => {
   fetchTripDetails()
 })
@@ -190,6 +209,6 @@ onMounted(() => {
 
     <CurrentBoardingPoint :trip-status="trip.status" :trip-details="tripDetails" />
 
-    <AllBoardingPoints :boarding-points="tripDetails?.boarding_points || []" />
+    <AllBoardingPoints :boarding-points="tripDetails?.stops || []" />
   </div>
 </template>
