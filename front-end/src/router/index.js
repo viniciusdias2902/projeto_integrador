@@ -4,6 +4,7 @@ import PollsPage from '@/pages/PollsPage.vue'
 import BoardingPage from '@/pages/BoardingPage.vue'
 import RegistrationPage from '@/pages/RegistrationPage.vue'
 import TripsPage from '@/pages/TripsPage.vue'
+import TripViewPage from '@/pages/TripViewPage.vue'
 import { verifyAndRefreshToken, getUserRole } from '@/services/auth'
 
 const router = createRouter({
@@ -33,6 +34,12 @@ const router = createRouter({
       meta: { requiresAuth: true, allowedRoles: ['driver'] },
     },
     {
+      path: '/acompanhar-viagem',
+      name: 'trip-view',
+      component: TripViewPage,
+      meta: { requiresAuth: true, allowedRoles: ['student'] },
+    },
+    {
       path: '/cadastro',
       name: 'registration-page',
       component: RegistrationPage,
@@ -41,7 +48,6 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  // Verificar se a rota requer autenticação
   if (to.meta.requiresAuth) {
     const isValid = await verifyAndRefreshToken()
 
