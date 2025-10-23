@@ -7,9 +7,9 @@ urlpatterns = [
     path("trips/<int:pk>/", views.TripDetailView.as_view(), name="trip-detail"),
     path("trips/<int:pk>/start/", views.TripStartView.as_view(), name="trip-start"),
     path(
-        "trips/<int:pk>/next_point/",
-        views.TripNextPointView.as_view(),
-        name="trip-next-point",
+        "trips/<int:pk>/next_stop/",
+        views.TripNextStopView.as_view(),
+        name="trip-next-stop",
     ),
     path(
         "trips/<int:pk>/complete/",
