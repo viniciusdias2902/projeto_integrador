@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import TripHeader from '@/components/trip/TripHeader.vue'
-import TripMessages from '@/components/trip/TripMessages.vue'
-import TripActions from '@/components/trip/TripActions.vue'
-import CurrentBoardingPoint from '@/components/trip/CurrentBoardingPoint.vue'
-import AllBoardingPoints from '@/components/trip/AllBoardingPoints.vue'
+import TripHeader from '@/components/TripHeader.vue'
+import TripMessages from '@/components/TripMessages.vue'
+import TripActions from '@/components/TripActions.vue'
+import CurrentBoardingPoint from '@/components/CurrentBoardingPoint.vue'
+import AllBoardingPoints from '@/components/AllBoardingPoints.vue'
 
 const props = defineProps({
   trip: {

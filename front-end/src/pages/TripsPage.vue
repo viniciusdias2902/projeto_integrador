@@ -3,8 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 import TripController from '@/components/TripController.vue'
-import TripSelector from '@/components/trip/TripSelector.vue'
-import TripMessages from '@/components/trip/TripMessages.vue'
+import TripSelector from '@/components/TripSelector.vue'
+import TripMessages from '@/components/TripMessages.vue'
 
 const API_BASE_URL = import.meta.env.VITE_APP_API_URL
 
