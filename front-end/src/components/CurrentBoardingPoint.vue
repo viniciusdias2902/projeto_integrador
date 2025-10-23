@@ -9,37 +9,64 @@ const props = defineProps({
   tripDetails: Object,
 })
 
-const currentBoardingPoint = computed(() => {
-  if (!props.tripDetails?.boarding_points) return null
-  return props.tripDetails.boarding_points.find((bp) => bp.is_current)
+const currentLocation = computed(() => {
+  if (!props.tripDetails) return null
+
+  if (props.tripDetails.stops) {
+    return props.tripDetails.stops.find((stop) => stop.is_current)
+  }
+
+  return null
 })
 
 const currentStudents = computed(() => {
-  if (!currentBoardingPoint.value) return []
-  return currentBoardingPoint.value.students || []
+  if (!currentLocation.value) return []
+  return currentLocation.value.students || []
+})
+
+const locationName = computed(() => {
+  if (!currentLocation.value) return ''
+
+  if (currentLocation.value.boarding_point) {
+    return currentLocation.value.boarding_point.name
+  }
+
+  if (currentLocation.value.university_name) {
+    return currentLocation.value.university_name
+  }
+
+  return ''
+})
+
+const locationReference = computed(() => {
+  if (!currentLocation.value) return ''
+
+  if (
+    currentLocation.value.boarding_point &&
+    currentLocation.value.boarding_point.address_reference
+  ) {
+    return currentLocation.value.boarding_point.address_reference
+  }
+
+  return ''
 })
 </script>
 
 <template>
-  <div
-    v-if="tripStatus === 'in_progress' && currentBoardingPoint"
-    class="card bg-base-100 shadow-xl"
-  >
+  <div v-if="tripStatus === 'in_progress' && currentLocation" class="card bg-base-100 shadow-xl">
     <div class="card-body">
-      <h3 class="card-title text-xl mb-4">Ponto Atual</h3>
+      <h3 class="card-title text-xl mb-4">Localização Atual</h3>
 
       <div class="bg-primary/10 rounded-box p-4 mb-4">
-        <h4 class="font-bold text-lg">{{ currentBoardingPoint.boarding_point.name }}</h4>
-        <p v-if="currentBoardingPoint.boarding_point.address_reference" class="text-sm opacity-70">
-          {{ currentBoardingPoint.boarding_point.address_reference }}
+        <h4 class="font-bold text-lg">{{ locationName }}</h4>
+        <p v-if="locationReference" class="text-sm opacity-70">
+          {{ locationReference }}
         </p>
-        <div class="badge badge-primary mt-2">
-          {{ currentBoardingPoint.student_count }} aluno(s)
-        </div>
+        <div class="badge badge-primary mt-2">{{ currentLocation.student_count }} aluno(s)</div>
       </div>
 
       <div v-if="currentStudents.length > 0">
-        <h4 class="font-semibold mb-3">Alunos neste ponto:</h4>
+        <h4 class="font-semibold mb-3">Alunos neste local:</h4>
         <ul class="menu bg-base-200 rounded-box">
           <li
             v-for="student in currentStudents"
@@ -66,7 +93,7 @@ const currentStudents = computed(() => {
           </li>
         </ul>
       </div>
-      <div v-else class="text-center py-6 opacity-60">Nenhum aluno neste ponto</div>
+      <div v-else class="text-center py-6 opacity-60">Nenhum aluno neste local</div>
     </div>
   </div>
 </template>
