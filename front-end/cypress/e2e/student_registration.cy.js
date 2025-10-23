@@ -6,7 +6,7 @@ describe('Cadastro de estudante', () => {
 
     cy.get('form', { timeout: 20000 }).should('exist')
 
-    cy.contains('Nome Completo').parent().find('input', { timeout: 10000 }).type('José Henrique')
+    cy.contains('Nome Completo').parent().find('input', { timeout: 10000 }).type('Teste Cypress')
     cy.contains('E-mail').parent().find('input', { timeout: 10000 }).type('teste@cypress.com')
     cy.contains('Senha').parent().find('input', { timeout: 10000 }).type('Senha1234')
     cy.contains('Telefone').parent().find('input', { timeout: 10000 }).type('1234567890')
