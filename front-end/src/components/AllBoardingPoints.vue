@@ -1,10 +1,27 @@
 <script setup>
-defineProps({
+const props = defineProps({
   boardingPoints: {
     type: Array,
     default: () => [],
   },
 })
+
+function getDisplayName(point) {
+  if (point.boarding_point) {
+    return point.boarding_point.name
+  }
+  if (point.university_name) {
+    return point.university_name
+  }
+  return 'Ponto desconhecido'
+}
+
+function getReference(point) {
+  if (point.boarding_point && point.boarding_point.address_reference) {
+    return point.boarding_point.address_reference
+  }
+  return null
+}
 </script>
 
 <template>
@@ -15,7 +32,7 @@ defineProps({
       <div class="space-y-3">
         <div
           v-for="(point, index) in boardingPoints"
-          :key="point.boarding_point.id"
+          :key="point.boarding_point?.id || point.university || index"
           class="p-4 rounded-box transition-all"
           :class="{
             'bg-primary/20 border-2 border-primary': point.is_current,
@@ -28,9 +45,9 @@ defineProps({
                 {{ index + 1 }}
               </div>
               <div>
-                <h4 class="font-bold">{{ point.boarding_point.name }}</h4>
-                <p v-if="point.boarding_point.address_reference" class="text-sm opacity-70">
-                  {{ point.boarding_point.address_reference }}
+                <h4 class="font-bold">{{ getDisplayName(point) }}</h4>
+                <p v-if="getReference(point)" class="text-sm opacity-70">
+                  {{ getReference(point) }}
                 </p>
               </div>
             </div>
@@ -61,7 +78,7 @@ defineProps({
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               />
             </svg>
-            Você está aqui
+            Localização atual
           </div>
         </div>
       </div>
