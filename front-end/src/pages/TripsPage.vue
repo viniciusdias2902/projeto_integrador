@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
+import { usePolling } from '@/composables/usePolling'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 import TripController from '@/components/TripController.vue'
 import TripSelector from '@/components/TripSelector.vue'
@@ -22,6 +23,33 @@ const selectedPoll = computed(() => {
   if (!selectedPollId.value) return null
   return polls.value.find((p) => p.id === selectedPollId.value)
 })
+
+const { startPolling, stopPolling } = usePolling(async () => {
+  await verifyAndRefreshToken()
+
+  if (activeTrip.value && activeTrip.value.status === 'in_progress') {
+    await refreshTripStatus()
+  }
+}, 10000)
+
+async function refreshTripStatus() {
+  if (!activeTrip.value) return
+
+  try {
+    const response = await fetch(`${API_BASE_URL}trips/${activeTrip.value.id}/status/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access')}`,
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      activeTrip.value = data.trip
+    }
+  } catch (error) {
+    console.error('Error refreshing trip status:', error)
+  }
+}
 
 async function fetchPolls() {
   errorMessage.value = ''
@@ -134,6 +162,7 @@ async function initializeTrip() {
 }
 
 function handleTripCompleted() {
+  stopPolling()
   activeTrip.value = null
   successMessage.value = 'Viagem concluída com sucesso!'
 
@@ -143,11 +172,20 @@ function handleTripCompleted() {
 }
 
 async function handleSelectionChange() {
+  stopPolling()
   activeTrip.value = null
   if (selectedPollId.value) {
     await checkExistingTrip()
   }
 }
+
+watch(activeTrip, (newTrip) => {
+  if (newTrip && newTrip.status === 'in_progress') {
+    startPolling()
+  } else {
+    stopPolling()
+  }
+})
 
 onMounted(() => {
   fetchPolls()
