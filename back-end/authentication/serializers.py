@@ -6,7 +6,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        person = getattr(user, "student", None) or getattr(user, "employee", None)
+        person = getattr(user, "student", None) or getattr(user, "driver", None)
+
         token["role"] = getattr(person, "role", "unknown")
 
         return token
@@ -14,7 +15,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         person = getattr(self.user, "student", None) or getattr(
-            self.user, "employee", None
+            self.user, "driver", None
         )
         data["role"] = getattr(person, "role", "unknown")
         return data

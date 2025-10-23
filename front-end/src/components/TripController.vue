@@ -61,7 +61,6 @@ const progressPercentage = computed(() => {
   return Math.round(((current + 1) / total) * 100)
 })
 
-// Buscar detalhes completos da viagem
 async function fetchTripDetails() {
   isLoading.value = true
   errorMessage.value = ''
@@ -166,7 +165,6 @@ async function nextPoint() {
   }
 }
 
-// Encerrar viagem manualmente
 async function completeTrip() {
   if (props.trip.status !== 'in_progress') {
     errorMessage.value = 'A viagem não está em andamento'
@@ -368,12 +366,10 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Loading detalhes -->
     <div v-if="isLoading && !tripDetails" class="flex justify-center py-12">
       <span class="loading loading-spinner loading-lg"></span>
     </div>
 
-    <!-- Ponto atual e alunos -->
     <div
       v-if="trip.status === 'in_progress' && currentBoardingPoint"
       class="card bg-base-100 shadow-xl"
@@ -427,7 +423,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Todos os pontos (resumo) -->
     <div v-if="tripDetails?.boarding_points" class="card bg-base-100 shadow-xl">
       <div class="card-body">
         <h3 class="card-title text-xl mb-4">Todos os Pontos</h3>

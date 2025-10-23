@@ -15,6 +15,13 @@ TRIP_STATUS_CHOICES = (
     ("completed", "Completed"),
 )
 
+UNIVERSITY_ORDER = {
+    "IFPI": 0,
+    "CHRISFAPI": 1,
+    "UESPI": 2,
+    "ETC": 3,
+}
+
 
 class Trip(models.Model):
     poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="trips")
@@ -29,6 +36,7 @@ class Trip(models.Model):
         blank=True,
         related_name="current_trips",
     )
+    current_university = models.CharField(max_length=50, null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,32 +49,46 @@ class Trip(models.Model):
         return f"Trip {self.trip_type} for {self.poll.date} - {self.status}"
 
     def start_trip(self):
-
         if self.status != "pending":
-            raise ValueError("A viagem já foi iniciada ou concluída.")
+            raise ValueError("Trip already started or completed")
 
-        first_point = self.get_boarding_points().first()
+        if self.trip_type == "outbound":
+            points = self.get_boarding_points()
+            if not points:
+                raise ValueError("No boarding points for this trip")
 
-        if not first_point:
-            raise ValueError("Não há pontos de embarque para esta viagem.")
+            first_point = points[0]
+            self.status = "in_progress"
+            self.current_boarding_point = first_point
+            self.started_at = timezone.now()
+            self.save()
+            return first_point
+        else:
+            universities = self.get_universities()
+            if not universities:
+                raise ValueError("No universities for this trip")
 
-        self.status = "in_progress"
-        self.current_boarding_point = first_point
-        self.started_at = timezone.now()
-        self.save()
+            first_university = universities[0]
+            self.status = "in_progress"
+            self.current_university = first_university
+            self.started_at = timezone.now()
+            self.save()
+            return first_university
 
-        return first_point
-
-    def next_boarding_point(self):
-
+    def next_stop(self):
         if self.status != "in_progress":
-            raise ValueError("A viagem não está em andamento.")
+            raise ValueError("Trip is not in progress")
 
+        if self.trip_type == "outbound":
+            return self._next_boarding_point()
+        else:
+            return self._next_university()
+
+    def _next_boarding_point(self):
         if not self.current_boarding_point:
-            raise ValueError("Não há ponto atual definido.")
+            raise ValueError("No current boarding point")
 
         boarding_points = list(self.get_boarding_points())
-
         current_index = next(
             (
                 i
@@ -77,7 +99,7 @@ class Trip(models.Model):
         )
 
         if current_index is None:
-            raise ValueError("Ponto atual não encontrado na lista de pontos.")
+            raise ValueError("Current boarding point not found")
 
         if current_index + 1 < len(boarding_points):
             next_point = boarding_points[current_index + 1]
@@ -85,27 +107,40 @@ class Trip(models.Model):
             self.save()
             return next_point
         else:
+            self.complete_trip()
+            return None
 
+    def _next_university(self):
+        if not self.current_university:
+            raise ValueError("No current university")
+
+        universities = self.get_universities()
+        current_index = universities.index(self.current_university)
+
+        if current_index + 1 < len(universities):
+            next_university = universities[current_index + 1]
+            self.current_university = next_university
+            self.save()
+            return next_university
+        else:
             self.complete_trip()
             return None
 
     def complete_trip(self):
-
         if self.status != "in_progress":
-            raise ValueError("A viagem não está em andamento.")
+            raise ValueError("Trip is not in progress")
 
         self.status = "completed"
         self.completed_at = timezone.now()
         self.current_boarding_point = None
+        self.current_university = None
         self.save()
 
     def get_boarding_points(self):
+        if self.trip_type != "outbound":
+            return []
 
-        if self.trip_type == "outbound":
-            valid_options = ["round_trip", "one_way_outbound"]
-        else:
-            valid_options = ["round_trip", "one_way_return"]
-
+        valid_options = ["round_trip", "one_way_outbound"]
         votes = self.poll.votes.filter(option__in=valid_options).select_related(
             "student__boarding_point"
         )
@@ -115,17 +150,54 @@ class Trip(models.Model):
             if vote.student.boarding_point:
                 point_ids.add(vote.student.boarding_point.id)
 
-        return BoardingPoint.objects.filter(id__in=point_ids).order_by("route_order")
+        return list(
+            BoardingPoint.objects.filter(id__in=point_ids).order_by("route_order")
+        )
+
+    def get_universities(self):
+        if self.trip_type != "return":
+            return []
+
+        valid_options = ["round_trip", "one_way_return"]
+        votes = self.poll.votes.filter(option__in=valid_options).select_related(
+            "student"
+        )
+
+        university_set = set()
+        for vote in votes:
+            university_set.add(vote.student.university)
+
+        universities = sorted(
+            university_set, key=lambda u: UNIVERSITY_ORDER.get(u, 999)
+        )
+        return universities
 
     def get_students_at_point(self, boarding_point):
+        if self.trip_type != "outbound":
+            return []
 
-        if self.trip_type == "outbound":
-            valid_options = ["round_trip", "one_way_outbound"]
-        else:
-            valid_options = ["round_trip", "one_way_return"]
-
+        valid_options = ["round_trip", "one_way_outbound"]
         votes = self.poll.votes.filter(
             option__in=valid_options, student__boarding_point=boarding_point
         ).select_related("student")
 
         return [vote.student for vote in votes]
+
+    def get_students_at_university(self, university):
+        if self.trip_type != "return":
+            return []
+
+        valid_options = ["round_trip", "one_way_return"]
+        votes = self.poll.votes.filter(
+            option__in=valid_options, student__university=university
+        ).select_related("student")
+
+        students = [vote.student for vote in votes]
+        return sorted(students, key=lambda s: s.name)
+
+    def get_current_students(self):
+        if self.trip_type == "outbound" and self.current_boarding_point:
+            return self.get_students_at_point(self.current_boarding_point)
+        elif self.trip_type == "return" and self.current_university:
+            return self.get_students_at_university(self.current_university)
+        return []
