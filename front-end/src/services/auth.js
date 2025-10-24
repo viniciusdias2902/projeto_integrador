@@ -1,7 +1,7 @@
-const URL = import.meta.env.VITE_APP_AUTHENTICATION_URL
+import { API_URLS, getAuthUrl } from '@/config/api-config'
 
 export async function login(email, password) {
-  const response = await fetch(`${URL}`, {
+  const response = await fetch(API_URLS.AUTHENTICATION, {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ username: email, password: password }),
@@ -24,7 +24,7 @@ export async function refreshToken() {
   const refresh = localStorage.getItem('refresh')
   if (!refresh) throw new Error('No refresh token')
 
-  const response = await fetch(`${URL}refresh`, {
+  const response = await fetch(getAuthUrl('refresh'), {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ refresh: refresh }),
@@ -44,7 +44,7 @@ export async function verifyToken() {
   const access = localStorage.getItem('access')
   if (!access) return false
 
-  const response = await fetch(`${URL}verify`, {
+  const response = await fetch(getAuthUrl('verify'), {
     method: 'POST',
     headers: { 'Content-type': 'application/json' },
     body: JSON.stringify({ token: access }),
