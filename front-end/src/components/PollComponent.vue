@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { verifyAndRefreshToken } from '@/services/auth'
 
-const props = defineProps({ 
-  name: [String, Number], 
+const props = defineProps({
+  name: [String, Number],
   day: String,
-  date: String // Adicionando a data completa para validação
+  date: String,
 })
 
 const POLLS_URL = `${import.meta.env.VITE_APP_API_URL}polls/`
@@ -16,24 +17,27 @@ const successMessage = ref('')
 const isLoading = ref(false)
 const existingVoteId = ref(null)
 
-const token = localStorage.getItem('access')
+// ✅ Função auxiliar para obter o token atualizado
+function getToken() {
+  return localStorage.getItem('access')
+}
 
 // Função para verificar se pode votar em uma opção específica
 function canVoteForOption(option) {
   if (!props.date) return true
-  
+
   const now = new Date()
   const pollDate = new Date(`${props.date}T00:00:00`)
-  
+
   // Se a enquete não é para hoje, permite votar
   if (now.toDateString() !== pollDate.toDateString()) {
     if (now > pollDate) return false // Enquete já passou
     return true // Enquete futura
   }
-  
+
   // Se é o dia da enquete, verifica o horário
   const currentHour = now.getHours()
-  
+
   if (option === 'round_trip' || option === 'one_way_outbound') {
     // Limite até 12:00
     return currentHour < 12
@@ -41,7 +45,7 @@ function canVoteForOption(option) {
     // Limite até 18:00
     return currentHour < 18
   }
-  
+
   return false
 }
 
@@ -54,18 +58,18 @@ const canVoteInSelectedOption = computed(() => {
 // Mensagem de aviso sobre horários
 const timeWarning = computed(() => {
   if (!props.date) return ''
-  
+
   const now = new Date()
   const pollDate = new Date(`${props.date}T00:00:00`)
-  
+
   // Se não é hoje, não mostra aviso
   if (now.toDateString() !== pollDate.toDateString()) {
     if (now > pollDate) return 'Esta enquete já foi encerrada'
     return ''
   }
-  
+
   const currentHour = now.getHours()
-  
+
   if (currentHour < 12) {
     return '⏰ Todas as opções disponíveis até 12h (ida/volta) e 18h (volta/ausente)'
   } else if (currentHour < 18) {
@@ -89,6 +93,9 @@ function getDisabledTooltip(option) {
 }
 
 function getUserIdFromDecodedToken() {
+  const token = getToken()
+  if (!token) return null
+
   try {
     const payload = token.split('.')[1]
     const decoded = JSON.parse(atob(payload))
@@ -98,16 +105,22 @@ function getUserIdFromDecodedToken() {
   }
 }
 
-const userId = token ? getUserIdFromDecodedToken() : null
-
 async function fetchPoll() {
   errorMessage.value = ''
   isLoading.value = true
-  
+
+  // ✅ Verificar e renovar token antes da requisição
+  const isValid = await verifyAndRefreshToken()
+  if (!isValid) {
+    errorMessage.value = 'Sessão expirada. Faça login novamente.'
+    isLoading.value = false
+    return
+  }
+
   try {
     const response = await fetch(`${POLLS_URL}${props.name}/`, {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${getToken()}`, // ✅ Obter token atualizado
       },
     })
 
@@ -117,6 +130,7 @@ async function fetchPoll() {
     }
 
     const poll = await response.json()
+    const userId = getUserIdFromDecodedToken()
     const userVote = poll.votes.find((vote) => Number(vote.student.user_id) === Number(userId))
 
     if (userVote) {
@@ -152,10 +166,18 @@ async function submitVote() {
     return
   }
 
+  // ✅ Verificar e renovar token antes da requisição
+  const isValid = await verifyAndRefreshToken()
+  if (!isValid) {
+    errorMessage.value = 'Sessão expirada. Faça login novamente.'
+    return
+  }
+
   isLoading.value = true
 
   try {
     let response
+    const token = getToken() // ✅ Obter token atualizado
 
     if (existingVoteId.value) {
       // Atualizar voto existente
@@ -190,8 +212,10 @@ async function submitVote() {
     const data = await response.json()
     console.log('Vote submitted:', data)
 
-    successMessage.value = existingVoteId.value ? 'Voto atualizado com sucesso!' : 'Voto enviado com sucesso!'
-    
+    successMessage.value = existingVoteId.value
+      ? 'Voto atualizado com sucesso!'
+      : 'Voto enviado com sucesso!'
+
     if (!existingVoteId.value && data.id) {
       existingVoteId.value = data.id
     }
@@ -204,7 +228,8 @@ async function submitVote() {
 }
 
 onMounted(() => {
-  if (token && userId) {
+  const userId = getUserIdFromDecodedToken()
+  if (getToken() && userId) {
     fetchPoll()
   } else {
     errorMessage.value = 'Usuário não autenticado'
@@ -213,7 +238,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <fieldset 
+  <fieldset
     class="fieldset bg-base-100 border-base-300 rounded-box border w-64 p-4 flex flex-col"
     :class="{ 'opacity-60': isLoading }"
   >
@@ -234,8 +259,8 @@ onMounted(() => {
 
     <!-- Opções de voto -->
     <div v-else class="space-y-2">
-      <LabelComponent 
-        :for="`${name}-1`" 
+      <LabelComponent
+        :for="`${name}-1`"
         class="text-lg cursor-pointer hover:bg-base-200 p-2 rounded transition-colors"
         :class="{ 'opacity-50 cursor-not-allowed': isOptionDisabled('round_trip') }"
       >
@@ -250,8 +275,8 @@ onMounted(() => {
             :disabled="isOptionDisabled('round_trip')"
           />
           <span>Ida e volta</span>
-          <span 
-            v-if="isOptionDisabled('round_trip')" 
+          <span
+            v-if="isOptionDisabled('round_trip')"
             class="badge badge-sm badge-ghost"
             :title="getDisabledTooltip('round_trip')"
           >
@@ -260,8 +285,8 @@ onMounted(() => {
         </div>
       </LabelComponent>
 
-      <LabelComponent 
-        :for="`${name}-2`" 
+      <LabelComponent
+        :for="`${name}-2`"
         class="text-lg cursor-pointer hover:bg-base-200 p-2 rounded transition-colors"
         :class="{ 'opacity-50 cursor-not-allowed': isOptionDisabled('one_way_outbound') }"
       >
@@ -276,8 +301,8 @@ onMounted(() => {
             :disabled="isOptionDisabled('one_way_outbound')"
           />
           <span>Apenas ida</span>
-          <span 
-            v-if="isOptionDisabled('one_way_outbound')" 
+          <span
+            v-if="isOptionDisabled('one_way_outbound')"
             class="badge badge-sm badge-ghost"
             :title="getDisabledTooltip('one_way_outbound')"
           >
@@ -286,8 +311,8 @@ onMounted(() => {
         </div>
       </LabelComponent>
 
-      <LabelComponent 
-        :for="`${name}-3`" 
+      <LabelComponent
+        :for="`${name}-3`"
         class="text-lg cursor-pointer hover:bg-base-200 p-2 rounded transition-colors"
         :class="{ 'opacity-50 cursor-not-allowed': isOptionDisabled('one_way_return') }"
       >
@@ -302,8 +327,8 @@ onMounted(() => {
             :disabled="isOptionDisabled('one_way_return')"
           />
           <span>Apenas volta</span>
-          <span 
-            v-if="isOptionDisabled('one_way_return')" 
+          <span
+            v-if="isOptionDisabled('one_way_return')"
             class="badge badge-sm badge-ghost"
             :title="getDisabledTooltip('one_way_return')"
           >
@@ -312,8 +337,8 @@ onMounted(() => {
         </div>
       </LabelComponent>
 
-      <LabelComponent 
-        :for="`${name}-4`" 
+      <LabelComponent
+        :for="`${name}-4`"
         class="text-lg cursor-pointer hover:bg-base-200 p-2 rounded transition-colors"
         :class="{ 'opacity-50 cursor-not-allowed': isOptionDisabled('absent') }"
       >
@@ -328,8 +353,8 @@ onMounted(() => {
             :disabled="isOptionDisabled('absent')"
           />
           <span>Não vou</span>
-          <span 
-            v-if="isOptionDisabled('absent')" 
+          <span
+            v-if="isOptionDisabled('absent')"
             class="badge badge-sm badge-ghost"
             :title="getDisabledTooltip('absent')"
           >
@@ -339,11 +364,11 @@ onMounted(() => {
       </LabelComponent>
     </div>
 
-    <button 
-      class="btn btn-primary mt-4" 
+    <button
+      class="btn btn-primary mt-4"
       @click="submitVote"
       :disabled="isLoading || !selectedOption || !canVoteInSelectedOption"
-      :class="{ 'loading': isLoading }"
+      :class="{ loading: isLoading }"
     >
       <span v-if="!isLoading">
         {{ existingVoteId ? 'Atualizar Voto' : 'Enviar Resposta' }}
@@ -354,8 +379,18 @@ onMounted(() => {
     <!-- Mensagens de erro -->
     <div v-if="errorMessage" class="mt-3">
       <div class="alert alert-error py-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="stroke-current shrink-0 h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
         <span class="text-sm">{{ errorMessage }}</span>
       </div>
@@ -364,8 +399,18 @@ onMounted(() => {
     <!-- Mensagens de sucesso -->
     <div v-if="successMessage" class="mt-3">
       <div class="alert alert-success py-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="stroke-current shrink-0 h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
         <span class="text-sm">{{ successMessage }}</span>
       </div>
