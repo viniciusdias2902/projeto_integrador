@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
 import { usePolling } from '@/composables/usePolling'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
-import TripHeader from '@/components/TripHeader.vue'
+import TripViewCard from '@/components/TripViewCard.vue'
 import TripMessages from '@/components/TripMessages.vue'
 import CurrentBoardingPoint from '@/components/CurrentBoardingPoint.vue'
 import AllBoardingPoints from '@/components/AllBoardingPoints.vue'
@@ -13,12 +13,9 @@ const API_BASE_URL = import.meta.env.VITE_APP_API_URL
 const todayPoll = ref(null)
 const outboundTrip = ref(null)
 const returnTrip = ref(null)
-const tripDetails = ref({
-  outbound: null,
-  return: null,
-})
 const isLoading = ref(false)
 const errorMessage = ref('')
+const lastUpdate = ref(new Date())
 
 const hasActiveTrip = computed(() => {
   return (
@@ -36,8 +33,9 @@ async function refreshTripStatus() {
   if (!todayPoll.value) return
 
   try {
+    // Atualizar viagem de ida
     if (outboundTrip.value) {
-      const outResponse = await fetch(`${API_BASE_URL}trips/${outboundTrip.value.id}/status/`, {
+      const outResponse = await fetch(`${API_BASE_URL}trips/${outboundTrip.value.id}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access')}`,
         },
@@ -45,13 +43,14 @@ async function refreshTripStatus() {
 
       if (outResponse.ok) {
         const data = await outResponse.json()
-        outboundTrip.value = data.trip
-        tripDetails.value.outbound = data.trip
+        outboundTrip.value = data
+        lastUpdate.value = new Date()
       }
     }
 
+    // Atualizar viagem de volta
     if (returnTrip.value) {
-      const retResponse = await fetch(`${API_BASE_URL}trips/${returnTrip.value.id}/status/`, {
+      const retResponse = await fetch(`${API_BASE_URL}trips/${returnTrip.value.id}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access')}`,
         },
@@ -59,9 +58,14 @@ async function refreshTripStatus() {
 
       if (retResponse.ok) {
         const data = await retResponse.json()
-        returnTrip.value = data.trip
-        tripDetails.value.return = data.trip
+        returnTrip.value = data
+        lastUpdate.value = new Date()
       }
+    }
+
+    // Se não há viagem de volta mas a ida foi concluída, verificar se foi criada
+    if (outboundTrip.value?.status === 'completed' && !returnTrip.value) {
+      await loadTrips(false) // Recarregar sem loading
     }
   } catch (error) {
     console.error('Error refreshing trip status:', error)
@@ -72,7 +76,7 @@ async function fetchTodayPoll() {
   errorMessage.value = ''
   isLoading.value = true
 
-  const isValid = verifyAndRefreshToken()
+  const isValid = await verifyAndRefreshToken()
   if (!isValid) {
     errorMessage.value = 'Sessão expirada. Faça login novamente.'
     isLoading.value = false
@@ -100,7 +104,7 @@ async function fetchTodayPoll() {
       return
     }
 
-    await loadTrips()
+    await loadTrips(true)
   } catch (error) {
     console.error('Error fetching polls:', error)
     errorMessage.value = 'Erro ao carregar dados. Tente novamente.'
@@ -109,10 +113,15 @@ async function fetchTodayPoll() {
   }
 }
 
-async function loadTrips() {
+async function loadTrips(showLoading = true) {
   if (!todayPoll.value) return
 
+  if (showLoading) {
+    isLoading.value = true
+  }
+
   try {
+    // Buscar viagem de ida
     const outboundResponse = await fetch(
       `${API_BASE_URL}trips/?poll_id=${todayPoll.value.id}&trip_type=outbound`,
       {
@@ -125,11 +134,20 @@ async function loadTrips() {
     if (outboundResponse.ok) {
       const outboundTrips = await outboundResponse.json()
       if (outboundTrips.length > 0) {
-        outboundTrip.value = outboundTrips[0]
-        await loadTripDetails(outboundTrips[0].id, 'outbound')
+        const tripId = outboundTrips[0].id
+        const detailsResponse = await fetch(`${API_BASE_URL}trips/${tripId}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`,
+          },
+        })
+
+        if (detailsResponse.ok) {
+          outboundTrip.value = await detailsResponse.json()
+        }
       }
     }
 
+    // Buscar viagem de volta
     const returnResponse = await fetch(
       `${API_BASE_URL}trips/?poll_id=${todayPoll.value.id}&trip_type=return`,
       {
@@ -142,42 +160,45 @@ async function loadTrips() {
     if (returnResponse.ok) {
       const returnTrips = await returnResponse.json()
       if (returnTrips.length > 0) {
-        returnTrip.value = returnTrips[0]
-        await loadTripDetails(returnTrips[0].id, 'return')
+        const tripId = returnTrips[0].id
+        const detailsResponse = await fetch(`${API_BASE_URL}trips/${tripId}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access')}`,
+          },
+        })
+
+        if (detailsResponse.ok) {
+          returnTrip.value = await detailsResponse.json()
+        }
       }
     }
   } catch (error) {
     console.error('Error loading trips:', error)
-  }
-}
-
-async function loadTripDetails(tripId, tripType) {
-  try {
-    const response = await fetch(`${API_BASE_URL}trips/${tripId}/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access')}`,
-      },
-    })
-
-    if (response.ok) {
-      const data = await response.json()
-      tripDetails.value[tripType] = data
+  } finally {
+    if (showLoading) {
+      isLoading.value = false
     }
-  } catch (error) {
-    console.error('Error loading trip details:', error)
   }
 }
 
-watch(hasActiveTrip, (isActive) => {
-  if (isActive) {
-    startPolling()
-  } else {
-    stopPolling()
-  }
-})
+watch(
+  hasActiveTrip,
+  (isActive) => {
+    if (isActive) {
+      startPolling()
+    } else {
+      stopPolling()
+    }
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
   fetchTodayPoll()
+})
+
+onUnmounted(() => {
+  stopPolling()
 })
 </script>
 
@@ -187,6 +208,9 @@ onMounted(() => {
       <div class="mb-8 text-center">
         <h1 class="text-4xl font-bold mb-2">Acompanhamento de Viagem</h1>
         <p class="text-base-content/70">Acompanhe a localização do transporte em tempo real</p>
+        <p v-if="lastUpdate" class="text-xs text-base-content/50 mt-2">
+          Última atualização: {{ lastUpdate.toLocaleTimeString('pt-BR') }}
+        </p>
       </div>
 
       <TripMessages :error-message="errorMessage" />
@@ -216,23 +240,17 @@ onMounted(() => {
       </div>
 
       <div v-else class="space-y-6">
+        <!-- Viagem de IDA -->
         <div v-if="outboundTrip" class="space-y-6">
-          <TripHeader
-            :trip="outboundTrip"
-            :trip-details="tripDetails.outbound"
-            :is-loading="false"
-          />
+          <TripViewCard :trip="outboundTrip" :trip-details="outboundTrip" />
 
           <CurrentBoardingPoint
             v-if="outboundTrip.status === 'in_progress'"
             :trip-status="outboundTrip.status"
-            :trip-details="tripDetails.outbound"
+            :trip-details="outboundTrip"
           />
 
-          <AllBoardingPoints
-            v-if="tripDetails.outbound"
-            :boarding-points="tripDetails.outbound.stops || []"
-          />
+          <AllBoardingPoints :boarding-points="outboundTrip.stops || []" />
 
           <div v-if="outboundTrip.status === 'pending'" class="alert alert-warning">
             <svg
@@ -269,19 +287,17 @@ onMounted(() => {
           </div>
         </div>
 
+        <!-- Viagem de VOLTA -->
         <div v-if="returnTrip" class="space-y-6">
-          <TripHeader :trip="returnTrip" :trip-details="tripDetails.return" :is-loading="false" />
+          <TripViewCard :trip="returnTrip" :trip-details="returnTrip" />
 
           <CurrentBoardingPoint
             v-if="returnTrip.status === 'in_progress'"
             :trip-status="returnTrip.status"
-            :trip-details="tripDetails.return"
+            :trip-details="returnTrip"
           />
 
-          <AllBoardingPoints
-            v-if="tripDetails.return"
-            :boarding-points="tripDetails.return.stops || []"
-          />
+          <AllBoardingPoints :boarding-points="returnTrip.stops || []" />
 
           <div v-if="returnTrip.status === 'pending'" class="alert alert-warning">
             <svg
@@ -318,6 +334,7 @@ onMounted(() => {
           </div>
         </div>
 
+        <!-- Sem viagens criadas -->
         <div v-if="!outboundTrip && !returnTrip" class="alert alert-info">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -333,6 +350,33 @@ onMounted(() => {
             ></path>
           </svg>
           <span>Ainda não há viagens criadas para hoje</span>
+        </div>
+
+        <!-- Indicador de atualização automática -->
+        <div v-if="hasActiveTrip" class="text-center">
+          <div class="badge badge-sm badge-info gap-2">
+            <svg
+              class="animate-spin h-3 w-3"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Atualizando automaticamente
+          </div>
         </div>
       </div>
     </div>
