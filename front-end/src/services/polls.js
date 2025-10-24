@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1/'
+import { API_URLS } from '@/config/api-config'
 
 export async function getTodaysPoll() {
   const accessToken = localStorage.getItem('access')
@@ -6,7 +6,7 @@ export async function getTodaysPoll() {
     throw new Error('Usuário não autenticado.')
   }
 
-  const response = await fetch(`${BASE_URL}polls/`, {
+  const response = await fetch(API_URLS.POLLS, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
@@ -34,7 +34,7 @@ export async function getBoardingList(pollId, tripType) {
     throw new Error('Usuário não autenticado.')
   }
 
-  const url = `${BASE_URL}polls/${pollId}/boarding_list/?trip_type=${tripType}`
+  const url = `${API_URLS.POLLS}${pollId}/boarding_list/?trip_type=${tripType}`
 
   const response = await fetch(url, {
     method: 'GET',
