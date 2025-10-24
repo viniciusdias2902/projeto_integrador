@@ -124,7 +124,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+# ✅ CORREÇÃO: Mudado de "UTC" para horário de Brasília
+# Piauí usa GMT-3 (horário de Brasília)
+TIME_ZONE = "America/Fortaleza"  # Horário de Brasília (GMT-3) - mais próximo do Piauí
 
 USE_I18N = True
 
