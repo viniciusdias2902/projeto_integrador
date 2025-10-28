@@ -71,8 +71,10 @@ class StudentAPITestCase(APITestCase):
             "phone": "1112223334",
             "class_shift": "M",
             "university": "CHRISFAPI",
+            "role": self.student.role,
         }
         response = self.client.put(url, data, format="json")
+        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.student.refresh_from_db()
         self.assertEqual(self.student.name, "Updated Name")
