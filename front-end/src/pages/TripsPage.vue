@@ -24,8 +24,35 @@ const selectedPoll = computed(() => {
   return polls.value.find((p) => p.id === selectedPollId.value)
 })
 
-// ✅ REMOVIDO: Polling desnecessário em TripsPage
-// O polling já é feito em TripController, não precisa duplicar aqui
+const { startPolling, stopPolling } = usePolling(async () => {
+  await verifyAndRefreshToken()
+
+  if (activeTrip.value && activeTrip.value.status === 'in_progress') {
+    await refreshTripStatus()
+  }
+}, 1000)
+
+async function refreshTripStatus() {
+  if (!activeTrip.value) return
+
+  try {
+    const response = await fetch(`${API_BASE_URL}trips/${activeTrip.value.id}/status/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access')}`,
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+
+      if (JSON.stringify(activeTrip.value) !== JSON.stringify(data.trip)) {
+        activeTrip.value = data.trip
+      }
+    }
+  } catch (error) {
+    console.error('Error refreshing trip status:', error)
+  }
+}
 
 async function fetchPolls() {
   errorMessage.value = ''
@@ -138,6 +165,7 @@ async function initializeTrip() {
 }
 
 function handleTripCompleted() {
+  stopPolling()
   activeTrip.value = null
   successMessage.value = 'Viagem concluída com sucesso!'
 
@@ -147,11 +175,20 @@ function handleTripCompleted() {
 }
 
 async function handleSelectionChange() {
+  stopPolling()
   activeTrip.value = null
   if (selectedPollId.value) {
     await checkExistingTrip()
   }
 }
+
+watch(activeTrip, (newTrip) => {
+  if (newTrip && newTrip.status === 'in_progress') {
+    startPolling()
+  } else {
+    stopPolling()
+  }
+})
 
 onMounted(() => {
   fetchPolls()
@@ -178,10 +215,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- ✅ Usar key para evitar re-render desnecessário -->
       <TripSelector
         v-else-if="!hasActiveTrip"
-        :key="`selector-${selectedPollId}-${selectedTripType}`"
         :polls="polls"
         :selected-poll-id="selectedPollId"
         :selected-trip-type="selectedTripType"
@@ -202,10 +237,8 @@ onMounted(() => {
         @initialize-trip="initializeTrip"
       />
 
-      <!-- ✅ TripController gerencia seu próprio polling internamente -->
       <TripController
         v-if="hasActiveTrip"
-        :key="`controller-${activeTrip.id}`"
         :trip="activeTrip"
         @trip-updated="activeTrip = $event"
         @trip-completed="handleTripCompleted"
