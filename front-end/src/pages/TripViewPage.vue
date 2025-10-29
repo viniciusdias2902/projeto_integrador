@@ -17,7 +17,6 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const lastUpdate = ref(new Date())
 
-// ✅ CORREÇÃO: Agora considera viagens pending e in_progress, não apenas in_progress
 const hasActiveTrip = computed(() => {
   return (
     (outboundTrip.value && outboundTrip.value.status !== 'completed') ||
@@ -25,7 +24,6 @@ const hasActiveTrip = computed(() => {
   )
 })
 
-// ✅ CORREÇÃO: Intervalo reduzido de 5000ms para 1000ms (1 segundo)
 const { startPolling, stopPolling } = usePolling(async () => {
   await verifyAndRefreshToken()
   await refreshTripStatus()
@@ -35,7 +33,6 @@ async function refreshTripStatus() {
   if (!todayPoll.value) return
 
   try {
-    // Atualizar viagem de ida
     if (outboundTrip.value) {
       const outResponse = await fetch(`${API_BASE_URL}trips/${outboundTrip.value.id}/`, {
         headers: {
@@ -45,12 +42,14 @@ async function refreshTripStatus() {
 
       if (outResponse.ok) {
         const data = await outResponse.json()
-        outboundTrip.value = data
-        lastUpdate.value = new Date()
+
+        if (JSON.stringify(outboundTrip.value) !== JSON.stringify(data)) {
+          outboundTrip.value = data
+          lastUpdate.value = new Date()
+        }
       }
     }
 
-    // Atualizar viagem de volta
     if (returnTrip.value) {
       const retResponse = await fetch(`${API_BASE_URL}trips/${returnTrip.value.id}/`, {
         headers: {
@@ -60,14 +59,16 @@ async function refreshTripStatus() {
 
       if (retResponse.ok) {
         const data = await retResponse.json()
-        returnTrip.value = data
-        lastUpdate.value = new Date()
+
+        if (JSON.stringify(returnTrip.value) !== JSON.stringify(data)) {
+          returnTrip.value = data
+          lastUpdate.value = new Date()
+        }
       }
     }
 
-    // Se não há viagem de volta mas a ida foi concluída, verificar se foi criada
     if (outboundTrip.value?.status === 'completed' && !returnTrip.value) {
-      await loadTrips(false) // Recarregar sem loading
+      await loadTrips(false)
     }
   } catch (error) {
     console.error('Error refreshing trip status:', error)
@@ -123,7 +124,6 @@ async function loadTrips(showLoading = true) {
   }
 
   try {
-    // Buscar viagem de ida
     const outboundResponse = await fetch(
       `${API_BASE_URL}trips/?poll_id=${todayPoll.value.id}&trip_type=outbound`,
       {
@@ -149,7 +149,6 @@ async function loadTrips(showLoading = true) {
       }
     }
 
-    // Buscar viagem de volta
     const returnResponse = await fetch(
       `${API_BASE_URL}trips/?poll_id=${todayPoll.value.id}&trip_type=return`,
       {
@@ -183,7 +182,6 @@ async function loadTrips(showLoading = true) {
   }
 }
 
-// ✅ CORREÇÃO: Agora o polling inicia para viagens pending também
 watch(
   hasActiveTrip,
   (isActive) => {
@@ -243,7 +241,6 @@ onUnmounted(() => {
       </div>
 
       <div v-else class="space-y-6">
-        <!-- Viagem de IDA -->
         <div v-if="outboundTrip" class="space-y-6">
           <TripViewCard :trip="outboundTrip" :trip-details="outboundTrip" />
 
@@ -290,7 +287,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Viagem de VOLTA -->
         <div v-if="returnTrip" class="space-y-6">
           <TripViewCard :trip="returnTrip" :trip-details="returnTrip" />
 
@@ -337,7 +333,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Sem viagens criadas -->
         <div v-if="!outboundTrip && !returnTrip" class="alert alert-info">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -355,7 +350,6 @@ onUnmounted(() => {
           <span>Ainda não há viagens criadas para hoje</span>
         </div>
 
-        <!-- Indicador de atualização automática -->
         <div v-if="hasActiveTrip" class="text-center">
           <div class="badge badge-sm badge-info gap-2">
             <svg
