@@ -24,13 +24,14 @@ const selectedPoll = computed(() => {
   return polls.value.find((p) => p.id === selectedPollId.value)
 })
 
+// ✅ CORREÇÃO: Intervalo reduzido de 10000ms para 1000ms (1 segundo)
 const { startPolling, stopPolling } = usePolling(async () => {
   await verifyAndRefreshToken()
 
   if (activeTrip.value && activeTrip.value.status === 'in_progress') {
     await refreshTripStatus()
   }
-}, 10000)
+}, 1000)
 
 async function refreshTripStatus() {
   if (!activeTrip.value) return
