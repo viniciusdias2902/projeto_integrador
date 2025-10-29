@@ -17,17 +17,19 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const lastUpdate = ref(new Date())
 
+// ✅ CORREÇÃO: Agora considera viagens pending e in_progress, não apenas in_progress
 const hasActiveTrip = computed(() => {
   return (
-    (outboundTrip.value && outboundTrip.value.status === 'in_progress') ||
-    (returnTrip.value && returnTrip.value.status === 'in_progress')
+    (outboundTrip.value && outboundTrip.value.status !== 'completed') ||
+    (returnTrip.value && returnTrip.value.status !== 'completed')
   )
 })
 
+// ✅ CORREÇÃO: Intervalo reduzido de 5000ms para 1000ms (1 segundo)
 const { startPolling, stopPolling } = usePolling(async () => {
   await verifyAndRefreshToken()
   await refreshTripStatus()
-}, 5000)
+}, 1000)
 
 async function refreshTripStatus() {
   if (!todayPoll.value) return
@@ -181,6 +183,7 @@ async function loadTrips(showLoading = true) {
   }
 }
 
+// ✅ CORREÇÃO: Agora o polling inicia para viagens pending também
 watch(
   hasActiveTrip,
   (isActive) => {
@@ -208,7 +211,7 @@ onUnmounted(() => {
       <div class="mb-8 text-center">
         <h1 class="text-4xl font-bold mb-2">Acompanhamento de Viagem</h1>
         <p class="text-base-content/70">Acompanhe a localização do transporte em tempo real</p>
-        <p v-if="lastUpdate" class="text-xs text-base-content/50 mt-2">
+        <p v-if="lastUpdate && hasActiveTrip" class="text-xs text-base-content/50 mt-2">
           Última atualização: {{ lastUpdate.toLocaleTimeString('pt-BR') }}
         </p>
       </div>
@@ -375,7 +378,7 @@ onUnmounted(() => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            Atualizando automaticamente
+            Atualizando automaticamente a cada 1 segundo
           </div>
         </div>
       </div>
