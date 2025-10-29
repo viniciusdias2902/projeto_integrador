@@ -23,7 +23,6 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
-// ✅ CORREÇÃO: Intervalo reduzido de 5000ms para 1000ms (1 segundo)
 const { startPolling, stopPolling } = usePolling(async () => {
   if (props.trip.status === 'in_progress') {
     await fetchTripDetails()
@@ -31,8 +30,7 @@ const { startPolling, stopPolling } = usePolling(async () => {
 }, 1000)
 
 async function fetchTripDetails() {
-  isLoading.value = true
-  errorMessage.value = ''
+  if (isLoading.value) return
 
   try {
     const response = await fetch(`${API_BASE_URL}trips/${props.trip.id}/`, {
@@ -45,12 +43,14 @@ async function fetchTripDetails() {
       throw new Error('Erro ao carregar detalhes da viagem')
     }
 
-    tripDetails.value = await response.json()
+    const newData = await response.json()
+
+    if (JSON.stringify(tripDetails.value) !== JSON.stringify(newData)) {
+      tripDetails.value = newData
+    }
   } catch (error) {
     console.error('Error fetching trip details:', error)
     errorMessage.value = 'Erro ao carregar detalhes. Tente novamente.'
-  } finally {
-    isLoading.value = false
   }
 }
 
