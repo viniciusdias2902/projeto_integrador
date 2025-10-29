@@ -129,37 +129,61 @@ class PollBoardingListView(APIView):
 
 
 class CreateWeeklyPollsView(APIView):
+    """
+    Cria enquetes para os dias restantes da semana atual.
+    - Se chamado na segunda: cria segunda a sexta
+    - Se chamado na quarta: cria quarta, quinta e sexta
+    - Se chamado no sábado: cria segunda a sexta da próxima semana
+    - Se chamado no domingo: cria segunda a sexta da próxima semana
+    """
 
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         created_polls = []
+        existing_polls = []
         today = timezone.localtime(timezone.now()).date()
 
         weekday = today.weekday()  # 0=Monday, 6=Sunday
 
+        # Determinar data de início baseado no dia da semana
         if weekday == 5:  # Sábado
-            start_date = today + timedelta(days=2)
+            start_date = today + timedelta(days=2)  # Próxima segunda
         elif weekday == 6:  # Domingo
-            start_date = today + timedelta(days=1)
+            start_date = today + timedelta(days=1)  # Próxima segunda
         else:  # Segunda a sexta
-            start_date = today
+            start_date = today  # Começa hoje
 
+        # Determinar data de fim (sexta-feira da mesma semana)
+        end_date = start_date
+        while end_date.weekday() < 4:  # Avançar até sexta (weekday = 4)
+            end_date += timedelta(days=1)
+
+        # Criar enquetes do start_date até end_date
         current_date = start_date
-        while current_date.weekday() <= 4:  # 0-4 = Segunda a Sexta
+        while current_date <= end_date:
             poll, created = Poll.objects.get_or_create(
                 date=current_date, defaults={"status": "open"}
             )
+
             if created:
                 created_polls.append(str(current_date))
+            else:
+                existing_polls.append(str(current_date))
 
             current_date += timedelta(days=1)
 
         return Response(
             {
-                "message": "Enquetes criadas com sucesso",
+                "message": "Processo de criação de enquetes concluído",
                 "created_polls": created_polls,
-                "total": len(created_polls),
+                "existing_polls": existing_polls,
+                "total_created": len(created_polls),
+                "total_existing": len(existing_polls),
+                "start_date": str(start_date),
+                "end_date": str(end_date),
+                "today": str(today),
+                "weekday": weekday,
             }
         )
 
