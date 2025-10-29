@@ -23,11 +23,12 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
+// ✅ CORREÇÃO: Intervalo reduzido de 5000ms para 1000ms (1 segundo)
 const { startPolling, stopPolling } = usePolling(async () => {
   if (props.trip.status === 'in_progress') {
     await fetchTripDetails()
   }
-}, 5000)
+}, 1000)
 
 async function fetchTripDetails() {
   isLoading.value = true
