@@ -31,6 +31,8 @@ class DriverAPITestCase(APITestCase):
             name="Existing Driver",
             phone="0987654321",
             shift="N",
+            role="driver",
+            dailyPaymentCents=10000,
         )
 
     def get_jwt_token(self, user):
@@ -73,7 +75,7 @@ class DriverAPITestCase(APITestCase):
             "shift": "M",
             "email": "update@example.com",
         }
-        response = self.client.put(url, data, format="json")
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.driver.refresh_from_db()
         self.assertEqual(self.driver.name, "Updated Name")
