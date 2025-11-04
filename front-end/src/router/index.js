@@ -44,7 +44,7 @@ const router = createRouter({
       path: '/admin/estudantes',
       name: 'admin-students',
       component: AdminStudentsPage,
-      meta: { requiresAuth: true, allowedRoles: ['admin'] },
+      meta: { requiresAuth: true, allowedRoles: ['admin', 'administrator'] },
     },
     {
       path: '/cadastro',
@@ -55,22 +55,35 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
+  console.log('Router guard - navigating to:', to.path)
+
   if (to.meta.requiresAuth) {
     const isValid = await verifyAndRefreshToken()
 
     if (!isValid) {
+      console.log('Token invalid, redirecting to login')
       return next({ name: 'login' })
     }
 
     if (to.meta.allowedRoles) {
       const userRole = getUserRole()
+      const normalizedRole = (userRole || '').toLowerCase()
 
-      if (!userRole || !to.meta.allowedRoles.includes(userRole)) {
-        if (userRole === 'student') {
+      console.log('User role:', userRole)
+      console.log('Normalized role:', normalizedRole)
+      console.log('Allowed roles:', to.meta.allowedRoles)
+
+      // Normalizar roles permitidas
+      const normalizedAllowedRoles = to.meta.allowedRoles.map((role) => role.toLowerCase())
+
+      if (!userRole || !normalizedAllowedRoles.includes(normalizedRole)) {
+        console.log('Role not allowed, redirecting...')
+
+        if (normalizedRole === 'student') {
           return next({ name: 'polls' })
-        } else if (userRole === 'driver') {
+        } else if (normalizedRole === 'driver') {
           return next({ name: 'trips' })
-        } else if (userRole === 'admin') {
+        } else if (normalizedRole === 'admin' || normalizedRole === 'administrator') {
           return next({ name: 'admin-students' })
         } else {
           return next({ name: 'login' })
