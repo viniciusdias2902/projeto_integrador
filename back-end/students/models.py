@@ -26,7 +26,7 @@ class Student(Person):
     )
 
     monthly_payment_cents = models.IntegerField(null=True, blank=True)
-    payment_day = models.IntegerField(null=True, blank=True)
+    last_payment_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.role:
