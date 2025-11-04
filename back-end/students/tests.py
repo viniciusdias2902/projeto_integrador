@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Student
 from boarding_points.models import BoardingPoint
+from datetime import date, timedelta
 
 
 class StudentAPITestCase(APITestCase):
@@ -116,7 +117,7 @@ class StudentPaymentAPITestCase(APITestCase):
             class_shift="A",
             university="IFPI",
             monthly_payment_cents=50000,
-            payment_day=10,
+            last_payment_date=date.today() - timedelta(days=15),
         )
 
     def get_jwt_token(self, user):
@@ -138,7 +139,7 @@ class StudentPaymentAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["monthly_payment_cents"], "não informado")
-        self.assertEqual(response.data["payment_day"], "não informado")
+        self.assertEqual(response.data["last_payment_date"], "não informado")
 
     def test_student_payment_fields_return_values_when_set(self):
         self.authenticate_admin()
@@ -147,24 +148,28 @@ class StudentPaymentAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["monthly_payment_cents"], 50000)
-        self.assertEqual(response.data["payment_day"], 10)
+        self.assertIsNotNone(response.data["last_payment_date"])
 
     def test_admin_can_update_student_payment(self):
         self.authenticate_admin()
         url = reverse("student-payment-update", args=[self.student1.id])
-        data = {"monthly_payment_cents": 45000, "payment_day": 15}
+        payment_date = (date.today() - timedelta(days=10)).isoformat()
+        data = {"monthly_payment_cents": 45000, "last_payment_date": payment_date}
 
         response = self.client.patch(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.student1.refresh_from_db()
         self.assertEqual(self.student1.monthly_payment_cents, 45000)
-        self.assertEqual(self.student1.payment_day, 15)
+        self.assertEqual(self.student1.last_payment_date.isoformat(), payment_date)
 
     def test_regular_user_cannot_update_payment(self):
         self.authenticate_regular_user()
         url = reverse("student-payment-update", args=[self.student1.id])
-        data = {"monthly_payment_cents": 45000, "payment_day": 15}
+        data = {
+            "monthly_payment_cents": 45000,
+            "last_payment_date": date.today().isoformat(),
+        }
 
         response = self.client.patch(url, data, format="json")
 
@@ -203,10 +208,11 @@ class StudentPaymentAPITestCase(APITestCase):
         self.authenticate_admin()
         url = reverse("student-payment-bulk-update")
 
+        payment_date = date.today().isoformat()
         data = {
             "student_ids": [self.student1.id, self.student2.id],
             "monthly_payment_cents": 60000,
-            "payment_day": 5,
+            "last_payment_date": payment_date,
         }
 
         response = self.client.patch(url, data, format="json")
@@ -218,21 +224,9 @@ class StudentPaymentAPITestCase(APITestCase):
         self.student2.refresh_from_db()
 
         self.assertEqual(self.student1.monthly_payment_cents, 60000)
-        self.assertEqual(self.student1.payment_day, 5)
+        self.assertEqual(self.student1.last_payment_date.isoformat(), payment_date)
         self.assertEqual(self.student2.monthly_payment_cents, 60000)
-        self.assertEqual(self.student2.payment_day, 5)
-
-    def test_payment_day_validation(self):
-        self.authenticate_admin()
-        url = reverse("student-payment-update", args=[self.student1.id])
-
-        data = {"payment_day": 35}
-        response = self.client.patch(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-        data = {"payment_day": 0}
-        response = self.client.patch(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(self.student2.last_payment_date.isoformat(), payment_date)
 
     def test_monthly_payment_validation(self):
         self.authenticate_admin()
