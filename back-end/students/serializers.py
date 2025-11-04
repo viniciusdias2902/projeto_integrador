@@ -60,6 +60,9 @@ class StudentCreateSerializer(PersonSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    monthly_payment_cents = serializers.SerializerMethodField()
+    payment_day = serializers.SerializerMethodField()
+
     class Meta:
         model = Student
         fields = [
@@ -70,4 +73,33 @@ class StudentSerializer(serializers.ModelSerializer):
             "university",
             "boarding_point",
             "role",
+            "monthly_payment_cents",
+            "payment_day",
         ]
+
+    def get_monthly_payment_cents(self, obj):
+        if obj.monthly_payment_cents is None:
+            return "não informado"
+        return obj.monthly_payment_cents
+
+    def get_payment_day(self, obj):
+        if obj.payment_day is None:
+            return "não informado"
+        return obj.payment_day
+
+
+class StudentPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = ["id", "name", "monthly_payment_cents", "payment_day"]
+        read_only_fields = ["id", "name"]
+
+    def validate_payment_day(self, value):
+        if value is not None and (value < 1 or value > 31):
+            raise serializers.ValidationError("Payment day must be between 1 and 31")
+        return value
+
+    def validate_monthly_payment_cents(self, value):
+        if value is not None and value < 0:
+            raise serializers.ValidationError("Monthly payment cannot be negative")
+        return value
