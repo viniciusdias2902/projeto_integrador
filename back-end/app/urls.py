@@ -14,5 +14,6 @@ urlpatterns = [
     path("api/v1/", include("drivers.urls")),
     path("api/v1/", include("polls.urls")),
     path("api/v1/", include("trips.urls")),
+    path("api/v1/", include("admins.urls")),
     path("api/v1/", include(router.urls)),
 ]
