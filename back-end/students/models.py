@@ -25,6 +25,9 @@ class Student(Person):
         related_name="students",
     )
 
+    monthly_payment_cents = models.IntegerField(null=True, blank=True)
+    payment_day = models.IntegerField(null=True, blank=True)
+
     def save(self, *args, **kwargs):
         if not self.role:
             self.role = "student"
