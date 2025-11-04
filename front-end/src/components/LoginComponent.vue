@@ -14,17 +14,34 @@ const error = ref(null)
 async function handleLogin() {
   error.value = null
   try {
-    await login(email.value, password.value)
+    const response = await login(email.value, password.value)
 
+    console.log('Login response:', response)
+    console.log('Role from response:', response.role)
+
+    // Atualizar role
     updateRole()
 
-    if (isStudent.value) {
+    // Log para debug
+    console.log('User role after update:', userRole.value)
+    console.log('Is student:', isStudent.value)
+    console.log('Is driver:', isDriver.value)
+
+    // Normalizar role para comparação
+    const normalizedRole = (response.role || '').toLowerCase()
+
+    // Redirecionar baseado na role
+    if (normalizedRole === 'student') {
+      console.log('Redirecting to /enquetes')
       router.push('/enquetes')
-    } else if (isDriver.value) {
+    } else if (normalizedRole === 'driver') {
+      console.log('Redirecting to /viagens')
       router.push('/viagens')
-    } else if (userRole.value === 'admin') {
+    } else if (normalizedRole === 'admin' || normalizedRole === 'administrator') {
+      console.log('Redirecting to /admin/estudantes')
       router.push('/admin/estudantes')
     } else {
+      console.log('Unknown role, redirecting to /enquetes. Role:', response.role)
       router.push('/enquetes')
     }
   } catch (err) {
