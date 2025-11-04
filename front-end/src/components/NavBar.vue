@@ -11,10 +11,9 @@ const studentRoutes = ['/enquetes', '/lista-embarque', '/acompanhar-viagem']
 const driverRoutes = ['/viagens', '/lista-embarque']
 const adminRoutes = ['/admin/estudantes']
 
-// Verificar se é admin (aceita tanto "admin" quanto "administrator")
 const isAdmin = computed(() => {
   const role = (userRole.value || '').toLowerCase()
-  return role === 'admin' || role === 'administrator'
+  return role === 'admin'
 })
 </script>
 
