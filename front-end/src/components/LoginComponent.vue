@@ -5,7 +5,7 @@ import { login } from '../services/auth'
 import { useAuth } from '@/useAuth'
 
 const router = useRouter()
-const { updateRole, isStudent, isDriver } = useAuth()
+const { updateRole, isStudent, isDriver, userRole } = useAuth()
 
 const email = ref('')
 const password = ref('')
@@ -22,6 +22,8 @@ async function handleLogin() {
       router.push('/enquetes')
     } else if (isDriver.value) {
       router.push('/viagens')
+    } else if (userRole.value === 'admin') {
+      router.push('/admin/estudantes')
     } else {
       router.push('/enquetes')
     }
