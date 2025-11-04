@@ -5,6 +5,7 @@ import BoardingPage from '@/pages/BoardingPage.vue'
 import RegistrationPage from '@/pages/RegistrationPage.vue'
 import TripsPage from '@/pages/TripsPage.vue'
 import TripViewPage from '@/pages/TripViewPage.vue'
+import AdminStudentsPage from '@/pages/AdminStudentsPage.vue'
 import { verifyAndRefreshToken, getUserRole } from '@/services/auth'
 
 const router = createRouter({
@@ -40,6 +41,12 @@ const router = createRouter({
       meta: { requiresAuth: true, allowedRoles: ['student'] },
     },
     {
+      path: '/admin/estudantes',
+      name: 'admin-students',
+      component: AdminStudentsPage,
+      meta: { requiresAuth: true, allowedRoles: ['admin'] },
+    },
+    {
       path: '/cadastro',
       name: 'registration-page',
       component: RegistrationPage,
@@ -63,6 +70,8 @@ router.beforeEach(async (to, from, next) => {
           return next({ name: 'polls' })
         } else if (userRole === 'driver') {
           return next({ name: 'trips' })
+        } else if (userRole === 'admin') {
+          return next({ name: 'admin-students' })
         } else {
           return next({ name: 'login' })
         }
