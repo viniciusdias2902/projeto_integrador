@@ -4,6 +4,7 @@ from rest_framework import status
 from django.contrib.auth.models import User, Group
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Student
+from boarding_points.models import BoardingPoint
 
 
 class StudentAPITestCase(APITestCase):
@@ -84,3 +85,159 @@ class StudentAPITestCase(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Student.objects.filter(id=self.student.id).exists())
+
+
+class StudentPaymentAPITestCase(APITestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser(
+            username="admin", password="adminpass"
+        )
+
+        self.regular_user = User.objects.create_user(
+            username="regularuser", password="regularpass"
+        )
+
+        self.student1 = Student.objects.create(
+            user=User.objects.create_user(
+                username="student1@test.com", password="pass123"
+            ),
+            name="Student One",
+            phone="1111111111",
+            class_shift="M",
+            university="UESPI",
+        )
+
+        self.student2 = Student.objects.create(
+            user=User.objects.create_user(
+                username="student2@test.com", password="pass123"
+            ),
+            name="Student Two",
+            phone="2222222222",
+            class_shift="A",
+            university="IFPI",
+            monthly_payment_cents=50000,
+            payment_day=10,
+        )
+
+    def get_jwt_token(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
+
+    def authenticate_admin(self):
+        token = self.get_jwt_token(self.admin_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def authenticate_regular_user(self):
+        token = self.get_jwt_token(self.regular_user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_student_payment_fields_return_not_informed_when_null(self):
+        self.authenticate_admin()
+        url = reverse("students-retrieve-update-destroy", args=[self.student1.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["monthly_payment_cents"], "não informado")
+        self.assertEqual(response.data["payment_day"], "não informado")
+
+    def test_student_payment_fields_return_values_when_set(self):
+        self.authenticate_admin()
+        url = reverse("students-retrieve-update-destroy", args=[self.student2.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["monthly_payment_cents"], 50000)
+        self.assertEqual(response.data["payment_day"], 10)
+
+    def test_admin_can_update_student_payment(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-update", args=[self.student1.id])
+        data = {"monthly_payment_cents": 45000, "payment_day": 15}
+
+        response = self.client.patch(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.student1.refresh_from_db()
+        self.assertEqual(self.student1.monthly_payment_cents, 45000)
+        self.assertEqual(self.student1.payment_day, 15)
+
+    def test_regular_user_cannot_update_payment(self):
+        self.authenticate_regular_user()
+        url = reverse("student-payment-update", args=[self.student1.id])
+        data = {"monthly_payment_cents": 45000, "payment_day": 15}
+
+        response = self.client.patch(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_can_list_all_payments(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-list")
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_admin_can_filter_paid_students(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-list")
+
+        response = self.client.get(url, {"payment_status": "paid"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["name"], "Student Two")
+
+    def test_admin_can_filter_unpaid_students(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-list")
+
+        response = self.client.get(url, {"payment_status": "not_paid"})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["name"], "Student One")
+
+    def test_admin_can_bulk_update_payments(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-bulk-update")
+
+        data = {
+            "student_ids": [self.student1.id, self.student2.id],
+            "monthly_payment_cents": 60000,
+            "payment_day": 5,
+        }
+
+        response = self.client.patch(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["updated_count"], 2)
+
+        self.student1.refresh_from_db()
+        self.student2.refresh_from_db()
+
+        self.assertEqual(self.student1.monthly_payment_cents, 60000)
+        self.assertEqual(self.student1.payment_day, 5)
+        self.assertEqual(self.student2.monthly_payment_cents, 60000)
+        self.assertEqual(self.student2.payment_day, 5)
+
+    def test_payment_day_validation(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-update", args=[self.student1.id])
+
+        data = {"payment_day": 35}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        data = {"payment_day": 0}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_monthly_payment_validation(self):
+        self.authenticate_admin()
+        url = reverse("student-payment-update", args=[self.student1.id])
+
+        data = {"monthly_payment_cents": -1000}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
