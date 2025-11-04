@@ -19,25 +19,21 @@ async function handleLogin() {
     console.log('Login response:', response)
     console.log('Role from response:', response.role)
 
-    // Atualizar role
     updateRole()
 
-    // Log para debug
     console.log('User role after update:', userRole.value)
     console.log('Is student:', isStudent.value)
     console.log('Is driver:', isDriver.value)
 
-    // Normalizar role para comparação
     const normalizedRole = (response.role || '').toLowerCase()
 
-    // Redirecionar baseado na role
     if (normalizedRole === 'student') {
       console.log('Redirecting to /enquetes')
       router.push('/enquetes')
     } else if (normalizedRole === 'driver') {
       console.log('Redirecting to /viagens')
       router.push('/viagens')
-    } else if (normalizedRole === 'admin' || normalizedRole === 'administrator') {
+    } else if (normalizedRole === 'admin') {
       console.log('Redirecting to /admin/estudantes')
       router.push('/admin/estudantes')
     } else {
