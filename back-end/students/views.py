@@ -54,12 +54,12 @@ class StudentPaymentListView(ListAPIView):
 
         if payment_status == "paid":
             queryset = queryset.filter(
-                monthly_payment_cents__isnull=False, payment_day__isnull=False
+                monthly_payment_cents__isnull=False, last_payment_date__isnull=False
             )
         elif payment_status == "not_paid":
             queryset = queryset.filter(
                 monthly_payment_cents__isnull=True
-            ) | queryset.filter(payment_day__isnull=True)
+            ) | queryset.filter(last_payment_date__isnull=True)
 
         return queryset.order_by("name")
 
@@ -70,17 +70,17 @@ class StudentPaymentBulkUpdateView(APIView):
     def patch(self, request):
         student_ids = request.data.get("student_ids", [])
         monthly_payment_cents = request.data.get("monthly_payment_cents")
-        payment_day = request.data.get("payment_day")
+        last_payment_date = request.data.get("last_payment_date")
 
         if not student_ids:
             return Response(
                 {"error": "student_ids is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        if monthly_payment_cents is None and payment_day is None:
+        if monthly_payment_cents is None and last_payment_date is None:
             return Response(
                 {
-                    "error": "At least one field (monthly_payment_cents or payment_day) must be provided"
+                    "error": "At least one field (monthly_payment_cents or last_payment_date) must be provided"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -94,13 +94,8 @@ class StudentPaymentBulkUpdateView(APIView):
                 )
             update_data["monthly_payment_cents"] = monthly_payment_cents
 
-        if payment_day is not None:
-            if payment_day < 1 or payment_day > 31:
-                return Response(
-                    {"error": "Payment day must be between 1 and 31"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            update_data["payment_day"] = payment_day
+        if last_payment_date is not None:
+            update_data["last_payment_date"] = last_payment_date
 
         updated_count = Student.objects.filter(id__in=student_ids).update(**update_data)
 
