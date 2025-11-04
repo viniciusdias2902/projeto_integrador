@@ -44,7 +44,7 @@ const router = createRouter({
       path: '/admin/estudantes',
       name: 'admin-students',
       component: AdminStudentsPage,
-      meta: { requiresAuth: true, allowedRoles: ['admin', 'administrator'] },
+      meta: { requiresAuth: true, allowedRoles: ['admin'] },
     },
     {
       path: '/cadastro',
@@ -73,7 +73,6 @@ router.beforeEach(async (to, from, next) => {
       console.log('Normalized role:', normalizedRole)
       console.log('Allowed roles:', to.meta.allowedRoles)
 
-      // Normalizar roles permitidas
       const normalizedAllowedRoles = to.meta.allowedRoles.map((role) => role.toLowerCase())
 
       if (!userRole || !normalizedAllowedRoles.includes(normalizedRole)) {
@@ -83,7 +82,7 @@ router.beforeEach(async (to, from, next) => {
           return next({ name: 'polls' })
         } else if (normalizedRole === 'driver') {
           return next({ name: 'trips' })
-        } else if (normalizedRole === 'admin' || normalizedRole === 'administrator') {
+        } else if (normalizedRole === 'admin') {
           return next({ name: 'admin-students' })
         } else {
           return next({ name: 'login' })
