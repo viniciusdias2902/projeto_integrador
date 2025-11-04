@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "common",
     "boarding_points",
     "polls",
+    "admins",
     "trips",
     "corsheaders",
 ]
