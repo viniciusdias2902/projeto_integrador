@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { formatDateBR } from '@/utils/dateUtils'
 
 const props = defineProps({
   show: {
@@ -55,11 +56,7 @@ const currentPaymentDisplay = computed(() => {
 
 const currentDateDisplay = computed(() => {
   if (!props.student) return 'Não informado'
-  const dateString = props.student.last_payment_date
-  if (!dateString || dateString === 'não informado') {
-    return 'Não informado'
-  }
-  return new Date(dateString).toLocaleDateString('pt-BR')
+  return formatDateBR(props.student.last_payment_date)
 })
 
 function handleSave() {
