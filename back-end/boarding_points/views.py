@@ -1,6 +1,8 @@
 from rest_framework import viewsets, permissions
 from .models import BoardingPoint
+from rest_framework.permissions import IsAuthenticated
 from .serializers import BoardingPointSerializer
+from common.permissions import GlobalDefaultPermission
 
 
 class BoardingPointViewSet(viewsets.ModelViewSet):
@@ -10,3 +12,4 @@ class BoardingPointViewSet(viewsets.ModelViewSet):
 
     queryset = BoardingPoint.objects.all()
     serializer_class = BoardingPointSerializer
+    permission_classes = (IsAuthenticated, GlobalDefaultPermission)

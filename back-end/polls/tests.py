@@ -14,7 +14,7 @@ class PollsAPITestCase(APITestCase):
         self.admin_user = User.objects.create_superuser(
             username="admin", password="adminpass"
         )
-        
+
         self.ponto_a = BoardingPoint.objects.create(
             name="Ponto A - Praça Central", route_order=0
         )
@@ -46,7 +46,6 @@ class PollsAPITestCase(APITestCase):
             boarding_point=self.ponto_b,
         )
 
-
         self.poll = Poll.objects.create(date=date.today())
 
     def get_jwt_token(self, user):
@@ -68,12 +67,15 @@ class PollsAPITestCase(APITestCase):
         payload = {"poll": self.poll.id, "option": "round_trip"}
 
         response = self.client.post(url, payload, format="json")
-
+        print(
+            "DEBUG test_student_can_create_vote:", response.status_code, response.data
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         vote = Vote.objects.get(id=response.data["id"])
         self.assertEqual(vote.student, self.student_1)
         self.assertEqual(vote.poll, self.poll)
+        self.assertEqual(vote.option, "round_trip")
 
     def test_student_cannot_vote_twice_on_same_poll(self):
         self.authenticate_as_student(self.student_user_1)
@@ -85,7 +87,6 @@ class PollsAPITestCase(APITestCase):
 
         payload["option"] = "absent"
         response2 = self.client.post(url, payload, format="json")
-
         self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
 
         self.assertEqual(
@@ -107,7 +108,6 @@ class PollsAPITestCase(APITestCase):
 
         self.assertEqual(response.data[0]["student"]["name"], self.student_1.name)
 
-   
     def test_get_boarding_list_grouped_by_point(self):
         Vote.objects.create(student=self.student_1, poll=self.poll, option="round_trip")
         Vote.objects.create(
@@ -117,7 +117,7 @@ class PollsAPITestCase(APITestCase):
         self.authenticate_as_admin()
 
         url = reverse("poll-boarding-list", args=[self.poll.id])
-        url += "?trip_type=one_way_outbound" 
+        url += "?trip_type=one_way_outbound"
 
         response = self.client.get(url)
 
@@ -127,21 +127,19 @@ class PollsAPITestCase(APITestCase):
 
         ponto_a_data = response.data[0]
         self.assertEqual(ponto_a_data["point"]["name"], "Ponto A - Praça Central")
-        self.assertEqual(len(ponto_a_data["students"]), 1) 
+        self.assertEqual(len(ponto_a_data["students"]), 1)
 
         nomes_ponto_a = sorted([s["name"] for s in ponto_a_data["students"]])
         self.assertEqual(nomes_ponto_a, ["Ana Silva"])
 
         ponto_b_data = response.data[1]
         self.assertEqual(ponto_b_data["point"]["name"], "Ponto B - Posto Shell")
-        self.assertEqual(len(ponto_b_data["students"]), 1) 
+        self.assertEqual(len(ponto_b_data["students"]), 1)
         self.assertEqual(ponto_b_data["students"][0]["name"], "Bruno Costa")
 
     def test_get_boarding_list_requires_trip_type_param(self):
         self.authenticate_as_admin()
-        url = reverse(
-            "poll-boarding-list", args=[self.poll.id]
-        )
+        url = reverse("poll-boarding-list", args=[self.poll.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
