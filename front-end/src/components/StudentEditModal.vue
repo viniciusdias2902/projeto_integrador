@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   show: {
@@ -22,47 +22,67 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save'])
 
-const form = ref({
-  monthly_payment_cents: null,
-  last_payment_date: null,
-})
+const monthlyPaymentReais = ref('')
+const lastPaymentDate = ref(null)
 
 watch(
   () => props.student,
   (newStudent) => {
     if (newStudent) {
-      form.value = {
-        monthly_payment_cents:
-          newStudent.monthly_payment_cents === 'não informado'
-            ? null
-            : newStudent.monthly_payment_cents,
-        last_payment_date:
-          newStudent.last_payment_date === 'não informado' ? null : newStudent.last_payment_date,
+      if (
+        newStudent.monthly_payment_cents &&
+        newStudent.monthly_payment_cents !== 'não informado'
+      ) {
+        monthlyPaymentReais.value = (newStudent.monthly_payment_cents / 100).toFixed(2)
+      } else {
+        monthlyPaymentReais.value = ''
       }
+
+      lastPaymentDate.value =
+        newStudent.last_payment_date === 'não informado' ? null : newStudent.last_payment_date
     }
   },
 )
 
-function handleSave() {
-  emit('save', form.value)
-}
-
-function handleClose() {
-  emit('close')
-}
-
-function formatCurrency(cents) {
+const currentPaymentDisplay = computed(() => {
+  if (!props.student) return 'Não informado'
+  const cents = props.student.monthly_payment_cents
   if (cents === null || cents === undefined || cents === 'não informado') {
     return 'Não informado'
   }
   return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`
-}
+})
 
-function formatDate(dateString) {
+const currentDateDisplay = computed(() => {
+  if (!props.student) return 'Não informado'
+  const dateString = props.student.last_payment_date
   if (!dateString || dateString === 'não informado') {
     return 'Não informado'
   }
   return new Date(dateString).toLocaleDateString('pt-BR')
+})
+
+function handleSave() {
+  const data = {
+    last_payment_date: lastPaymentDate.value,
+  }
+
+  if (monthlyPaymentReais.value && monthlyPaymentReais.value.trim() !== '') {
+    const valueStr = monthlyPaymentReais.value.replace(',', '.')
+    const valueFloat = parseFloat(valueStr)
+
+    if (!isNaN(valueFloat)) {
+      data.monthly_payment_cents = Math.round(valueFloat * 100)
+    }
+  } else {
+    data.monthly_payment_cents = null
+  }
+
+  emit('save', data)
+}
+
+function handleClose() {
+  emit('close')
 }
 </script>
 
@@ -107,19 +127,20 @@ function formatDate(dateString) {
 
       <div class="form-control w-full mb-4">
         <label class="label">
-          <span class="label-text">Mensalidade (em centavos)</span>
+          <span class="label-text">Mensalidade</span>
         </label>
-        <input
-          v-model.number="form.monthly_payment_cents"
-          type="number"
-          placeholder="Ex: 50000 (R$ 500,00)"
-          class="input input-bordered w-full"
-          min="0"
-        />
+        <label class="input input-bordered flex items-center gap-2">
+          <span class="text-base-content/70">R$</span>
+          <input
+            v-model="monthlyPaymentReais"
+            type="text"
+            placeholder="500.00"
+            class="grow"
+            @input="monthlyPaymentReais = monthlyPaymentReais.replace(/[^\d.,]/g, '')"
+          />
+        </label>
         <label class="label">
-          <span class="label-text-alt">
-            Valor atual: {{ formatCurrency(student?.monthly_payment_cents) }}
-          </span>
+          <span class="label-text-alt"> Valor atual: {{ currentPaymentDisplay }} </span>
         </label>
       </div>
 
@@ -127,11 +148,9 @@ function formatDate(dateString) {
         <label class="label">
           <span class="label-text">Data do Último Pagamento</span>
         </label>
-        <input v-model="form.last_payment_date" type="date" class="input input-bordered w-full" />
+        <input v-model="lastPaymentDate" type="date" class="input input-bordered w-full" />
         <label class="label">
-          <span class="label-text-alt">
-            Data atual: {{ formatDate(student?.last_payment_date) }}
-          </span>
+          <span class="label-text-alt"> Data atual: {{ currentDateDisplay }} </span>
         </label>
       </div>
 
