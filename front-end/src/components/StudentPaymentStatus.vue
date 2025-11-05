@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { parseLocalDate } from '@/utils/dateUtils'
 
 const props = defineProps({
   lastPaymentDate: {
@@ -16,8 +17,10 @@ const paymentStatus = computed(() => {
     }
   }
 
-  const lastPayment = new Date(props.lastPaymentDate)
+  const lastPayment = parseLocalDate(props.lastPaymentDate)
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const daysSincePayment = Math.floor((today - lastPayment) / (1000 * 60 * 60 * 24))
 
   if (daysSincePayment > 35) {
