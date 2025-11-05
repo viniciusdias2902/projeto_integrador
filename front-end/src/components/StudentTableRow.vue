@@ -1,5 +1,6 @@
 <script setup>
 import StudentPaymentStatus from './StudentPaymentStatus.vue'
+import { formatDateBR } from '@/utils/dateUtils'
 
 defineProps({
   student: {
@@ -24,13 +25,6 @@ function formatCurrency(cents) {
   }
   return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`
 }
-
-function formatDate(dateString) {
-  if (!dateString || dateString === 'não informado') {
-    return 'Não informado'
-  }
-  return new Date(dateString).toLocaleDateString('pt-BR')
-}
 </script>
 
 <template>
@@ -44,7 +38,7 @@ function formatDate(dateString) {
       </span>
     </td>
     <td>{{ formatCurrency(student.monthly_payment_cents) }}</td>
-    <td>{{ formatDate(student.last_payment_date) }}</td>
+    <td>{{ formatDateBR(student.last_payment_date) }}</td>
     <td>
       <StudentPaymentStatus :last-payment-date="student.last_payment_date" />
     </td>
