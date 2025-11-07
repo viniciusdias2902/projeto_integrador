@@ -215,3 +215,16 @@ class TripAPITestCase(APITestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("not in progress", response.data["error"])
+
+    def test_student_can_get_trip_status(self):
+        self.authenticate_student()
+        self.trip_outbound.start_trip()
+        url = reverse("trip-status", args=[self.trip_outbound.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["trip"]["id"], self.trip_outbound.id)
+        self.assertEqual(response.data["trip"]["status"], "in_progress")
+        self.assertEqual(response.data["trip"]["current_boarding_point"]["name"], "Ponto A (Praça)")
+        self.assertEqual(response.data["current_student_count"], 2)
+        student_names = sorted([s["name"] for s in response.data["current_students"]])
+        self.assertEqual(student_names, ["Ana Silva", "Bruno Costa"])
