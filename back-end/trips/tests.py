@@ -200,3 +200,18 @@ class TripAPITestCase(APITestCase):
         
         self.assertEqual(response.data["message"], "Return trip completed")
         self.assertEqual(response.data["completed"], True)
+        
+    def test_cannot_start_started_trip(self):
+        self.authenticate_admin()
+        self.trip_outbound.start_trip()
+        url = reverse("trip-start", args=[self.trip_outbound.id])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already started", response.data["error"])
+
+    def test_cannot_advance_pending_trip(self):
+        self.authenticate_admin()
+        url = reverse("trip-next-stop", args=[self.trip_outbound.id])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("not in progress", response.data["error"])
