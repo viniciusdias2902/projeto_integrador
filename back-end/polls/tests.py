@@ -197,7 +197,7 @@ class PollsAPITestCase(APITestCase):
         response = self.client.post(url)
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("Processo de criação de enquetws concluído", response.data["message"])
+        self.assertIn("Processo de criação de enquetes concluído", response.data["message"])
         self.assertGreater(response.data["total_created"], 0)
         self.assertTrue(Poll.objects.filter(date__gte=date.today()).exists())
 
