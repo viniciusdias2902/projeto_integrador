@@ -276,3 +276,104 @@ class TripAPITestCase(APITestCase):
         self.assertEqual(response.data["current_student_count"], 2)
         student_names = sorted([s["name"] for s in response.data["current_students"]])
         self.assertEqual(student_names, ["Ana Silva", "Bruno Costa"])
+
+    def test_student_can_get_trip_status_on_return_trip(self):
+        self.authenticate_student(self.student_user_3) 
+        self.trip_return.start_trip()
+        
+        url = reverse("trip-status", args=[self.trip_return.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["trip"]["status"], "in_progress")
+        self.assertIsNone(response.data["trip"]["current_boarding_point"]) 
+        self.assertEqual(response.data["trip"]["current_university"], "IFPI")
+        self.assertEqual(response.data["current_student_count"], 1)
+        self.assertEqual(response.data["current_students"][0]["name"], "Carla Dias")
+        
+    def test_trip_detail_serializer_for_outbound_trip(self):
+        self.authenticate_admin()
+        self.trip_outbound.start_trip()
+        url = reverse("trip-detail", args=[self.trip_outbound.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("stops", response.data)
+        stops = response.data["stops"]
+        self.assertEqual(len(stops), 2)
+        self.assertEqual(stops[0]["boarding_point"]["name"], "Ponto A (Praça)")
+        self.assertEqual(stops[0]["student_count"], 2)
+        self.assertEqual(stops[0]["is_current"], True)
+        self.assertEqual(stops[1]["boarding_point"]["name"], "Ponto B (Posto)")
+        self.assertEqual(stops[1]["student_count"], 1)
+        self.assertEqual(stops[1]["is_current"], False)
+
+    def test_trip_detail_serializer_for_return_trip(self):
+        self.authenticate_admin()
+        self.trip_return.start_trip() 
+        url = reverse("trip-detail", args=[self.trip_return.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("stops", response.data)
+        stops = response.data["stops"]
+        self.assertEqual(len(stops), 2)
+        self.assertEqual(stops[0]["university"], "IFPI")
+        self.assertEqual(stops[0]["student_count"], 1)
+        self.assertEqual(stops[0]["is_current"], True)
+        self.assertEqual(stops[1]["university"], "UESPI")
+        self.assertEqual(stops[1]["student_count"], 1)
+        self.assertEqual(stops[1]["is_current"], False)
+
+    def test_trip_serializer_indexes_on_pending_return_trip(self):
+        self.authenticate_admin()
+        url = reverse("trip-detail", args=[self.trip_return.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["total_stops"], 2) 
+        self.assertIsNone(response.data["current_stop_index"]) 
+        self.assertIsNone(response.data["current_university_name"]) 
+    
+    def test_model_getters_on_pending_trip(self):
+        self.assertEqual(self.trip_outbound.status, "pending")
+        students = self.trip_outbound.get_current_students()
+        self.assertEqual(students, [])
+
+    def test_serializer_fields_on_pending_trip(self):  
+        trip = self.trip_return
+        self.assertEqual(trip.status, "pending")
+        
+        serializer = TripSerializer(trip)
+        data = serializer.data
+        
+        self.assertIsNone(data["current_stop_index"]) 
+        self.assertIsNone(data["current_university_name"])
+
+    def test_model_edge_case_next_stop_with_no_current_point(self):
+        self.trip_outbound.status = "in_progress"
+        self.trip_outbound.current_boarding_point = None
+        self.trip_outbound.save()
+        
+        with self.assertRaisesMessage(ValueError, "No current boarding point"):
+            self.trip_outbound.next_stop()
+
+    def test_model_edge_case_next_stop_with_mismatched_point(self):
+        fake_point = BoardingPoint.objects.create(name="Ponto Falso", route_order=99)
+        
+        self.trip_outbound.status = "in_progress"
+        self.trip_outbound.current_boarding_point = fake_point
+        self.trip_outbound.save()
+        
+        with self.assertRaisesMessage(ValueError, "Current boarding point not found"):
+            self.trip_outbound.next_stop()
+
+    def test_serializer_edge_case_stop_index_with_no_current_point(self):
+        self.trip_outbound.status = "in_progress"
+        self.trip_outbound.current_boarding_point = None
+        self.trip_outbound.save()
+        
+        serializer = TripSerializer(self.trip_outbound)
+        
+        #serializer deve tratar esse errp graciosamente e retornar um None
+        self.assertIsNone(serializer.data["current_stop_index"])
