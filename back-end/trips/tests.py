@@ -183,3 +183,20 @@ class TripAPITestCase(APITestCase):
         self.assertEqual(response.data["message"], "Moved to next university")
         self.assertEqual(response.data["student_count"], 1)
         self.assertEqual(response.data["students"][0]["name"], "Ana Silva")
+
+    def test_last_stop_return_completes_trip(self):
+        self.authenticate_admin()
+        self.trip_return.start_trip()
+        self.trip_return.next_stop()
+        
+        url = reverse("trip-next-stop", args=[self.trip_return.id])
+        response = self.client.post(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.trip_return.refresh_from_db()
+        
+        self.assertEqual(self.trip_return.status, "completed")
+        self.assertIsNone(self.trip_return.current_university)
+        
+        self.assertEqual(response.data["message"], "Return trip completed")
+        self.assertEqual(response.data["completed"], True)
