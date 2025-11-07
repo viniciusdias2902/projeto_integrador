@@ -130,3 +130,27 @@ class PollsAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
+
+    def test_get_boarding_list_grouped_by_university_for_return(self):
+       
+        Vote.objects.create(student=self.student_1, poll=self.poll, option="round_trip")
+        Vote.objects.create(student=self.student_2, poll=self.poll, option="one_way_return") 
+
+        self.authenticate_as_admin()
+        url = reverse("poll-boarding-list", args=[self.poll.id])
+        url += "?trip_type=return" 
+        
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.assertEqual(len(response.data), 2)
+        
+        group_ifpi = response.data[0]
+        self.assertEqual(group_ifpi["group_name"], "IFPI")
+        self.assertEqual(len(group_ifpi["students"]), 1)
+        self.assertEqual(group_ifpi["students"][0]["name"], "Bruno Costa")
+        
+        group_uespi = response.data[1]
+        self.assertEqual(group_uespi["group_name"], "UESPI")
+        self.assertEqual(len(group_uespi["students"]), 1)
+        self.assertEqual(group_uespi["students"][0]["name"], "Ana Silva")
