@@ -78,3 +78,13 @@ class TripAPITestCase(APITestCase):
         response = self.client.post(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Trip.objects.filter(poll=new_poll, trip_type="outbound").exists())
+
+    def test_cannot_create_duplicate_trip(self):
+        self.authenticate_admin()
+        url = reverse("trip-create")
+        payload = {"poll": self.poll.id, "trip_type": "outbound"}
+        response = self.client.post(url, payload, format="json")
+        
+      
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already exxists", str(response.data))
