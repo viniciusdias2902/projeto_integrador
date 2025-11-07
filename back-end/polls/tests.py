@@ -154,3 +154,20 @@ class PollsAPITestCase(APITestCase):
         self.assertEqual(group_uespi["group_name"], "UESPI")
         self.assertEqual(len(group_uespi["students"]), 1)
         self.assertEqual(group_uespi["students"][0]["name"], "Ana Silva")
+
+    def test_student_cannot_vote_outbound_after_deadline(self):
+        self.authenticate_as_student(self.student_user_1)
+        url = reverse("vote-create")
+        
+        poll_date = date.today()
+        mock_time = timezone.make_aware(
+            timezone.datetime.combine(poll_date, timezone.datetime.min.time()) + 
+            timezone.timedelta(hours=13)
+        )
+        
+        with mock.patch('django.utils.timezone.now', return_value=mock_time):
+            payload = {"poll": self.poll.id, "option": "one_way_outbound"}
+            response = self.client.post(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("até 12:00", str(response.data))
