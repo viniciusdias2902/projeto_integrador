@@ -198,7 +198,7 @@ class PollsAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("Processo de criação de enquetws concluído", response.data["message"])
-        self.assertGreater(response.data["total_created"], 0)
+        self.assertGreater(response.data["total"], 0)
         self.assertTrue(Poll.objects.filter(date__gte=date.today()).exists())
 
     def test_admin_can_trigger_clean_old_polls(self):
