@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 import StudentTableRow from '@/components/StudentTableRow.vue'
 import StudentEditModal from '@/components/StudentEditModal.vue'
+import SortableTableHeader from '@/components/SortableTableHeader.vue'
 
 const API_BASE_URL = import.meta.env.VITE_APP_API_URL
 
@@ -13,6 +14,8 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const editingStudent = ref(null)
 const showEditModal = ref(false)
+const sortField = ref(null)
+const sortDirection = ref('asc')
 
 const universities = {
   UESPI: 'Universidade Estadual do Piauí',
@@ -27,6 +30,70 @@ const shifts = {
   E: 'Noite',
   'M-A': 'Manhã/Tarde',
   'A-E': 'Tarde/Noite',
+}
+
+function parseLocalDate(dateString) {
+  if (!dateString || dateString === 'não informado') {
+    return null
+  }
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+function getPaymentStatusValue(student) {
+  if (!student.last_payment_date || student.last_payment_date === 'não informado') {
+    return 3
+  }
+
+  const lastPayment = parseLocalDate(student.last_payment_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const daysSincePayment = Math.floor((today - lastPayment) / (1000 * 60 * 60 * 24))
+
+  if (daysSincePayment > 35) {
+    return 2
+  } else if (daysSincePayment >= 30) {
+    return 1
+  } else {
+    return 0
+  }
+}
+
+const sortedStudents = computed(() => {
+  if (!sortField.value) {
+    return students.value
+  }
+
+  const sorted = [...students.value].sort((a, b) => {
+    let valueA, valueB
+
+    if (sortField.value === 'payment_status') {
+      valueA = getPaymentStatusValue(a)
+      valueB = getPaymentStatusValue(b)
+    } else if (sortField.value === 'monthly_payment_cents') {
+      valueA = a.monthly_payment_cents === 'não informado' ? 0 : a.monthly_payment_cents
+      valueB = b.monthly_payment_cents === 'não informado' ? 0 : b.monthly_payment_cents
+    } else {
+      valueA = a[sortField.value]
+      valueB = b[sortField.value]
+    }
+
+    if (valueA < valueB) return sortDirection.value === 'asc' ? -1 : 1
+    if (valueA > valueB) return sortDirection.value === 'asc' ? 1 : -1
+    return 0
+  })
+
+  return sorted
+})
+
+function handleSort(field) {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDirection.value = 'asc'
+  }
 }
 
 async function fetchStudents() {
@@ -227,15 +294,27 @@ onMounted(() => {
                   <th>Telefone</th>
                   <th>Universidade</th>
                   <th>Turno</th>
-                  <th>Mensalidade</th>
+                  <SortableTableHeader
+                    label="Mensalidade"
+                    field="monthly_payment_cents"
+                    :current-sort="sortField"
+                    :current-direction="sortDirection"
+                    @sort="handleSort"
+                  />
                   <th>Último Pagamento</th>
-                  <th>Status</th>
+                  <SortableTableHeader
+                    label="Status"
+                    field="payment_status"
+                    :current-sort="sortField"
+                    :current-direction="sortDirection"
+                    @sort="handleSort"
+                  />
                   <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 <StudentTableRow
-                  v-for="student in students"
+                  v-for="student in sortedStudents"
                   :key="student.id"
                   :student="student"
                   :universities="universities"
