@@ -188,3 +188,28 @@ class PollsAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("até 18:00", str(response.data))
+
+    def test_admin_can_trigger_create_weekly_polls(self):
+        self.authenticate_as_admin()
+        Poll.objects.filter(date__gte=date.today()).delete()
+        
+        url = reverse("create-weekly-polls")
+        response = self.client.post(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("Processo de criação de enquetws concluído", response.data["message"])
+        self.assertGreater(response.data["total_created"], 0)
+        self.assertTrue(Poll.objects.filter(date__gte=date.today()).exists())
+
+    def test_admin_can_trigger_clean_old_polls(self):
+        self.authenticate_as_admin()
+        
+        old_poll = Poll.objects.create(date=date.today() - timedelta(days=5))
+        self.assertTrue(Poll.objects.filter(id=old_poll.id).exists())
+        
+        url = reverse("clean-old-polls")
+        response = self.client.post(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["deleted_count"], 1)
+        self.assertFalse(Poll.objects.filter(id=old_poll.id).exists())
