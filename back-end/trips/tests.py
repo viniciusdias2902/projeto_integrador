@@ -151,3 +151,35 @@ class TripAPITestCase(APITestCase):
         self.assertEqual(response.data["message"], "Outbound trip completed, return trip ready")
         self.assertEqual(response.data["completed"], True)
         self.assertEqual(response.data["return_trip"]["id"], self.trip_return.id)
+    
+    def test_start_return_trip_successfully(self):
+        self.authenticate_admin()
+        url = reverse("trip-start", args=[self.trip_return.id])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.trip_return.refresh_from_db()
+        
+        self.assertEqual(self.trip_return.status, "in_progress")
+        self.assertEqual(self.trip_return.current_university, "IFPI") 
+        
+        self.assertEqual(response.data["message"], "Return trip started")
+        self.assertEqual(response.data["current_university"], "IFPI")
+        
+        self.assertEqual(response.data["student_count"], 1)
+        self.assertEqual(response.data["students"][0]["name"], "Carla Dias")
+        
+    def test_next_stop_return_trip(self):
+        self.authenticate_admin()
+        self.trip_return.start_trip()
+        
+        url = reverse("trip-next-stop", args=[self.trip_return.id])
+        response = self.client.post(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.trip_return.refresh_from_db()
+        
+        self.assertEqual(self.trip_return.current_university, "UESPI")
+        
+        self.assertEqual(response.data["message"], "Moved to next university")
+        self.assertEqual(response.data["student_count"], 1)
+        self.assertEqual(response.data["students"][0]["name"], "Ana Silva")
