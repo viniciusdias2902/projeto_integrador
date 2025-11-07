@@ -14,7 +14,7 @@ from .models import Trip
 class TripAPITestCase(APITestCase):
 
     def setUp(self):
-       
+      
         self.admin_user = User.objects.create_superuser(
             username="admin", password="adminpass123"
         )
@@ -88,3 +88,14 @@ class TripAPITestCase(APITestCase):
       
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("must make a unique set", str(response.data))
+
+    def test_admin_can_list_and_filter_trips(self):
+        self.authenticate_admin()
+        url = reverse("trip-list")
+        response = self.client.get(url, {"status": "pending"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        response = self.client.get(url, {"trip_type": "outbound"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.trip_outbound.id)
