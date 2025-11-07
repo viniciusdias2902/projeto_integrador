@@ -25,7 +25,7 @@ class Student(Person):
         related_name="students",
     )
 
-    monthly_payment_cents = models.IntegerField(null=True, blank=True)
+    monthly_payment_cents = models.IntegerField(default=33000, null=True, blank=True)
     last_payment_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
