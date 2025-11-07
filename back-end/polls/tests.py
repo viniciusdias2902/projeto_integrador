@@ -171,3 +171,20 @@ class PollsAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("até 12:00", str(response.data))
+
+    def test_student_cannot_vote_return_after_deadline(self):
+        self.authenticate_as_student(self.student_user_1)
+        url = reverse("vote-create")
+        
+        poll_date = date.today()
+        mock_time = timezone.make_aware(
+            timezone.datetime.combine(poll_date, timezone.datetime.min.time()) + 
+            timezone.timedelta(hours=20)
+        )
+        
+        with mock.patch('django.utils.timezone.now', return_value=mock_time):
+            payload = {"poll": self.poll.id, "option": "one_way_return"}
+            response = self.client.post(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("até 18:00", str(response.data))
