@@ -52,7 +52,7 @@ class TripAPITestCase(APITestCase):
 
         Vote.objects.create(student=self.student_ana, poll=self.poll, option="round_trip")
         Vote.objects.create(student=self.student_bruno, poll=self.poll, option="one_way_outbound")
-        Vote.objects.create(student=self.student_carla, poll=self.poll, option="round_trip") # <-- NOVO VOTO
+        Vote.objects.create(student=self.student_carla, poll=self.poll, option="round_trip")
 
         self.trip_outbound = Trip.objects.create(poll=self.poll, trip_type="outbound")
         self.trip_return = Trip.objects.create(poll=self.poll, trip_type="return")
@@ -69,3 +69,12 @@ class TripAPITestCase(APITestCase):
         user = user or self.student_user_1
         token = self.get_jwt_token(user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    def test_admin_can_create_trip(self):
+        self.authenticate_admin()
+        new_poll = Poll.objects.create(date=date.today() + timezone.timedelta(days=1))
+        url = reverse("trip-create")
+        payload = {"poll": new_poll.id, "trip_type": "outbound"}
+        response = self.client.post(url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(Trip.objects.filter(poll=new_poll, trip_type="outbound").exists())
