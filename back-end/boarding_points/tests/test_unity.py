@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import BoardingPoint
+from boarding_points.models import BoardingPoint
 
 
 class BoardingPointTests(TestCase):

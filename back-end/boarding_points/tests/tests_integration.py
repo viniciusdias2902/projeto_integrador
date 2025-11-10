@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import BoardingPoint
+from boarding_points.models import BoardingPoint
 
 
 class BoardingPointAPITests(APITestCase):
