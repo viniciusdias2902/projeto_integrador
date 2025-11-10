@@ -1,4 +1,6 @@
 from django.test import TestCase
+from admins.models import Admin
+from django.contrib.auth.models import User
 
 
 class AdminsTest(TestCase):
@@ -26,3 +28,10 @@ class AdminsTest(TestCase):
         self.assertTrue(user.groups.filter(name="admins").exists())
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_str_method(self):
+        user = User.objects.create_user(username="mrlsn", password="senha123")
+        admin = Admin.objects.create(
+            user=user, name="Admin Teste Str", phone="40028022"
+        )
+        self.assertEqual(str(admin), "Admin: Admin Teste Str")
