@@ -179,6 +179,56 @@ async function savePaymentInfo(formData) {
   }
 }
 
+function escapeCSV(value) {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  const stringValue = String(value)
+
+  if (stringValue.includes('"') || stringValue.includes(',') || stringValue.includes('\n')) {
+    return `"${stringValue.replace(/"/g, '""')}"`
+  }
+
+  return stringValue
+}
+
+function formatCurrency(cents) {
+  if (cents === null || cents === undefined || cents === 'não informado') {
+    return 'Não informado'
+  }
+  return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`
+}
+
+function formatDate(dateString) {
+  if (!dateString || dateString === 'não informado') {
+    return 'Não informado'
+  }
+  const date = parseLocalDate(dateString)
+  if (!date) return 'Não informado'
+  return date.toLocaleDateString('pt-BR')
+}
+
+function getPaymentStatus(student) {
+  if (!student.last_payment_date || student.last_payment_date === 'não informado') {
+    return 'Não informado'
+  }
+
+  const lastPayment = parseLocalDate(student.last_payment_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const daysSincePayment = Math.floor((today - lastPayment) / (1000 * 60 * 60 * 24))
+
+  if (daysSincePayment > 35) {
+    return 'Atrasado'
+  } else if (daysSincePayment >= 30) {
+    return 'Deve pagar'
+  } else {
+    return 'Em dia'
+  }
+}
+
 function exportToCSV() {
   const headers = [
     'Nome',
@@ -187,46 +237,42 @@ function exportToCSV() {
     'Turno',
     'Mensalidade',
     'Última Data de Pagamento',
+    'Status de Pagamento',
   ]
 
   const rows = students.value.map((student) => {
-    const formatCurrency = (cents) => {
-      if (cents === null || cents === undefined || cents === 'não informado') {
-        return 'Não informado'
-      }
-      return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`
-    }
-
-    const formatDate = (dateString) => {
-      if (!dateString || dateString === 'não informado') {
-        return 'Não informado'
-      }
-      return new Date(dateString).toLocaleDateString('pt-BR')
-    }
-
     return [
-      student.name,
-      student.phone,
-      universities[student.university] || student.university,
-      shifts[student.class_shift] || student.class_shift,
-      formatCurrency(student.monthly_payment_cents),
-      formatDate(student.last_payment_date),
+      escapeCSV(student.name),
+      escapeCSV(student.phone),
+      escapeCSV(universities[student.university] || student.university),
+      escapeCSV(shifts[student.class_shift] || student.class_shift),
+      escapeCSV(formatCurrency(student.monthly_payment_cents)),
+      escapeCSV(formatDate(student.last_payment_date)),
+      escapeCSV(getPaymentStatus(student)),
     ]
   })
 
-  let csvContent = 'data:text/csv;charset=utf-8,'
-  csvContent += headers.join(',') + '\n'
+  const csvLines = [headers.join(',')]
   rows.forEach((row) => {
-    csvContent += row.map((cell) => `"${cell}"`).join(',') + '\n'
+    csvLines.push(row.join(','))
   })
 
-  const encodedUri = encodeURI(csvContent)
+  const csvContent = csvLines.join('\n')
+  const BOM = '\uFEFF'
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+
   const link = document.createElement('a')
-  link.setAttribute('href', encodedUri)
+  const url = URL.createObjectURL(blob)
+
+  link.setAttribute('href', url)
   link.setAttribute('download', `estudantes_${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+
+  URL.revokeObjectURL(url)
 }
 
 onMounted(() => {
@@ -243,7 +289,11 @@ onMounted(() => {
             <h1 class="text-4xl font-bold mb-2">Gestão de Estudantes</h1>
             <p class="text-base-content/70">Gerencie pagamentos e informações dos estudantes</p>
           </div>
-          <button class="btn btn-primary" @click="exportToCSV" :disabled="isLoading">
+          <button
+            class="btn btn-primary"
+            @click="exportToCSV"
+            :disabled="isLoading || students.length === 0"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 mr-2"
