@@ -6,6 +6,7 @@ import DefaultLayout from '@/templates/DefaultLayout.vue'
 import StudentTableRow from '@/components/StudentTableRow.vue'
 import StudentEditModal from '@/components/StudentEditModal.vue'
 import SortableTableHeader from '@/components/SortableTableHeader.vue'
+
 const API_BASE_URL = import.meta.env.VITE_APP_API_URL
 
 const students = ref([])
