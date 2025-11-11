@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { verifyAndRefreshToken } from '@/services/auth'
+import { generatePaymentReceipt } from '@/services/pdfGenerator'
 import DefaultLayout from '@/templates/DefaultLayout.vue'
 import StudentTableRow from '@/components/StudentTableRow.vue'
 import StudentEditModal from '@/components/StudentEditModal.vue'
 import SortableTableHeader from '@/components/SortableTableHeader.vue'
-
 const API_BASE_URL = import.meta.env.VITE_APP_API_URL
 
 const students = ref([])
@@ -275,6 +275,22 @@ function exportToCSV() {
   URL.revokeObjectURL(url)
 }
 
+async function handleGenerateReceipt(student) {
+  try {
+    await generatePaymentReceipt(student)
+    successMessage.value = 'Recibo gerado com sucesso!'
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 3000)
+  } catch (error) {
+    console.error('Error generating receipt:', error)
+    errorMessage.value = 'Erro ao gerar recibo. Tente novamente.'
+    setTimeout(() => {
+      errorMessage.value = ''
+    }, 3000)
+  }
+}
+
 onMounted(() => {
   fetchStudents()
 })
@@ -311,6 +327,23 @@ onMounted(() => {
             Exportar como CSV
           </button>
         </div>
+      </div>
+
+      <div v-if="successMessage" class="alert alert-success mb-4">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="stroke-current shrink-0 h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <span>{{ successMessage }}</span>
       </div>
 
       <div v-if="errorMessage" class="alert alert-error mb-4">
@@ -370,6 +403,7 @@ onMounted(() => {
                   :universities="universities"
                   :shifts="shifts"
                   @edit="openEditModal"
+                  @generate-receipt="handleGenerateReceipt"
                 />
               </tbody>
             </table>
