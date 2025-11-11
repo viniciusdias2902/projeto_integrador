@@ -7,6 +7,7 @@ import TripsPage from '@/pages/TripsPage.vue'
 import TripViewPage from '@/pages/TripViewPage.vue'
 import AdminStudentsPage from '@/pages/AdminStudentsPage.vue'
 import { verifyAndRefreshToken, getUserRole } from '@/services/auth'
+import AdminBoardingPointsPage from '@/pages/AdminBoardingPointsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,6 +52,12 @@ const router = createRouter({
       path: '/cadastro',
       name: 'registration-page',
       component: RegistrationPage,
+    },
+    {
+      path: '/admin/pontos-embarque',
+      name: 'admin-boarding-points',
+      component: AdminBoardingPointsPage,
+      meta: { requiresAuth: true, allowedRoles: ['admin'] },
     },
   ],
 })
