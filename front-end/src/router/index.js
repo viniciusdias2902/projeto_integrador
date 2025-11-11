@@ -6,7 +6,6 @@ import RegistrationPage from '@/pages/RegistrationPage.vue'
 import TripsPage from '@/pages/TripsPage.vue'
 import TripViewPage from '@/pages/TripViewPage.vue'
 import AdminStudentsPage from '@/pages/AdminStudentsPage.vue'
-import AdminDashboardPage from '@/pages/AdminDashboardPage.vue'
 import { verifyAndRefreshToken, getUserRole } from '@/services/auth'
 
 const router = createRouter({
@@ -47,12 +46,7 @@ const router = createRouter({
       component: AdminStudentsPage,
       meta: { requiresAuth: true, allowedRoles: ['admin'] },
     },
-    {
-      path: '/admin/dashboard',
-      name: 'admin-dashboard',
-      component: AdminDashboardPage,
-      meta: { requiresAuth: true, allowedRoles: ['admin'] },
-    },
+
     {
       path: '/cadastro',
       name: 'registration-page',
