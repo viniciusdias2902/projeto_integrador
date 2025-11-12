@@ -1,11 +1,21 @@
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from admins.models import Admin
+from admins.admin import AdminModelAdmin
 from django.contrib.auth.models import User
 from admins.views import AdminListCreateView, AdminRetrieveUpdateDestroyView
 from admins.serializers import AdminSerializer, AdminCreateSerializer
 
 
 class AdminsTest(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = User.objects.create_superuser(
+            "admin@teste.com", "admin@teste.com", "senha123"
+        )
+
+        self.admin_model_admin = AdminModelAdmin(model=Admin, admin_site=None)
+
     def test_ct01_admin_role_automatically_set(self):
         admin = Admin.objects.create(
             user=User.objects.create_user(
@@ -47,7 +57,7 @@ class AdminsTest(TestCase):
         data = {
             "name": "TesteAdmin",
             "phone": "12345678910",
-            "email": "admin@teste.com",
+            "email": "mariarita@teste.com",
             "password": "senha123",
         }
 
@@ -61,8 +71,8 @@ class AdminsTest(TestCase):
         self.assertEqual(admin.phone, "12345678910")
 
         user = admin.user
-        self.assertEqual(user.username, "admin@teste.com")
-        self.assertEqual(user.email, "admin@teste.com")
+        self.assertEqual(user.username, "mariarita@teste.com")
+        self.assertEqual(user.email, "mariarita@teste.com")
         self.assertTrue(user.check_password("senha123"))
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
