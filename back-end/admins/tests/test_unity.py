@@ -42,3 +42,5 @@ class AdminsTest(TestCase):
         view = AdminListCreateView()
         view.request = type("Request", (object,), {"method": "GET"})()
         self.assertEqual(view.get_serializer_class(), AdminSerializer)
+
+    def test_create_method(self):
