@@ -257,3 +257,23 @@ class StudentPaymentListViewGetQuerysetTests(TestCase):
         queryset = self.view.get_queryset()
 
         self.assertEqual(list(queryset), [self.aluno_a_pago])
+
+    def test_CT_4_2_filtro_not_paid_CV_2(self):
+        request = Mock()
+        request.query_params = {"payment_status": "not_paid"}
+        self.view.request = request
+
+        queryset = self.view.get_queryset()
+
+        self.assertEqual(queryset.count(), 2)
+        self.assertIn(self.aluno_b_nao_pago_cents, queryset)
+        self.assertIn(self.aluno_c_nao_pago_data, queryset)
+
+    def test_CT_4_3_sem_filtro_CV_3(self):
+        request = Mock()
+        request.query_params = {}
+        self.view.request = request
+
+        queryset = self.view.get_queryset()
+
+        self.assertEqual(queryset.count(), 3)
