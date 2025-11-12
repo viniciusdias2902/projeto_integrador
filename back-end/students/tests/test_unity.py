@@ -328,3 +328,14 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("At least one field", response.data["error"])
+
+    def test_CT_5_5_erro_valor_negativo_CI_3(self):
+        self.request.data = {
+            "student_ids": [self.student_1.id],
+            "monthly_payment_cents": -100,
+        }
+
+        response = self.view.patch(self.request)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Monthly payment cannot be negative", response.data["error"])
