@@ -44,3 +44,9 @@ class AdminsTest(TestCase):
         self.assertEqual(view.get_serializer_class(), AdminSerializer)
 
     def test_create_method(self):
+        data = {
+            "name": "TesteAdmin",
+            "phone": "123456",
+            "email": "email@teste.com",
+            "password": "12345",
+        }
