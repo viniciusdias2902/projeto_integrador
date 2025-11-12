@@ -68,3 +68,8 @@ class AdminsTest(TestCase):
         self.assertTrue(user.is_staff)
 
         self.assertTrue(user.groups.filter(name="admins").exists())
+
+    def test_ct06_view_uses_admin_queryset(self):
+        view = AdminRetrieveUpdateDestroyView()
+        self.assertEqual(self.view.serializer_class, AdminSerializer)
+        self.assertEqual()
