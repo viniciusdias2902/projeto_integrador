@@ -59,3 +59,39 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertEqual(
             str(serializer.errors["email"][0]), "This email is already in use"
         )
+
+    def test_CT_1_4_senha_invalida_CI_2(self):
+        data = self.valid_data.copy()
+        data["password"] = "123"
+        serializer = StudentCreateSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password", serializer.errors)
+        self.assertIn("at least 8 characters", str(serializer.errors["password"][0]))
+
+    def test_CT_1_5_senha_invalida_CI_3(self):
+        data = self.valid_data.copy()
+        data["password"] = "SenhaSemNumero"
+        serializer = StudentCreateSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password", serializer.errors)
+        self.assertIn("at least one number", str(serializer.errors["password"][0]))
+
+    def test_CT_1_6_senha_invalida_CI_4(self):
+        data = self.valid_data.copy()
+        data["password"] = "123456789"
+        serializer = StudentCreateSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("password", serializer.errors)
+        self.assertIn("at least one letter", str(serializer.errors["password"][0]))
+
+    def test_CT_1_8_telefone_invalido_CI_5(self):
+        data = self.valid_data.copy()
+        data["phone"] = "12345"
+        serializer = StudentCreateSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("phone", serializer.errors)
+        self.assertIn("10 or 11 digits", str(serializer.errors["phone"][0]))
