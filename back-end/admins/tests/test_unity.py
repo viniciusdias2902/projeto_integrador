@@ -6,7 +6,7 @@ from admins.serializers import AdminSerializer, AdminCreateSerializer
 
 
 class AdminsTest(TestCase):
-    def ct01_test_admin_role_automatically_set(self):
+    def test_ct01_admin_role_automatically_set(self):
         admin = Admin.objects.create(
             user=User.objects.create_user(
                 username="testrole@example.com", password="testpass123"
@@ -17,7 +17,7 @@ class AdminsTest(TestCase):
 
         self.assertEqual(admin.role, "admin")
 
-    def ct02_test_admin_added_to_admins_group(self):
+    def test_ct02_admin_added_to_admins_group(self):
         user = User.objects.create_user(
             username="testgroup@example.com", password="testpass123"
         )
@@ -31,24 +31,24 @@ class AdminsTest(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def ct03_test_str_method(self):
+    def test_ct03_str_method(self):
         user = User.objects.create_user(username="mrlsn", password="senha123")
         admin = Admin.objects.create(
             user=user, name="Admin Teste Str", phone="40028022"
         )
         self.assertEqual(str(admin), "Admin: Admin Teste Str")
 
-    def ct04_test_get_serializer_class_get(self):
+    def test_ct04_get_serializer_class_get(self):
         view = AdminListCreateView()
         view.request = type("Request", (object,), {"method": "GET"})()
         self.assertEqual(view.get_serializer_class(), AdminSerializer)
 
-    def ct05_test_create_method(self):
+    def test_ct05_create_method(self):
         data = {
             "name": "TesteAdmin",
-            "phone": "123456",
-            "email": "email@teste.com",
-            "password": "12345",
+            "phone": "12345678910",
+            "email": "admin@teste.com",
+            "password": "senha123",
         }
 
         serializer = AdminCreateSerializer(data=data)
@@ -57,5 +57,14 @@ class AdminsTest(TestCase):
         admin = serializer.save()
 
         self.assertIsInstance(admin, Admin)
-        self.assertEqual(admin.name, "Admin Teste")
-        self.assertEqual(admin.phone, "1234567")
+        self.assertEqual(admin.name, "TesteAdmin")
+        self.assertEqual(admin.phone, "12345678910")
+
+        user = admin.user
+        self.assertEqual(user.username, "admin@teste.com")
+        self.assertEqual(user.email, "admin@teste.com")
+        self.assertTrue(user.check_password("senha123"))
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.is_staff)
+
+        self.assertTrue(user.groups.filter(name="admins").exists())
