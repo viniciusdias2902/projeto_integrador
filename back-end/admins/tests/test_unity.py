@@ -72,7 +72,7 @@ class AdminsTest(TestCase):
     def test_ct06_view_uses_admin_queryset(self):
         view = AdminRetrieveUpdateDestroyView()
         self.assertEqual(view.queryset.model, Admin)
-        self.assertEqual(self.view.serializer_class, AdminSerializer)
+        self.assertEqual(view.serializer_class, AdminSerializer)
 
         permissions = [permissions.__name__ for permissions in view.permission_classes]
         self.assertIn("IsAuthenticated", permissions)
