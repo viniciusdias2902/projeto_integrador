@@ -403,3 +403,14 @@ class GlobalDefaultPermissionTests(TestCase):
         )
 
         self.assertFalse(has_perm)
+
+    def test_CT_6_5_nao_dono_nao_pode_deletar_CI_2(self):
+        request = Mock()
+        request.user = self.aluno_b_user
+        request.method = "DELETE"
+
+        has_perm = self.permission.has_object_permission(
+            request, None, self.aluno_a_obj
+        )
+
+        self.assertFalse(has_perm)
