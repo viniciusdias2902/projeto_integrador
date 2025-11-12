@@ -1,6 +1,8 @@
 from django.test import TestCase
 from admins.models import Admin
 from django.contrib.auth.models import User
+from admins.views import AdminListCreateView
+from admins.serializers import AdminSerializer, AdminCreateSerializer
 
 
 class AdminsTest(TestCase):
@@ -35,3 +37,8 @@ class AdminsTest(TestCase):
             user=user, name="Admin Teste Str", phone="40028022"
         )
         self.assertEqual(str(admin), "Admin: Admin Teste Str")
+
+    def test_get_serializer_class_get(self):
+        view = AdminListCreateView()
+        view.request = type("Request", (object,), {"method": "GET"})()
+        self.assertEqual(view.get_serializer_class(), AdminSerializer)
