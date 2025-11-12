@@ -320,3 +320,11 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("student_ids is required", response.data["error"])
+
+    def test_CT_5_4_erro_sem_dados_pagamento_CI_2(self):
+        self.request.data = {"student_ids": [self.student_1.id]}
+
+        response = self.view.patch(self.request)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("At least one field", response.data["error"])
