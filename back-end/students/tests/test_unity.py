@@ -122,3 +122,53 @@ class StudentCreateSerializerCreateTests(TestCase):
             "password": "Password123",
             "boarding_point": self.boarding_point,
         }
+
+    @patch("django.contrib.auth.models.User.objects.create_user")
+    @patch("django.contrib.auth.models.Group.objects.get_or_create")
+    @patch("students.models.Student.objects.create")
+    def test_CT_2_1_metodo_create_CV_1(
+        self, mock_create_student, mock_get_or_create_group, mock_create_user
+    ):
+
+        mock_user = Mock(spec=User)
+        mock_create_user.return_value = mock_user
+
+        mock_group = Mock(spec=Group)
+        mock_get_or_create_group.return_value = (mock_group, True)
+
+        mock_student = Mock(spec=Student)
+        mock_create_student.return_value = mock_student
+
+        serializer = StudentCreateSerializer(data=self.valid_data)
+
+        if not serializer.is_valid():
+            print("Erros de Validação no Teste 2.1:", serializer.errors)
+
+        self.assertTrue(serializer.is_valid())
+
+        # Executa o método 'create'
+        student = serializer.save()
+
+        # 1. Verifica se User foi criado
+        mock_create_user.assert_called_once_with(
+            username="aluno.criado@email.com",
+            email="aluno.criado@email.com",
+            password="Password123",
+        )
+
+        mock_get_or_create_group.assert_called_once_with(name="students")
+        mock_user.groups.add.assert_called_once_with(mock_group)
+
+        expected_student_data = {
+            "name": "Aluno Criado",
+            "phone": "86999887766",
+            "class_shift": "M",
+            "university": "UESPI",
+            "boarding_point": self.boarding_point,
+        }
+
+        mock_create_student.assert_called_once_with(
+            user=mock_user, **expected_student_data
+        )
+
+        self.assertEqual(student, mock_student)
