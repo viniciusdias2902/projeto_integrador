@@ -277,3 +277,46 @@ class StudentPaymentListViewGetQuerysetTests(TestCase):
         queryset = self.view.get_queryset()
 
         self.assertEqual(queryset.count(), 3)
+
+
+# Tabela 5
+class StudentPaymentBulkUpdateViewTests(TestCase):
+
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            "admin", "admin@a.com", "pass123", is_superuser=True
+        )
+        user_a = User.objects.create_user("aluno_a", "a@a.com", "pass123")
+        user_b = User.objects.create_user("aluno_b", "b@b.com", "pass123")
+
+        self.student_1 = Student.objects.create(
+            user=user_a, name="Aluno A", class_shift="M", university="UESPI"
+        )
+        self.student_2 = Student.objects.create(
+            user=user_b, name="Aluno B", class_shift="N", university="IFPI"
+        )
+
+        self.view = StudentPaymentBulkUpdateView()
+        self.request = Mock(spec=HttpRequest)
+        self.request.user = self.admin_user
+
+    def test_CT_5_1_atualizacao_em_massa_CV_1(self):
+        self.request.data = {
+            "student_ids": [self.student_1.id, self.student_2.id],
+            "monthly_payment_cents": 50000,
+        }
+
+        response = self.view.patch(self.request)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["updated_count"], 2)
+        self.student_1.refresh_from_db()
+        self.assertEqual(self.student_1.monthly_payment_cents, 50000)
+
+    def test_CT_5_3_erro_sem_ids_CI_1(self):
+        self.request.data = {"monthly_payment_cents": 50000}
+
+        response = self.view.patch(self.request)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("student_ids is required", response.data["error"])
