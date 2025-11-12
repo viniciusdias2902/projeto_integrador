@@ -52,4 +52,10 @@ class AdminsTest(TestCase):
         }
 
         serializer = AdminCreateSerializer(data=data)
-        self.assertTrue
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+        admin = serializer.save()
+
+        self.assertIsInstance(admin, Admin)
+        self.assertEqual(admin.name, "Admin Teste")
+        self.assertEqual(admin.phone, "1234567")
