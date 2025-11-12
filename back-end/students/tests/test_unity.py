@@ -44,12 +44,12 @@ class StudentCreateSerializerValidationTests(TestCase):
             "boarding_point": cls.boarding_point.id,
         }
 
-    def test_CT_1_1_email_valido_CV_1(self):
+    def test_CT_1_1_valid_email_CV_1(self):
         data = self.valid_data.copy()
         serializer = StudentCreateSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
-    def test_CT_1_2_email_invalido_CI_1(self):
+    def test_CT_1_2_invalid_email_CI_1(self):
         data = self.valid_data.copy()
         data["email"] = "existente@email.com"
         serializer = StudentCreateSerializer(data=data)
@@ -60,7 +60,7 @@ class StudentCreateSerializerValidationTests(TestCase):
             str(serializer.errors["email"][0]), "This email is already in use"
         )
 
-    def test_CT_1_4_senha_invalida_CI_2(self):
+    def test_CT_1_4_invalid_password_CI_2(self):
         data = self.valid_data.copy()
         data["password"] = "123"
         serializer = StudentCreateSerializer(data=data)
@@ -69,7 +69,7 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertIn("password", serializer.errors)
         self.assertIn("at least 8 characters", str(serializer.errors["password"][0]))
 
-    def test_CT_1_5_senha_invalida_CI_3(self):
+    def test_CT_1_5_invalid_password_CI_3(self):
         data = self.valid_data.copy()
         data["password"] = "SenhaSemNumero"
         serializer = StudentCreateSerializer(data=data)
@@ -78,7 +78,7 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertIn("password", serializer.errors)
         self.assertIn("at least one number", str(serializer.errors["password"][0]))
 
-    def test_CT_1_6_senha_invalida_CI_4(self):
+    def test_CT_1_6_invalid_password_CI_4(self):
         data = self.valid_data.copy()
         data["password"] = "123456789"
         serializer = StudentCreateSerializer(data=data)
@@ -87,7 +87,7 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertIn("password", serializer.errors)
         self.assertIn("at least one letter", str(serializer.errors["password"][0]))
 
-    def test_CT_1_8_telefone_invalido_CI_5(self):
+    def test_CT_1_8_invalid_phone_CI_5(self):
         data = self.valid_data.copy()
         data["phone"] = "12345"
         serializer = StudentCreateSerializer(data=data)
@@ -96,7 +96,7 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertIn("phone", serializer.errors)
         self.assertIn("10 or 11 digits", str(serializer.errors["phone"][0]))
 
-    def test_CT_1_9_telefone_invalido_CI_7(self):
+    def test_CT_1_9_invalid_phone_CI_7(self):
         data = self.valid_data.copy()
         data["phone"] = "8699988a776"
         serializer = StudentCreateSerializer(data=data)
@@ -126,7 +126,7 @@ class StudentCreateSerializerCreateTests(TestCase):
     @patch("django.contrib.auth.models.User.objects.create_user")
     @patch("django.contrib.auth.models.Group.objects.get_or_create")
     @patch("students.models.Student.objects.create")
-    def test_CT_2_1_metodo_create_CV_1(
+    def test_CT_2_1_create_method_CV_1(
         self, mock_create_student, mock_get_or_create_group, mock_create_user
     ):
 
@@ -197,19 +197,19 @@ class StudentSerializerGetMethodsTests(TestCase):
             last_payment_date=date(2025, 10, 10),
         )
 
-    def test_CT_3_1_pagamento_cents_none_CV_1(self):
+    def test_CT_3_1_payment_cents_none_CV_1(self):
         serializer = StudentSerializer(self.student_sem_pagamento)
         self.assertEqual(serializer.data["monthly_payment_cents"], "não informado")
 
-    def test_CT_3_2_pagamento_cents_valor_CV_2(self):
+    def test_CT_3_2_payment_cents_value_CV_2(self):
         serializer = StudentSerializer(self.student_com_pagamento)
         self.assertEqual(serializer.data["monthly_payment_cents"], 33000)
 
-    def test_CT_3_3_pagamento_data_none_CV_1(self):
+    def test_CT_3_3_payment_date_none_CV_1(self):
         serializer = StudentSerializer(self.student_sem_pagamento)
         self.assertEqual(serializer.data["last_payment_date"], "não informado")
 
-    def test_CT_3_4_pagamento_data_valor_CV_2(self):
+    def test_CT_3_4_payment_date_value_CV_2(self):
         serializer = StudentSerializer(self.student_com_pagamento)
         self.assertEqual(serializer.data["last_payment_date"], date(2025, 10, 10))
 
@@ -249,7 +249,7 @@ class StudentPaymentListViewGetQuerysetTests(TestCase):
 
         self.view = StudentPaymentListView()
 
-    def test_CT_4_1_filtro_paid_CV_1(self):
+    def test_CT_4_1_filter_paid_CV_1(self):
         request = Mock()
         request.query_params = {"payment_status": "paid"}
         self.view.request = request
@@ -258,7 +258,7 @@ class StudentPaymentListViewGetQuerysetTests(TestCase):
 
         self.assertEqual(list(queryset), [self.aluno_a_pago])
 
-    def test_CT_4_2_filtro_not_paid_CV_2(self):
+    def test_CT_4_2_filter_not_paid_CV_2(self):
         request = Mock()
         request.query_params = {"payment_status": "not_paid"}
         self.view.request = request
@@ -269,7 +269,7 @@ class StudentPaymentListViewGetQuerysetTests(TestCase):
         self.assertIn(self.aluno_b_nao_pago_cents, queryset)
         self.assertIn(self.aluno_c_nao_pago_data, queryset)
 
-    def test_CT_4_3_sem_filtro_CV_3(self):
+    def test_CT_4_3_no_filter_CV_3(self):
         request = Mock()
         request.query_params = {}
         self.view.request = request
@@ -300,7 +300,7 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
         self.request = Mock(spec=HttpRequest)
         self.request.user = self.admin_user
 
-    def test_CT_5_1_atualizacao_em_massa_CV_1(self):
+    def test_CT_5_1_mass_update_CV_1(self):
         self.request.data = {
             "student_ids": [self.student_1.id, self.student_2.id],
             "monthly_payment_cents": 50000,
@@ -313,7 +313,7 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
         self.student_1.refresh_from_db()
         self.assertEqual(self.student_1.monthly_payment_cents, 50000)
 
-    def test_CT_5_3_erro_sem_ids_CI_1(self):
+    def test_CT_5_3_error_missing_ids_CI_1(self):
         self.request.data = {"monthly_payment_cents": 50000}
 
         response = self.view.patch(self.request)
@@ -321,7 +321,7 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("student_ids is required", response.data["error"])
 
-    def test_CT_5_4_erro_sem_dados_pagamento_CI_2(self):
+    def test_CT_5_4_error_missing_payment_data_CI_2(self):
         self.request.data = {"student_ids": [self.student_1.id]}
 
         response = self.view.patch(self.request)
@@ -329,7 +329,7 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("At least one field", response.data["error"])
 
-    def test_CT_5_5_erro_valor_negativo_CI_3(self):
+    def test_CT_5_5_error_negative_value_CI_3(self):
         self.request.data = {
             "student_ids": [self.student_1.id],
             "monthly_payment_cents": -100,
@@ -360,7 +360,7 @@ class GlobalDefaultPermissionTests(TestCase):
 
         self.permission = GlobalDefaultPermission()
 
-    def test_CT_6_1_superuser_pode_deletar_CV_1(self):
+    def test_CT_6_1_superuser_can_delete_CV_1(self):
         request = Mock()
         request.user = self.admin_user
         request.method = "DELETE"
@@ -371,7 +371,7 @@ class GlobalDefaultPermissionTests(TestCase):
 
         self.assertTrue(has_perm)
 
-    def test_CT_6_2_dono_pode_editar_CV_2(self):
+    def test_CT_6_2_owner_can_edit_CV_2(self):
         request = Mock()
         request.user = self.aluno_a_user
         request.method = "PATCH"
@@ -382,7 +382,7 @@ class GlobalDefaultPermissionTests(TestCase):
 
         self.assertTrue(has_perm)
 
-    def test_CT_6_3_nao_dono_pode_ver_CV_4(self):
+    def test_CT_6_3_non_owner_can_view_CV_4(self):
         request = Mock()
         request.user = self.aluno_b_user
         request.method = "GET"
@@ -393,7 +393,7 @@ class GlobalDefaultPermissionTests(TestCase):
 
         self.assertTrue(has_perm)
 
-    def test_CT_6_4_nao_dono_nao_pode_editar_CI_1(self):
+    def test_CT_6_4_non_owner_cannot_edit_CI_1(self):
         request = Mock()
         request.user = self.aluno_b_user
         request.method = "PATCH"
@@ -404,7 +404,7 @@ class GlobalDefaultPermissionTests(TestCase):
 
         self.assertFalse(has_perm)
 
-    def test_CT_6_5_nao_dono_nao_pode_deletar_CI_2(self):
+    def test_CT_6_5_non_owner_cannot_delete_CI_2(self):
         request = Mock()
         request.user = self.aluno_b_user
         request.method = "DELETE"
