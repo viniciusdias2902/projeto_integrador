@@ -77,3 +77,11 @@ class AdminsTest(TestCase):
         permissions = [permissions.__name__ for permissions in view.permission_classes]
         self.assertIn("IsAuthenticated", permissions)
         self.assertIn("IsAdminUser", permissions)
+
+    def test_ct07_save_model_add_user_to_admin_group(self):
+        request = self.factory.get("/")
+        request.user = self.user
+
+        user = User.objects.create_user(
+            "novousuario@teste.com",
+        )
