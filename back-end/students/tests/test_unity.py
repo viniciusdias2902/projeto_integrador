@@ -208,3 +208,7 @@ class StudentSerializerGetMethodsTests(TestCase):
     def test_CT_3_3_pagamento_data_none_CV_1(self):
         serializer = StudentSerializer(self.student_sem_pagamento)
         self.assertEqual(serializer.data["last_payment_date"], "não informado")
+
+    def test_CT_3_4_pagamento_data_valor_CV_2(self):
+        serializer = StudentSerializer(self.student_com_pagamento)
+        self.assertEqual(serializer.data["last_payment_date"], "2025-10-10")
