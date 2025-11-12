@@ -212,3 +212,48 @@ class StudentSerializerGetMethodsTests(TestCase):
     def test_CT_3_4_pagamento_data_valor_CV_2(self):
         serializer = StudentSerializer(self.student_com_pagamento)
         self.assertEqual(serializer.data["last_payment_date"], date(2025, 10, 10))
+
+
+# Tabela 4
+class StudentPaymentListViewGetQuerysetTests(TestCase):
+
+    def setUp(self):
+        user_a = User.objects.create_user("aluno_a", "a@a.com", "pass123")
+        user_b = User.objects.create_user("aluno_b", "b@b.com", "pass123")
+        user_c = User.objects.create_user("aluno_c", "c@c.com", "pass123")
+
+        self.aluno_a_pago = Student.objects.create(
+            user=user_a,
+            name="Aluno A",
+            class_shift="M",
+            university="UESPI",
+            monthly_payment_cents=33000,
+            last_payment_date=date.today(),
+        )
+        self.aluno_b_nao_pago_cents = Student.objects.create(
+            user=user_b,
+            name="Aluno B",
+            class_shift="N",
+            university="IFPI",
+            monthly_payment_cents=None,
+            last_payment_date=date.today(),
+        )
+        self.aluno_c_nao_pago_data = Student.objects.create(
+            user=user_c,
+            name="Aluno C",
+            class_shift="M",
+            university="UESPI",
+            monthly_payment_cents=33000,
+            last_payment_date=None,
+        )
+
+        self.view = StudentPaymentListView()
+
+    def test_CT_4_1_filtro_paid_CV_1(self):
+        request = Mock()
+        request.query_params = {"payment_status": "paid"}
+        self.view.request = request
+
+        queryset = self.view.get_queryset()
+
+        self.assertEqual(list(queryset), [self.aluno_a_pago])
