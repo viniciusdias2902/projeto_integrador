@@ -370,3 +370,36 @@ class GlobalDefaultPermissionTests(TestCase):
         )
 
         self.assertTrue(has_perm)
+
+    def test_CT_6_2_dono_pode_editar_CV_2(self):
+        request = Mock()
+        request.user = self.aluno_a_user
+        request.method = "PATCH"
+
+        has_perm = self.permission.has_object_permission(
+            request, None, self.aluno_a_obj
+        )
+
+        self.assertTrue(has_perm)
+
+    def test_CT_6_3_nao_dono_pode_ver_CV_4(self):
+        request = Mock()
+        request.user = self.aluno_b_user
+        request.method = "GET"
+
+        has_perm = self.permission.has_object_permission(
+            request, None, self.aluno_a_obj
+        )
+
+        self.assertTrue(has_perm)
+
+    def test_CT_6_4_nao_dono_nao_pode_editar_CI_1(self):
+        request = Mock()
+        request.user = self.aluno_b_user
+        request.method = "PATCH"
+
+        has_perm = self.permission.has_object_permission(
+            request, None, self.aluno_a_obj
+        )
+
+        self.assertFalse(has_perm)
