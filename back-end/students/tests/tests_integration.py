@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth.models import User, Group
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import Student
+from students.models import Student
 from boarding_points.models import BoardingPoint
 from datetime import date, timedelta
 

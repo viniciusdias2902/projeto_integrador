@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from students.models import Student
 from boarding_points.models import BoardingPoint
-from .models import Poll, Vote
+from polls.models import Poll, Vote
 from datetime import date, timedelta
 from django.utils import timezone
 from unittest import mock

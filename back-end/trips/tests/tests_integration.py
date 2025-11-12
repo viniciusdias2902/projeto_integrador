@@ -9,8 +9,8 @@ from datetime import date, timedelta
 from students.models import Student
 from boarding_points.models import BoardingPoint
 from polls.models import Poll, Vote
-from .models import Trip
-from .serializers import TripSerializer
+from trips.models import Trip
+from trips.serializers import TripSerializer
 
 class TripAPITestCase(APITestCase):
 
