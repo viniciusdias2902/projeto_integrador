@@ -104,3 +104,21 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("phone", serializer.errors)
         self.assertIn("10 or 11 digits", str(serializer.errors["phone"][0]))
+
+
+# Tabela 2
+class StudentCreateSerializerCreateTests(TestCase):
+
+    def setUp(self):
+        self.boarding_point = BoardingPoint.objects.create(
+            name="Ponto Teste", route_order=1
+        )
+        self.valid_data = {
+            "name": "Aluno Criado",
+            "phone": "86999887766",
+            "class_shift": "M",
+            "university": "UESPI",
+            "email": "aluno.criado@email.com",
+            "password": "Password123",
+            "boarding_point": self.boarding_point,
+        }
