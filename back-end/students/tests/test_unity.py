@@ -120,7 +120,7 @@ class StudentCreateSerializerCreateTests(TestCase):
             "university": "UESPI",
             "email": "aluno.criado@email.com",
             "password": "Password123",
-            "boarding_point": self.boarding_point,
+            "boarding_point": self.boarding_point.id,
         }
 
     @patch("django.contrib.auth.models.User.objects.create_user")
@@ -146,10 +146,8 @@ class StudentCreateSerializerCreateTests(TestCase):
 
         self.assertTrue(serializer.is_valid())
 
-        # Executa o método 'create'
         student = serializer.save()
 
-        # 1. Verifica se User foi criado
         mock_create_user.assert_called_once_with(
             username="aluno.criado@email.com",
             email="aluno.criado@email.com",
