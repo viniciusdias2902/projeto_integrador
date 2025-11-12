@@ -339,3 +339,34 @@ class StudentPaymentBulkUpdateViewTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Monthly payment cannot be negative", response.data["error"])
+
+
+# Tabela 6
+class GlobalDefaultPermissionTests(TestCase):
+
+    def setUp(self):
+        self.admin_user = User.objects.create_user(
+            "admin", "admin@a.com", "pass123", is_superuser=True
+        )
+
+        user_a = User.objects.create_user("aluno_a", "a@a.com", "pass123")
+        self.aluno_a_obj = Student.objects.create(
+            user=user_a, name="Aluno A", class_shift="M", university="UESPI"
+        )
+        self.aluno_a_user = user_a
+
+        user_b = User.objects.create_user("aluno_b", "b@b.com", "pass123")
+        self.aluno_b_user = user_b
+
+        self.permission = GlobalDefaultPermission()
+
+    def test_CT_6_1_superuser_pode_deletar_CV_1(self):
+        request = Mock()
+        request.user = self.admin_user
+        request.method = "DELETE"
+
+        has_perm = self.permission.has_object_permission(
+            request, None, self.aluno_a_obj
+        )
+
+        self.assertTrue(has_perm)
