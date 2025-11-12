@@ -41,7 +41,7 @@ class StudentCreateSerializerValidationTests(TestCase):
             "university": "UESPI",
             "email": "novo@email.com",
             "password": "Password123",
-            "boarding_point": cls.boarding_point,
+            "boarding_point": cls.boarding_point.id,
         }
 
     def test_CT_1_1_email_valido_CV_1(self):
