@@ -65,7 +65,7 @@ class AdminsTest(TestCase):
         self.assertEqual(user.email, "admin@teste.com")
         self.assertTrue(user.check_password("senha123"))
         self.assertTrue(user.is_superuser)
-        self.assertTrue(user.is_staff)
+        self.asserfaçtTrue(user.is_staff)
 
         self.assertTrue(user.groups.filter(name="admins").exists())
 
