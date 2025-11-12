@@ -95,3 +95,12 @@ class StudentCreateSerializerValidationTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("phone", serializer.errors)
         self.assertIn("10 or 11 digits", str(serializer.errors["phone"][0]))
+
+    def test_CT_1_9_telefone_invalido_CI_7(self):
+        data = self.valid_data.copy()
+        data["phone"] = "8699988a776"
+        serializer = StudentCreateSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("phone", serializer.errors)
+        self.assertIn("10 or 11 digits", str(serializer.errors["phone"][0]))
