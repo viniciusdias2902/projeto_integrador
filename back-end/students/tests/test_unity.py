@@ -170,3 +170,41 @@ class StudentCreateSerializerCreateTests(TestCase):
         )
 
         self.assertEqual(student, mock_student)
+
+
+# Tabela 3
+class StudentSerializerGetMethodsTests(TestCase):
+
+    def setUp(self):
+        user_a = User.objects.create_user("aluno_a", "a@a.com", "pass123")
+        user_b = User.objects.create_user("aluno_b", "b@b.com", "pass123")
+
+        self.student_sem_pagamento = Student.objects.create(
+            user=user_a,
+            name="Aluno A",
+            class_shift="M",
+            university="UESPI",
+            monthly_payment_cents=None,
+            last_payment_date=None,
+        )
+
+        self.student_com_pagamento = Student.objects.create(
+            user=user_b,
+            name="Aluno B",
+            class_shift="N",
+            university="IFPI",
+            monthly_payment_cents=33000,
+            last_payment_date=date(2025, 10, 10),
+        )
+
+    def test_CT_3_1_pagamento_cents_none_CV_1(self):
+        serializer = StudentSerializer(self.student_sem_pagamento)
+        self.assertEqual(serializer.data["monthly_payment_cents"], "não informado")
+
+    def test_CT_3_2_pagamento_cents_valor_CV_2(self):
+        serializer = StudentSerializer(self.student_com_pagamento)
+        self.assertEqual(serializer.data["monthly_payment_cents"], 33000)
+
+    def test_CT_3_3_pagamento_data_none_CV_1(self):
+        serializer = StudentSerializer(self.student_sem_pagamento)
+        self.assertEqual(serializer.data["last_payment_date"], "não informado")
