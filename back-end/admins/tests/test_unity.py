@@ -1,7 +1,7 @@
 from django.test import TestCase
 from admins.models import Admin
 from django.contrib.auth.models import User
-from admins.views import AdminListCreateView
+from admins.views import AdminListCreateView, AdminRetrieveUpdateDestroyView
 from admins.serializers import AdminSerializer, AdminCreateSerializer
 
 
@@ -71,5 +71,9 @@ class AdminsTest(TestCase):
 
     def test_ct06_view_uses_admin_queryset(self):
         view = AdminRetrieveUpdateDestroyView()
+        self.assertEqual(view.queryset.model, Admin)
         self.assertEqual(self.view.serializer_class, AdminSerializer)
-        self.assertEqual()
+
+        permissions = [permissions.__name__ for permissions in view.permission_classes]
+        self.assertIn("IsAuthenticated", permissions)
+        self.assertIn("IsAdminUser", permissions)
