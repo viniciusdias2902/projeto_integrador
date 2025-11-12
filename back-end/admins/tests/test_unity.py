@@ -83,5 +83,12 @@ class AdminsTest(TestCase):
         request.user = self.user
 
         user = User.objects.create_user(
-            "novousuario@teste.com",
+            "novousuario@teste.com", "novousuario@teste.com", "senha123"
         )
+        admin = Admin(user=user, name="Admin Teste", phone="123456789")
+
+        self.admin_model_admin.save_model(request, admin, form=None, change=False)
+
+        self.assertTrue(user.groups.filter(name="admins").exists())
+        self.assertTrue(user.is_superuser)
+        self.assertTrue(user.is_staff)
