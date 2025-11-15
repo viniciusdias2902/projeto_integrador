@@ -5,6 +5,7 @@ from polls.views import PollListView, PollDetailView, PollBoardingListView
 from polls.serializers import PollSerializer
 from datetime import date
 from django.utils import timezone
+from django.db import IntegrityError
 
 
 class PollsTest(TestCase):
@@ -26,5 +27,10 @@ class PollsTest(TestCase):
 
     def test_ct03_unique_vote_per_poll(self):
         Vote.objects.create(
-            self=self.student, poll=self.poll_today, option="round_trip"
+            student=self.student, poll=self.poll_today, option="round_trip"
         )
+
+        with self.assertRaises(IntegrityError):
+            Vote.objects.create(
+                student=self.student, poll=self.poll_today, option="absent"
+            )
