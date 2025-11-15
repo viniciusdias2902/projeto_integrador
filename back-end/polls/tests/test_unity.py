@@ -3,7 +3,7 @@ from polls.models import Poll, Vote, Student
 from django.contrib.auth.models import User
 from polls.views import PollListView, PollDetailView, PollBoardingListView
 from polls.serializers import PollSerializer
-from datetime import date
+from datetime import date, timedelta
 from django.utils import timezone
 from django.db import IntegrityError
 
@@ -13,6 +13,8 @@ class PollsTest(TestCase):
         self.user = User.objects.create(username="teste_user")
         self.student = Student.objects.create(name="Teste enquetes", user=self.user)
         self.poll_today = Poll.objects.create(date=timezone.localdate())
+        self poll_yesterday = Poll.objects.create(date = timezone.localdate() - timedelta(days=1), status = "open")
+
 
     def test_ct01_str_method(self):
         poll = Poll.objects.create(date=date(2025, 8, 14), status="open")
