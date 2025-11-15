@@ -1,9 +1,17 @@
 from django.test import TestCase
-from polls.models import Poll
+from polls.models import Poll, Vote
 from django.contrib.auth.models import User
 from polls.views import PollListView, PollDetailView, PollBoardingListView
 from polls.serializers import PollSerializer
 from datetime import date
+from students.models import Student
+from django.utils import timezone
+import pytest
+
+
+@pytest.fixture
+def student(db):
+    return Student.objects.create(name="Teste enquetes")
 
 
 class PollsTest(TestCase):
