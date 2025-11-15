@@ -24,6 +24,11 @@ def poll_tomorrow(db):
     return Poll.objects.create(date=timezone.localdate() + timezone.timedelta(days=1))
 
 
+@pytest.fixture
+def poll_yesterday(db):
+    return Poll.objects.create(date=timezone.localdate() - timezone.timedelta(days=1))
+
+
 class PollsTest(TestCase):
     def test_ct01_str_method(self):
         poll = Poll.objects.create(date=date(2025, 8, 14), status="open")
