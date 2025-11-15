@@ -25,3 +25,6 @@ class PollsTest(TestCase):
         self.assertEqual(vote.option, "round_trip")
 
     def test_ct03_unique_vote_per_poll(self):
+        Vote.objects.create(
+            self=self.student, poll=self.poll_today, option="round_trip"
+        )
