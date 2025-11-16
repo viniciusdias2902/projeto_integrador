@@ -72,3 +72,8 @@ class PollsTest(TestCase):
             self.assertFalse(self.poll_today.can_vote_for_option("one_way_outbound"))
 
     def test_ct07_can_vote_today_afternoon_limit(self):
+        fake = datetime.combine(timezone.localdate(), time(18, 0))
+        with patch("django.utils.timezone.now") as mock_now:
+            mock_now.return_value = timezone.make_aware(fake)
+            self.assertTrue(self.poll_today.can_vote_for_option("round_trip"))
+            self.assertTrue(self.poll_today.can_vote_for_option("one_way_outbound"))
