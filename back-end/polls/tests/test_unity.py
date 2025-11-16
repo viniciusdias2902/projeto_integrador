@@ -57,3 +57,5 @@ class PollsTest(TestCase):
             mock_now.return_value = timezone.make_aware(fake)
 
             self.assertTrue(self.poll_tomorrow.can_vote_for_option("round_trip"))
+
+    def test_ct06_can_vote_morning_limit(self):
