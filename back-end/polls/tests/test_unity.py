@@ -52,4 +52,8 @@ class PollsTest(TestCase):
             )
 
     def test_ct05_can_vote_future_poll(self):
-        
+        fake = datetime.combine(timezone.localdate(), time(10, 0))
+        with patch("django.utils.timezone.now") as mock_now:
+            mock_now.return_value = timezone.make_aware(fake)
+
+            self.assertTrue(self.poll_tomorrow.can_vote_for_option("round_trip"))
