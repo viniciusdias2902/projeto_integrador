@@ -75,5 +75,11 @@ class PollsTest(TestCase):
         fake = datetime.combine(timezone.localdate(), time(18, 0))
         with patch("django.utils.timezone.now") as mock_now:
             mock_now.return_value = timezone.make_aware(fake)
-            self.assertTrue(self.poll_today.can_vote_for_option("round_trip"))
-            self.assertTrue(self.poll_today.can_vote_for_option("one_way_outbound"))
+            self.assertTrue(self.poll_today.can_vote_for_option("one_way_return"))
+            self.assertTrue(self.poll_today.can_vote_for_option("absent"))
+
+        fake = datetime.combine(timezone.localdate(), time(18, 1))
+        with patch("django.utils.timezone.now") as mock_now:
+            mock_now.return_value = timezone.make_aware(fake)
+            self.assertFalse(self.poll_today.can_vote_for_option("one_way_return"))
+            self.assertFalse(self.poll_today.can_vote_for_option("absent"))
