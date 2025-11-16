@@ -17,6 +17,9 @@ class PollsTest(TestCase):
         self.poll_yesterday = Poll.objects.create(
             date=timezone.localdate() - timedelta(days=1), status="open"
         )
+        self.poll_tomorrow = Poll.objects.create(
+            date=timezone.localdate() + timedelta(days=1), status="open"
+        )
 
     def test_ct01_str_method(self):
         poll = Poll.objects.create(date=date(2025, 8, 14), status="open")
