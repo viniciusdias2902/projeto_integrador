@@ -2,7 +2,7 @@ from django.test import TestCase
 from polls.models import Poll, Vote, Student
 from django.contrib.auth.models import User
 from polls.views import PollListView, PollDetailView, PollBoardingListView
-from polls.serializers import PollSerializer
+from polls.serializers import PollSerializer, StudentNestedSerializer
 from datetime import date, timedelta, datetime, time
 from django.utils import timezone
 from django.db import IntegrityError
@@ -83,3 +83,11 @@ class PollsTest(TestCase):
             mock_now.return_value = timezone.make_aware(fake)
             self.assertFalse(self.poll_today.can_vote_for_option("one_way_return"))
             self.assertFalse(self.poll_today.can_vote_for_option("absent"))
+
+    def test_ct08_student_nested_serializer(self):
+        serializer = StudentNestedSerializer(self.student)
+        data = serializer.data
+
+        self.assertEqual(data["id"], self.student.id)
+        self.assertEqual(data["name"], "Teste enquetes")
+        self.assertEqual(data["user_id"], self.user.id)
