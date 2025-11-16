@@ -2,7 +2,7 @@ from django.test import TestCase
 from polls.models import Poll, Vote, Student
 from django.contrib.auth.models import User
 from polls.views import PollListView, PollDetailView, PollBoardingListView
-from polls.serializers import PollSerializer, StudentNestedSerializer
+from polls.serializers import StudentNestedSerializer
 from datetime import date, timedelta, datetime, time
 from django.utils import timezone
 from django.db import IntegrityError
