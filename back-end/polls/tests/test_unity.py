@@ -50,3 +50,6 @@ class PollsTest(TestCase):
             self.assertFalse(
                 self.poll_yesterday.can_vote_for_option("one_way_outbound")
             )
+
+    def test_ct05_can_vote_future_poll(self):
+        
