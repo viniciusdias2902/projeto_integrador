@@ -20,11 +20,15 @@ class TripsTest(TestCase):
         self.student2 = Student.objects.create(
             name="Leonardo", user=self.user2, university="CHRISFAPI"
         )
-        self.boarding1 = BoardingPoint.objects.create(name="Point 1", route_order=1)
-        self.boarding2 = BoardingPoint.objects.create(name="Point2", route_order=2)
-        self.student1.boarding_point = self.boarding1
+        self.boarding_point1 = BoardingPoint.objects.create(
+            name="Point 1", route_order=1
+        )
+        self.boarding_point2 = BoardingPoint.objects.create(
+            name="Point2", route_order=2
+        )
+        self.student1.boarding_point = self.boarding_point1
         self.student1.save()
-        self.student2.boarding_point = self.boarding2
+        self.student2.boarding_point = self.boarding_point2
         self.student2.save()
 
         self.poll = Poll.objects.create(date=date.today(), status="open")
@@ -46,3 +50,10 @@ class TripsTest(TestCase):
         self.assertIn(str(self.poll.date), str(self.trip_outbound))
 
     def test_ct03_start_outbound_trip_sets_first_boarding_point(self):
+        first_point = self.trip_outbound.start_trip()
+        self.assertEqual(first_point, self.boarding_point1)
+        self.assertEqual(self.trip_outbound.status, "in_progress")
+        self.assertEqual(
+            self.trip_outbound.current_boarding_point, self.boarding_point1
+        )
+        self.assertIsNotNone(self.trip_outbound.started_at)
