@@ -57,3 +57,17 @@ class TripsTest(TestCase):
             self.trip_outbound.current_boarding_point, self.boarding_point1
         )
         self.assertIsNotNone(self.trip_outbound.started_at)
+
+    def test_ct04_next_stop_outbound_progresses_correctly(self):
+        self.trip_outbound.start_trip()
+        next_point = self.trip_outbound.next_stop()
+        self.assertEqual(next_point, self.boarding_point2)
+        self.assertEqual(
+            self.trip_outbound.current_boarding_point, self.boarding_point2
+        )
+
+        final_point = self.trip_outbound.next_stop()
+        self.assertIsNone(final_point)
+        self.trip_outbound.refresh_from_db()
+        self.assertEqual(self.trip_outbound.status, "completed")
+        self.assertIsNone(self.trip_outbound.current_boarding_point)
