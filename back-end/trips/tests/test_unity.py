@@ -1,5 +1,5 @@
 from django.test import TestCase
-from trips.models import Trip, Student, BoardingPoint
+from trips.models import Trip, Student, BoardingPoint, Poll, Vote
 from django.contrib.auth.models import User
 from trips.views import TripCreateView, TripCompleteView
 from trips.serializers import TripSerializer, TripDetailSerializer
@@ -24,6 +24,10 @@ class TripsTest(TestCase):
         self.student2.save()
 
         self.poll = Poll.objects.create(date=date.today(), status="open")
+        Vote.objects.create(student=self.student1, poll=self.poll, option="round_trip")
+        Vote.objects.create(
+            student=self.student2, poll=self.poll, option="one_way_outbound"
+        )
 
     def test_ct01_default_status_is_pending(self):
         poll = Poll.objects.create(date=date(2025, 9, 13), status="open")
