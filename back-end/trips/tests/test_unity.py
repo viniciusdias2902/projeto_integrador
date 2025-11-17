@@ -29,6 +29,9 @@ class TripsTest(TestCase):
             student=self.student2, poll=self.poll, option="one_way_outbound"
         )
 
+        self.trip_outbound = Trip.objects.create(poll=self.poll, trip_type="outbound")
+        self.trip_return = Trip.objects.create(poll=self.poll, trip_type="return")
+
     def test_ct01_default_status_is_pending(self):
         poll = Poll.objects.create(date=date(2025, 9, 13), status="open")
         trip = Trip.objects.create(poll=poll, trip_type="outbound")
