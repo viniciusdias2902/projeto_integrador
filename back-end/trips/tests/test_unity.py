@@ -91,3 +91,11 @@ class TripsTest(TestCase):
         self.assertIsNone(data["current_boarding_point"])
         self.assertIsNone(data["current_university_name"])
         self.assertIsNone(data["current_stop_index"])
+
+    def test_ct07_serializer_current_university_name(self):
+        self.trip_return.current_university = "UESPI"
+        serializer = TripSerializer(self.trip_return)
+        data = serializer.data
+        self.assertEqual(
+            data["current_university_name"], "Universidade Estadual do Piaui"
+        )
