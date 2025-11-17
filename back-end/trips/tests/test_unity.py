@@ -79,3 +79,15 @@ class TripsTest(TestCase):
         self.assertIsNone(self.trip_outbound.current_boarding_point)
         self.assertIsNone(self.trip_outbound.current_university)
         self.assertIsNotNone(self.trip_outbound.completed_at)
+
+    def test_ct06_trip_serializer_basic_fields(self):
+        serializer = TripSerializer(self.trip_outbound)
+        data = serializer.data
+
+        self.assertEqual(data["id"], self.trip_outbound.id)
+        self.assertEqual(data["poll"], self.poll.id)
+        self.assertEqual(data["trip_type"], "outbound")
+        self.assertEqual(data["status"], "pending")
+        self.assertIsNone(data["current_boarding_point"])
+        self.assertIsNone(data["current_university_name"])
+        self.assertIsNone(data["current_stop_index"])
