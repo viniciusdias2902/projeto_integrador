@@ -44,3 +44,5 @@ class TripsTest(TestCase):
     def test_ct02_str_method(self):
         self.assertIn("Trip outbound", str(self.trip_outbound))
         self.assertIn(str(self.poll.date), str(self.trip_outbound))
+
+    def test_ct03_start_outbound_trip_sets_first_boarding_point(self):
