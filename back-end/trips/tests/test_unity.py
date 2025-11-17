@@ -23,6 +23,8 @@ class TripsTest(TestCase):
         self.student2.boarding_point = self.boarding2
         self.student2.save()
 
+        self.poll = Poll.objects.create(date=date.today(), status="open")
+
     def test_ct01_default_status_is_pending(self):
         poll = Poll.objects.create(date=date(2025, 9, 13), status="open")
         trip = Trip.objects.create(poll=poll, trip_type="outbound")
