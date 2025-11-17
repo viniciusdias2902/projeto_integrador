@@ -71,3 +71,11 @@ class TripsTest(TestCase):
         self.trip_outbound.refresh_from_db()
         self.assertEqual(self.trip_outbound.status, "completed")
         self.assertIsNone(self.trip_outbound.current_boarding_point)
+
+    def test_ct05_complete_trip_sets_status_completed(self):
+        self.trip_outbound.start_trip()
+        self.trip_outbound.complete_trip()
+        self.assertEqual(self.trip_outbound.status, "completed")
+        self.assertIsNone(self.trip_outbound.current_boarding_point)
+        self.assertIsNone(self.trip_outbound.current_university)
+        self.assertIsNotNone(self.trip_outbound.completed_at)
