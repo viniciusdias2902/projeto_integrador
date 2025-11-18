@@ -7,7 +7,7 @@ class DriverModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create(username="dom", password="password123")
 
-    def test_driver_role_is_set_to_driver_on_save(self):
+    def test_ct01_driver_role_is_set_to_driver_on_save(self):
         driver = Driver.objects.create(
             user=self.user,
             name="Sem usuário",
