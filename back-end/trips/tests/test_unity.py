@@ -1,4 +1,5 @@
 from django.test import TestCase
+from unittest.mock import MagicMock
 from trips.models import Trip
 from students.models import Student
 from polls.models import Poll, Vote
@@ -6,8 +7,8 @@ from boarding_points.models import BoardingPoint
 from django.contrib.auth.models import User
 from trips.views import TripCreateView, TripCompleteView
 from trips.serializers import TripSerializer, TripDetailSerializer
-from polls.models import Poll
 from datetime import date
+from django.contrib.auth.models import User
 
 
 class TripsTest(TestCase):
@@ -37,8 +38,14 @@ class TripsTest(TestCase):
             student=self.student2, poll=self.poll, option="one_way_outbound"
         )
 
-        self.trip_outbound = Trip.objects.create(poll=self.poll, trip_type="outbound")
-        self.trip_return = Trip.objects.create(poll=self.poll, trip_type="return")
+        self.trip_outbound = Trip.objects.create(
+            poll=self.poll,
+            trip_type="outbound",
+            current_boarding_point=self.boarding_point1,
+        )
+        self.trip_return = Trip.objects.create(
+            poll=self.poll, trip_type="return", current_university="IFPI"
+        )
 
     def test_ct01_default_status_is_pending(self):
         poll = Poll.objects.create(date=date(2025, 9, 13), status="open")
@@ -88,7 +95,7 @@ class TripsTest(TestCase):
         self.assertEqual(data["poll"], self.poll.id)
         self.assertEqual(data["trip_type"], "outbound")
         self.assertEqual(data["status"], "pending")
-        self.assertIsNone(data["current_boarding_point"])
+        self.assertEqual(data["current_boarding_point"]["id"], self.boarding_point1.id)
         self.assertIsNone(data["current_university_name"])
         self.assertIsNone(data["current_stop_index"])
 
