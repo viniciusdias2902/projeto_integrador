@@ -3,7 +3,7 @@ from boarding_points.models import BoardingPoint
 
 
 class BoardingPointTests(TestCase):
-    def test_create_boarding_point(self):
+    def test_ct01_create_boarding_point(self):
         boarding_point = BoardingPoint.objects.create(
             name="Hotel Alvorada", address_reference="Em frente ao IBE", route_order=1
         )
@@ -11,7 +11,7 @@ class BoardingPointTests(TestCase):
         self.assertEqual(boarding_point.address_reference, "Em frente ao IBE")
         self.assertEqual(boarding_point.route_order, 1)
 
-    def test_boarding_points_ordering(self):
+    def test_ct02_boarding_points_ordering(self):
         boarding_points1 = BoardingPoint.objects.create(
             name="Rodoviária", route_order=2
         )
