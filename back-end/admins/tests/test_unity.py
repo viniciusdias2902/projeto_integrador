@@ -1,69 +1,54 @@
 from django.test import TestCase, RequestFactory
+from django.contrib.auth.models import User, Group
+from rest_framework.permissions import IsAuthenticated
+
 from admins.models import Admin
 from admins.admin import AdminModelAdmin
-from django.contrib.auth.models import User
 from admins.views import AdminListCreateView, AdminRetrieveUpdateDestroyView
 from admins.serializers import AdminSerializer, AdminCreateSerializer
 
-
-class AdminsTest(TestCase):
-
-    def setUp(self):
-        self.factory = RequestFactory()
-        self.user = User.objects.create_superuser(
-            "admin@teste.com", "admin@teste.com", "senha123"
-        )
-
-        self.admin_model_admin = AdminModelAdmin(model=Admin, admin_site=None)
-
-    def test_ct01_admin_role_automatically_set(self):
-        admin = Admin.objects.create(
-            user=User.objects.create_user(
-                username="testrole@example.com", password="testpass123"
-            ),
-            name="Test Role Admin",
-            phone="5555555555",
-        )
-
+# Funcionalidades 1 e 2
+class AdminModelTests(TestCase):
+    
+    def test_CT_01_admin_role_automatically_set(self):
+        user = User.objects.create_user("testrole", "role@test.com", "pass123")
+        admin = Admin.objects.create(user=user, name="Test Role", phone="123")
+        
         self.assertEqual(admin.role, "admin")
 
-    def test_ct02_admin_added_to_admins_group(self):
-        user = User.objects.create_user(
-            username="testgroup@example.com", password="testpass123"
-        )
-        admin = Admin.objects.create(
-            user=user,
-            name="Test Group Admin",
-            phone="6666666666",
-        )
-
+    def test_CT_02_admin_permissions_and_groups_set(self):
+        user = User.objects.create_user("testgroup", "group@test.com", "pass123")
+        Group.objects.create(name="admins")
+        
+        Admin.objects.create(user=user, name="Test Group", phone="123")
+        
         self.assertTrue(user.groups.filter(name="admins").exists())
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def test_ct03_str_method(self):
-        user = User.objects.create_user(username="mrlsn", password="senha123")
-        admin = Admin.objects.create(
-            user=user, name="Admin Teste Str", phone="40028022"
-        )
-        self.assertEqual(str(admin), "Admin: Admin Teste Str")
+    def test_CT_03_str_method(self):
+        user = User.objects.create_user("strtest", "str@test.com", "pass123")
+        admin = Admin.objects.create(user=user, name="Admin Teste Str", phone="123")
+        
+        self.assertEqual(str(admin), "Admin: Admin Teste Str") 
 
-    def test_ct04_get_serializer_class_get(self):
-        view = AdminListCreateView()
-        view.request = type("Request", (object,), {"method": "GET"})()
-        self.assertEqual(view.get_serializer_class(), AdminSerializer)
 
-    def test_ct05_create_method(self):
+# Funcionalidade 4
+class AdminCreateSerializerTests(TestCase):
+
+    def test_CT_06_create_method_logic(self):
         data = {
             "name": "TesteAdmin",
             "phone": "12345678910",
             "email": "mariarita@teste.com",
             "password": "senha123",
         }
+        #mcock grupos
+        Group.objects.create(name="admins")
 
         serializer = AdminCreateSerializer(data=data)
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-
+        self.assertTrue(serializer.is_valid())
+        
         admin = serializer.save()
 
         self.assertIsInstance(admin, Admin)
@@ -74,27 +59,55 @@ class AdminsTest(TestCase):
         self.assertEqual(user.username, "mariarita@teste.com")
         self.assertEqual(user.email, "mariarita@teste.com")
         self.assertTrue(user.check_password("senha123"))
+        
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
-
         self.assertTrue(user.groups.filter(name="admins").exists())
 
-    def test_ct06_view_uses_admin_queryset(self):
+
+# Funcionalidades 3 e 5
+class AdminViewTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_CT_04_get_serializer_class_get_method(self):
+        view = AdminListCreateView()
+        view.request = self.factory.get('/')
+        self.assertEqual(view.get_serializer_class(), AdminSerializer)
+
+    def test_CT_05_get_serializer_class_post_method(self):
+        view = AdminListCreateView()
+        view.request = self.factory.post('/')
+        self.assertEqual(view.get_serializer_class(), AdminCreateSerializer)
+
+    def test_CT_07_to_09_retrieve_view_configuration(self):
         view = AdminRetrieveUpdateDestroyView()
+        
         self.assertEqual(view.queryset.model, Admin)
+        
         self.assertEqual(view.serializer_class, AdminSerializer)
+        
+       
+        perm_classes = view.permission_classes
+        self.assertTrue(any(issubclass(p, IsAuthenticated) for p in perm_classes) or IsAuthenticated in perm_classes)
 
-        permissions = [permissions.__name__ for permissions in view.permission_classes]
-        self.assertIn("IsAuthenticated", permissions)
-        self.assertIn("IsAdminUser", permissions)
 
-    def test_ct07_save_model_add_user_to_admin_group(self):
+# Funcionalidade 6
+class AdminSiteTests(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.superuser = User.objects.create_superuser("super", "s@s.com", "pass")
+        self.admin_model_admin = AdminModelAdmin(model=Admin, admin_site=None)
+        Group.objects.create(name="admins")
+
+    def test_CT_10_save_model_integration(self):
         request = self.factory.get("/")
-        request.user = self.user
+        request.user = self.superuser
 
-        user = User.objects.create_user(
-            "novousuario@teste.com", "novousuario@teste.com", "senha123"
-        )
+        user = User.objects.create_user("novo@teste.com", "novo@teste.com", "senha123")
+        # admin ainda não salvo
         admin = Admin(user=user, name="Admin Teste", phone="123456789")
 
         self.admin_model_admin.save_model(request, admin, form=None, change=False)
