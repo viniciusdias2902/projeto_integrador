@@ -1,93 +1,127 @@
 from django.test import TestCase
-from polls.models import Poll, Vote, Student
 from django.contrib.auth.models import User
-from polls.views import PollListView, PollDetailView, PollBoardingListView
-from polls.serializers import StudentNestedSerializer
-from datetime import date, timedelta, datetime, time
 from django.utils import timezone
 from django.db import IntegrityError
+from datetime import date, timedelta, datetime, time
 from unittest.mock import patch
 
+from polls.models import Poll, Vote
+from students.models import Student
+from polls.serializers import StudentNestedSerializer
+from boarding_points.models import BoardingPoint
 
-class PollsTest(TestCase):
+
+class PollModelLogicTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create(username="teste_user")
-        self.student = Student.objects.create(name="Teste enquetes", user=self.user)
-        self.poll_today = Poll.objects.create(date=timezone.localdate())
-        self.poll_yesterday = Poll.objects.create(
-            date=timezone.localdate() - timedelta(days=1), status="open"
-        )
-        self.poll_tomorrow = Poll.objects.create(
-            date=timezone.localdate() + timedelta(days=1), status="open"
-        )
+        self.today = timezone.localdate()
+        self.poll_today = Poll.objects.create(date=self.today)
+        self.poll_yesterday = Poll.objects.create(date=self.today - timedelta(days=1))
+        self.poll_tomorrow = Poll.objects.create(date=self.today + timedelta(days=1))
 
-    def test_ct01_str_method(self):
-        poll = Poll.objects.create(date=date(2025, 8, 14), status="open")
+    # Funcionalidade 1
+    def test_CT_01_str_method(self):
+        fixed_date = date(2025, 8, 14)
+        poll = Poll.objects.create(date=fixed_date, status="open")
         self.assertEqual(str(poll), "Poll for 2025-08-14 (open)")
 
-    def test_ct02_create_valid_vote(self):
-        vote = Vote.objects.create(
-            student=self.student, poll=self.poll_today, option="round_trip"
-        )
-        self.assertIsNotNone(vote.pk)
-        self.assertEqual(vote.option, "round_trip")
-
-    def test_ct03_unique_vote_per_poll(self):
-        Vote.objects.create(
-            student=self.student, poll=self.poll_today, option="round_trip"
-        )
-
-        with self.assertRaises(IntegrityError):
-            Vote.objects.create(
-                student=self.student, poll=self.poll_today, option="absent"
-            )
-
-    def test_ct04_can_vote_past_poll(self):
-        fake = datetime.combine(timezone.localdate(), time(10, 0))
+    # Funcionalidade 3
+    def test_CT_04_cannot_vote_on_past_poll(self):
+        fake_time = datetime.combine(self.today, time(10, 0))
         with patch("django.utils.timezone.now") as mock_now:
-            mock_now.return_value = timezone.make_aware(fake)
+            mock_now.return_value = timezone.make_aware(fake_time)
 
             self.assertFalse(
                 self.poll_yesterday.can_vote_for_option("one_way_outbound")
             )
 
-    def test_ct05_can_vote_future_poll(self):
-        fake = datetime.combine(timezone.localdate(), time(10, 0))
+    # Funcionalidade 3
+    def test_CT_05_can_vote_on_future_poll(self):
+        fake_time = datetime.combine(self.today, time(10, 0))
         with patch("django.utils.timezone.now") as mock_now:
-            mock_now.return_value = timezone.make_aware(fake)
+            mock_now.return_value = timezone.make_aware(fake_time)
 
             self.assertTrue(self.poll_tomorrow.can_vote_for_option("round_trip"))
 
-    def test_ct06_can_vote_morning_limit(self):
-        fake = datetime.combine(timezone.localdate(), time(12, 0))
+    # Funcionalidade 3
+    def test_CT_06_morning_deadline_boundary(self):
+        # liimite (12:00:00) -> passa
+        fake_limit = datetime.combine(self.today, time(12, 0))
         with patch("django.utils.timezone.now") as mock_now:
-            mock_now.return_value = timezone.make_aware(fake)
+            mock_now.return_value = timezone.make_aware(fake_limit)
             self.assertTrue(self.poll_today.can_vote_for_option("round_trip"))
             self.assertTrue(self.poll_today.can_vote_for_option("one_way_outbound"))
 
-        fake = datetime.combine(timezone.localdate(), time(12, 1))
+        # tempo expirado (12:01:00) -> falha
+        fake_expired = datetime.combine(self.today, time(12, 1))
         with patch("django.utils.timezone.now") as mock_now:
-            mock_now.return_value = timezone.make_aware(fake)
+            mock_now.return_value = timezone.make_aware(fake_expired)
             self.assertFalse(self.poll_today.can_vote_for_option("round_trip"))
             self.assertFalse(self.poll_today.can_vote_for_option("one_way_outbound"))
 
-    def test_ct07_can_vote_today_afternoon_limit(self):
-        fake = datetime.combine(timezone.localdate(), time(18, 0))
+    # Funcionalidade 3
+    def test_CT_07_afternoon_deadline_boundary(self):
+        # limite (18:00:00) -> passa
+        fake_limit = datetime.combine(self.today, time(18, 0))
         with patch("django.utils.timezone.now") as mock_now:
-            mock_now.return_value = timezone.make_aware(fake)
+            mock_now.return_value = timezone.make_aware(fake_limit)
             self.assertTrue(self.poll_today.can_vote_for_option("one_way_return"))
             self.assertTrue(self.poll_today.can_vote_for_option("absent"))
 
-        fake = datetime.combine(timezone.localdate(), time(18, 1))
+        # tempo expirado (18:01:00) -> falha
+        fake_expired = datetime.combine(self.today, time(18, 1))
         with patch("django.utils.timezone.now") as mock_now:
-            mock_now.return_value = timezone.make_aware(fake)
+            mock_now.return_value = timezone.make_aware(fake_expired)
             self.assertFalse(self.poll_today.can_vote_for_option("one_way_return"))
             self.assertFalse(self.poll_today.can_vote_for_option("absent"))
 
-    def test_ct08_student_nested_serializer(self):
+
+class VoteModelIntegrityTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username="voter_user")
+        bp = BoardingPoint.objects.create(name="Ponto Teste", route_order=1)
+
+        self.student = Student.objects.create(
+            name="Teste Votante",
+            user=self.user,
+            boarding_point=bp,
+            class_shift="M",
+            university="UESPI",
+        )
+        self.poll = Poll.objects.create(date=timezone.localdate())
+
+    # Funcionalidade 2
+    def test_CT_02_create_valid_vote(self):
+        vote = Vote.objects.create(
+            student=self.student, poll=self.poll, option="round_trip"
+        )
+        self.assertIsNotNone(vote.pk)
+        self.assertEqual(vote.option, "round_trip")
+
+    # Funcionalidade 2
+    def test_CT_03_unique_vote_constraint(self):
+        Vote.objects.create(student=self.student, poll=self.poll, option="round_trip")
+
+        with self.assertRaises(IntegrityError):
+            Vote.objects.create(student=self.student, poll=self.poll, option="absent")
+
+
+class PollsSerializersTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(username="serializer_user")
+        bp = BoardingPoint.objects.create(name="Ponto Serializer", route_order=1)
+        self.student = Student.objects.create(
+            name="Teste Serializer",
+            user=self.user,
+            boarding_point=bp,
+            class_shift="M",
+            university="UESPI",
+        )
+
+    # Funcionalidade 4
+    def test_CT_08_student_nested_serializer_content(self):
         serializer = StudentNestedSerializer(self.student)
         data = serializer.data
 
         self.assertEqual(data["id"], self.student.id)
-        self.assertEqual(data["name"], "Teste enquetes")
+        self.assertEqual(data["name"], "Teste Serializer")
         self.assertEqual(data["user_id"], self.user.id)
