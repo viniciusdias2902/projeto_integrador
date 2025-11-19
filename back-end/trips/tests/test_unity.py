@@ -1,108 +1,146 @@
 from django.test import TestCase
-from unittest.mock import MagicMock
+from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import date
+
 from trips.models import Trip
+from trips.serializers import TripSerializer
 from students.models import Student
 from polls.models import Poll, Vote
 from boarding_points.models import BoardingPoint
-from django.contrib.auth.models import User
-from trips.views import TripCreateView, TripCompleteView
-from trips.serializers import TripSerializer, TripDetailSerializer
-from datetime import date
-from django.contrib.auth.models import User
 
 
-class TripsTest(TestCase):
+class TripModelLogicTests(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username="user1")
-        self.user2 = User.objects.create(username="user2")
+        self.user = User.objects.create(username="test_user")
+
+        # pontos
+        self.bp1 = BoardingPoint.objects.create(name="Ponto 1", route_order=0)
+        self.bp2 = BoardingPoint.objects.create(name="Ponto 2", route_order=1)
+
+        # alunos
         self.student1 = Student.objects.create(
-            name="José", user=self.user1, university="UESPI"
+            name="Aluno Ida",
+            user=self.user,
+            university="UESPI",
+            boarding_point=self.bp1,
         )
+        self.user2 = User.objects.create(username="test_user2")
         self.student2 = Student.objects.create(
-            name="Leonardo", user=self.user2, university="CHRISFAPI"
+            name="Aluno Volta",
+            user=self.user2,
+            university="IFPI",
+            boarding_point=self.bp2,
         )
-        self.boarding_point1 = BoardingPoint.objects.create(
-            name="Point 1", route_order=1
-        )
-        self.boarding_point2 = BoardingPoint.objects.create(
-            name="Point2", route_order=2
-        )
-        self.student1.boarding_point = self.boarding_point1
-        self.student1.save()
-        self.student2.boarding_point = self.boarding_point2
-        self.student2.save()
 
-        self.poll = Poll.objects.create(date=date.today(), status="open")
-        Vote.objects.create(student=self.student1, poll=self.poll, option="round_trip")
+        # enquete e votos
+        self.poll = Poll.objects.create(date=date.today())
         Vote.objects.create(
-            student=self.student2, poll=self.poll, option="one_way_outbound"
-        )
+            student=self.student1, poll=self.poll, option="round_trip"
+        )  # Vai na Ida
+        Vote.objects.create(
+            student=self.student2, poll=self.poll, option="one_way_return"
+        )  # Só Volta
 
-        self.trip_outbound = Trip.objects.create(
-            poll=self.poll,
-            trip_type="outbound",
-            current_boarding_point=self.boarding_point1,
-        )
-        self.trip_return = Trip.objects.create(
-            poll=self.poll, trip_type="return", current_university="IFPI"
-        )
+        # bviagem
+        self.trip = Trip.objects.create(poll=self.poll, trip_type="outbound")
 
-    def test_ct01_default_status_is_pending(self):
-        poll = Poll.objects.create(date=date(2025, 9, 13), status="open")
-        trip = Trip.objects.create(poll=poll, trip_type="outbound")
-        self.assertEqual(trip.status, "pending")
+    # Fuccionalide 1
+    def test_CT_01_initial_status_pending(self):
+        self.assertEqual(self.trip.status, "pending")
 
-    def test_ct02_str_method(self):
-        self.assertIn("Trip outbound", str(self.trip_outbound))
-        self.assertIn(str(self.poll.date), str(self.trip_outbound))
+    # Funcionalidade 1
+    def test_CT_02_start_trip_outbound_logic(self):
+        first_point = self.trip.start_trip()
 
-    def test_ct03_start_outbound_trip_sets_first_boarding_point(self):
-        first_point = self.trip_outbound.start_trip()
-        self.assertEqual(first_point, self.boarding_point1)
-        self.assertEqual(self.trip_outbound.status, "in_progress")
+        self.assertEqual(self.trip.status, "in_progress")
+        self.assertEqual(self.trip.current_boarding_point, self.bp1)
+        self.assertIsNotNone(self.trip.started_at)
+        self.assertEqual(first_point, self.bp1)
+
+    # Funcionalidade 1
+    def test_CT_03_cannot_start_non_pending_trip(self):
+        self.trip.status = "in_progress"
+        self.trip.save()
+
+        with self.assertRaisesMessage(ValueError, "Trip already started"):
+            self.trip.start_trip()
+
+    # Funcionalidade 1
+    def test_CT_04_next_stop_advances_point(self):
+        Vote.objects.filter(student=self.student2).update(option="round_trip")
+
+        self.trip.start_trip()
+
+        next_point = self.trip.next_stop()
+
+        self.assertEqual(self.trip.current_boarding_point, self.bp2)
+        self.assertEqual(next_point, self.bp2)
+
+    # Funcionalidade 1
+    def test_CT_05_next_stop_completes_trip_at_end(self):
+        self.trip.start_trip()
+
+        self.trip.next_stop()
+
+        self.assertEqual(self.trip.status, "completed")
+        self.assertIsNone(self.trip.current_boarding_point)
+
+    # Funcionalidade 1
+    def test_CT_06_complete_trip_logic(self):
+        self.trip.status = "in_progress"
+        self.trip.save()
+
+        self.trip.complete_trip()
+
+        self.assertEqual(self.trip.status, "completed")
+        self.assertIsNotNone(self.trip.completed_at)
+
+    # Funcionalidade 2
+    def test_CT_07_get_boarding_points_filters_correctly(self):
+        points = self.trip.get_boarding_points()
+
+        self.assertEqual(len(points), 1)
+        self.assertEqual(points[0], self.bp1)
+
+    # Funcionalidade 2
+    def test_CT_08_get_students_at_point(self):
+        students = self.trip.get_students_at_point(self.bp1)
+
+        self.assertEqual(len(students), 1)
+        self.assertEqual(students[0], self.student1)
+
+
+class TripSerializerTests(TestCase):
+    def setUp(self):
+        self.poll = Poll.objects.create(date=date.today())
+        self.trip = Trip.objects.create(poll=self.poll, trip_type="return")
+
+    # Funcionalidade 3
+    def test_CT_09_university_name_mapping(self):
+        self.trip.current_university = "UESPI"
+        serializer = TripSerializer(self.trip)
+
         self.assertEqual(
-            self.trip_outbound.current_boarding_point, self.boarding_point1
-        )
-        self.assertIsNotNone(self.trip_outbound.started_at)
-
-    def test_ct04_next_stop_outbound_progresses_correctly(self):
-        self.trip_outbound.start_trip()
-        next_point = self.trip_outbound.next_stop()
-        self.assertEqual(next_point, self.boarding_point2)
-        self.assertEqual(
-            self.trip_outbound.current_boarding_point, self.boarding_point2
+            serializer.data["current_university_name"], "Universidade Estadual do Piaui"
         )
 
-        final_point = self.trip_outbound.next_stop()
-        self.assertIsNone(final_point)
-        self.trip_outbound.refresh_from_db()
-        self.assertEqual(self.trip_outbound.status, "completed")
-        self.assertIsNone(self.trip_outbound.current_boarding_point)
+    # Funcionalidade 3
+    def test_CT_10_current_stop_index_calculation(self):
+        user = User.objects.create(username="u")
+        bp1 = BoardingPoint.objects.create(name="P1", route_order=0)
+        bp2 = BoardingPoint.objects.create(name="P2", route_order=1)
+        student = Student.objects.create(
+            name="S", user=user, boarding_point=bp2
+        )  # Aluno no ponto 2
+        Vote.objects.create(student=student, poll=self.poll, option="round_trip")
 
-    def test_ct05_complete_trip_sets_status_completed(self):
-        self.trip_outbound.start_trip()
-        self.trip_outbound.complete_trip()
-        self.assertEqual(self.trip_outbound.status, "completed")
-        self.assertIsNone(self.trip_outbound.current_boarding_point)
-        self.assertIsNone(self.trip_outbound.current_university)
-        self.assertIsNotNone(self.trip_outbound.completed_at)
-
-    def test_ct06_trip_serializer_basic_fields(self):
-        serializer = TripSerializer(self.trip_outbound)
-        data = serializer.data
-
-        self.assertEqual(data["id"], self.trip_outbound.id)
-        self.assertEqual(data["poll"], self.poll.id)
-        self.assertEqual(data["trip_type"], "outbound")
-        self.assertEqual(data["status"], "pending")
-        self.assertEqual(data["current_boarding_point"]["id"], self.boarding_point1.id)
-        self.assertIsNone(data["current_university_name"])
-        self.assertIsNone(data["current_stop_index"])
-
-    def test_ct07_serializer_current_university_name(self):
-        self.trip_return.current_university = "UESPI"
-        serializer = TripSerializer(self.trip_return)
-        data = serializer.data
-        self.assertEqual(
-            data["current_university_name"], "Universidade Estadual do Piaui"
+        trip_outbound = Trip.objects.create(
+            poll=self.poll, trip_type="outbound", status="in_progress"
         )
+
+        trip_outbound.current_boarding_point = bp2
+        trip_outbound.save()
+
+        serializer = TripSerializer(trip_outbound)
+        self.assertEqual(serializer.data["current_stop_index"], 0)
