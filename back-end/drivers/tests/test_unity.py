@@ -1,6 +1,7 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from drivers.models import Driver
+from common.constants import SHIFT_CHOICES
 
 
 class DriverModelTests(TestCase):
@@ -19,3 +20,16 @@ class DriverModelTests(TestCase):
         )
 
         self.assertEqual(driver.role, "driver")
+
+    # Funcionalidade 2
+    def test_CT_02_driver_user_added_to_group(self):
+        driver = Driver.objects.create(
+            name="DriverTest",
+            user=self.user,
+            shift=SHIFT_CHOICES[0][0],
+            dailyPaymentCents=13000,
+        )
+
+        self.assertTrue(Group.objects.filter(name="drivers").exists())
+        group = Group.objects.get(name="drivers")
+        self.assertIn(driver.user, group.user_set.all())
