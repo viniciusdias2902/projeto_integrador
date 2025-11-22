@@ -4,6 +4,9 @@ from rest_framework import permissions
 class GlobalDefaultPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return True
+        
         model_permission_codename = self.__get_model_permission_codename(
             method=request.method,
             view=view,
