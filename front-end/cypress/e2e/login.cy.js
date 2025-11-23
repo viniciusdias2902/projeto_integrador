@@ -3,6 +3,7 @@ describe('Funcionalidade de Login', () => {
     cy.visit('/');
   });
 
+//CT_2
   it('Deve fazer login com sucesso com credenciais válidas e redirecionar', () => {
     const userEmail = 'ana.silva@example.com';
     const userPassword = 'Password123';
@@ -16,6 +17,7 @@ describe('Funcionalidade de Login', () => {
     cy.window().its('localStorage').invoke('getItem', 'access').should('exist');
   });
 
+  //CT_3
   it('Deve mostrar mensagem de erro com credenciais inválidas', () => {
     const invalidEmail = 'usuario@errado.com';
     const invalidPassword = 'senhaerrada';

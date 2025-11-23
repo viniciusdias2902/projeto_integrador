@@ -1,6 +1,7 @@
 describe('Cadastro de estudante', () => {
   const baseUrl = 'http://localhost:5173/cadastro' 
 
+  //CT_1
   it('Deve cadastrar um novo estudante com sucesso', () => {
     cy.visit(baseUrl, { timeout: 20000 })
 
