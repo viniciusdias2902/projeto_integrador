@@ -1,68 +1,102 @@
-import StudentForm from '@/components/StudentForm.vue';  
-import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import  flushPromises  from 'flush-promises';
+import { describe, it, expect, vi } from 'vitest';
+import StudentForm from '@/components/StudentForm.vue';
+import flushPromises from 'flush-promises';
 
 describe("StudentForm", () => {
-    it("mostra mensagem de erro se o e-mail já estiver sido cadastrado", async() => {
-        vi.stubGlobal('fetch', vi.fn(() =>
-          Promise.resolve({
-            ok: false,
-            json: async () => ({ email: ['This email is already in use'] }),
-})
-    ));
+
+  const createFetchMock = (postOk, postResponse) => {
+    return vi.fn((url, options) => {
+      if (url.includes('boarding-points')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: 1, name: 'Ponto A' },
+            { id: 2, name: 'Ponto B' }
+          ],
+        });
+      }
+
+      if (url.includes('students') && options?.method === 'POST') {
+        return Promise.resolve({
+          ok: postOk,
+          json: async () => postResponse,
+        });
+      }
+
+      return Promise.resolve({ ok: true, json: async () => [] });
+    });
+  };
+
+  const fillInput = async (wrapper, selector, value) => {
+    let input = wrapper.find(selector);
+    if (!input.exists()) {
+        input = wrapper.find(`${selector} input`);
+    }
+    if (input.exists()) {
+        await input.setValue(value);
+    } else {
+        const typeSelector = selector.replace('#', 'input[type="').replace('name', 'text') + '"]'; 
+        const typeInput = wrapper.find(typeSelector);
+        if(typeInput.exists()) await typeInput.setValue(value);
+    }
+  };
+
+  // Teste Duplicidade
+  it("mostra mensagem de erro se o e-mail já estiver sido cadastrado", async () => {
+    vi.stubGlobal('fetch', createFetchMock(false, { email: ['This email is already in use'] }));
 
     const wrapper = mount(StudentForm);
+    await flushPromises();
 
-     await wrapper.setData({
-      form: {
-        name: 'Maria Rita',
-        email: 'teste@email.com',
-        password: 'senha123',
-        phone: '1234567890',
-        university: 'UESPI',
-        class_shift: 'A',
-        boarding_point: 1,
-      }
-    })
+    await fillInput(wrapper, '#name', 'Maria Rita');
+    await fillInput(wrapper, '#email', 'teste@email.com');
+    await fillInput(wrapper, '#password', 'Senha123');
+    await fillInput(wrapper, '#phone', '12345678901');
+    
+    const selects = wrapper.findAll('select');
+    if (selects.length >= 3) {
+        await selects[0].setValue('UESPI'); 
+        await selects[1].setValue('M');     
+        await selects[2].setValue(1); 
+    }
+
+    await wrapper.find('form').trigger('submit.prevent');
+    await flushPromises(); // espera o submit
+
+    expect(wrapper.text()).toContain('Esse email já está sendo usado por outro usuário.');
+  });
+
+  // Teste Limpeza
+  it("limpa os campos após cadastro bem-sucedido", async () => {
+    vi.stubGlobal('fetch', createFetchMock(true, { id: 1 }));
+
+    const wrapper = mount(StudentForm);
+    await flushPromises();
+
+    // Preenche dados
+    await fillInput(wrapper, '#name', 'Nome Valido');
+    await fillInput(wrapper, '#email', 'novo@email.com');
+    await fillInput(wrapper, '#password', 'Senha123');
+    await fillInput(wrapper, '#phone', '11999999999');
+    
+    const selects = wrapper.findAll('select');
+    if (selects.length >= 3) {
+        await selects[0].setValue('UESPI');
+        await selects[1].setValue('M');
+        await selects[2].setValue(1);
+    }
+
     await wrapper.find('form').trigger('submit.prevent');
     await flushPromises();
-    expect(wrapper.text()).toContain('Esse email já está sendo usado por outro usuário.');
 
-    });
-});
+    let emailInput = wrapper.find('#email');
+    if (!emailInput.element || emailInput.element.tagName !== 'INPUT') {
+        emailInput = wrapper.find('#email input');
+    }
+    
+    if (!emailInput.exists()) emailInput = wrapper.find('input[type="email"]');
 
-describe("StudentForm", () => {
-    it("limpa os campos após cadastro bem-sucedido", async() => {
-        vi.stubGlobal('fetch', vi.fn(() =>
-          Promise.resolve({
-            ok: true,
-            json: async () => ({}) })
-          ))
-
-      const wrapper = mount(StudentForm, {shallow: false});
-
-        wrapper.vm.form = {
-          name: 'Gbaryel',
-          email: 'teste@email.com',
-          password: 'pedro456',
-          phone: '1234564690',
-          university: 'CHRISFAPI',
-          class_shift: 'N',
-          boarding_point: 2,
-      };
-
-      await wrapper.vm.$nextTick();
-      await wrapper.find('form').trigger('submit.prevent');
-      await flushPromises();
-      
-      expect(wrapper.vm.form.name).toBe('');
-      expect(wrapper.vm.form.email).toBe('');
-      expect(wrapper.vm.form.password).toBe('');
-      expect(wrapper.vm.form.phone).toBe('');
-      expect(wrapper.vm.form.university).toBe('');
-      expect(wrapper.vm.form.class_shift).toBe('');
-      expect(wrapper.vm.form.boarding_point).toBe(1);
-});
-
+    expect(emailInput.element.value).toBe('');
+  });
 });

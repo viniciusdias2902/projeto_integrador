@@ -1,69 +1,75 @@
 import { mount } from '@vue/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import BoardingComponent from '@/components/BoardingComponent.vue';
+import BoardingPage from '@/pages/BoardingPage.vue';
 import flushPromises from 'flush-promises';
 
-beforeEach(() => {
-  vi.stubGlobal('localStorage', {
-    getItem: vi.fn().mockReturnValue('fake_token'),
-  });
-});
-
-describe('BoardingComponent', () => {
-
-  it('deve buscar e renderizar a lista de embarque quando montado com um pollId', async () => {
-    const mockBoardingData = [
-      {
-        point: { id: 1, name: 'Ponto A - Praça Central' },
-        students: [
-          { id: 10, name: 'Ana Silva' },
-          { id: 12, name: 'Bruno Costa' },
-        ],
-      },
-    ];
-
-    vi.stubGlobal('fetch', vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: async () => mockBoardingData,
-      })
-    ));
-
-    const wrapper = mount(BoardingComponent, {
-      props: {
-        boardingType: 'Ida',
-        pollId: 5,
-      },
-    });
-
-    await flushPromises();
-
-    const componentText = wrapper.text();
-    expect(componentText).toContain('Ponto A - Praça Central (2 alunos)');
-    expect(componentText).toContain('Ana Silva');
-    expect(componentText).toContain('Bruno Costa');
-    expect(componentText).not.toContain('Nenhum aluno confirmado');
-  });
-
-  it('deve mostrar uma mensagem de erro se a API falhar', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Falha de rede'))));
-
-    const wrapper = mount(BoardingComponent, {
-      props: { boardingType: 'Ida', pollId: 5 },
-    });
-    await flushPromises();
-
-    expect(wrapper.text()).toContain('Erro: Falha de rede');
-  });
+describe('BoardingPage', () => {
   
-  it('deve mostrar "nenhum aluno" se a API retornar uma lista vazia', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: async () => [] })));
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Teste positivo de carregamento bem sucedido
+  it('deve buscar a enquete do dia e renderizar a lista de embarque', async () => {
+    const today = new Date().toISOString().split('T')[0];
     
-    const wrapper = mount(BoardingComponent, {
-      props: { boardingType: 'Ida', pollId: 5 },
-    });
+    vi.stubGlobal('fetch', vi.fn((url) => {
+      if (url.includes('token')) return Promise.resolve({ ok: true, json: async () => ({}) });
+
+      if (url.includes('polls/') && !url.includes('boarding_list')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [{ id: 5, date: today }], 
+        });
+      }
+
+      if (url.includes('boarding_list')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { 
+              point: { id: 1, name: 'Ponto A - Praça Central' }, 
+              students: [{ id: 10, name: 'Ana Silva' }] 
+            }
+          ],
+        });
+      }
+
+      return Promise.resolve({ ok: true, json: async () => [] });
+    }));
+
+    const wrapper = mount(BoardingPage);
+    
+    await flushPromises(); // Carrega Enquete
+    await flushPromises(); // Carrega Lista
+
+    expect(wrapper.text()).toContain('Ana Silva');
+    expect(wrapper.text()).toContain('Ponto A - Praça Central');
+  });
+
+  // teste falha de rede
+  it('deve mostrar uma mensagem de erro se a busca da enquete falhar', async () => {
+    vi.stubGlobal('fetch', vi.fn((url) => {
+      if (url.includes('token')) return Promise.resolve({ ok: true });
+      return Promise.reject(new Error('Falha de rede'));
+    }));
+
+    const wrapper = mount(BoardingPage);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Nenhum aluno confirmado para esta viagem.');
+    expect(wrapper.text()).toContain('Erro ao carregar');
+  });
+
+  // Teste ausencia de enquetes
+  it('deve mostrar mensagem se não houver enquete para o dia', async () => {
+    vi.stubGlobal('fetch', vi.fn((url) => {
+        if (url.includes('token')) return Promise.resolve({ ok: true });
+        return Promise.resolve({ ok: true, json: async () => [] });
+    }));
+
+    const wrapper = mount(BoardingPage);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Nenhuma enquete para hoje');
   });
 });
