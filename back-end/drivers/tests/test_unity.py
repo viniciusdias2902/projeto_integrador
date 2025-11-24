@@ -35,6 +35,7 @@ class DriverModelTests(TestCase):
         group = Group.objects.get(name="drivers")
         self.assertIn(driver.user, group.user_set.all())
 
+    # Funcionalidade 3
     def test_CT_03_create_driver_sucess(self):
         data = {
             "name": "CreateDriverTest",
@@ -57,3 +58,15 @@ class DriverModelTests(TestCase):
 
         self.assertEqual(driver.name, data["name"])
         self.assertEqual(driver.dailyPaymentCents, data["dailyPaymentCents"])
+
+    # Funcionalidade 4
+    def test_CT_04_missing_required_fields(self):
+        data = {
+            "name": "Gabryel",
+            "phone": "9876543215",
+            "shift": SHIFT_CHOICES[1][0],
+        }
+        serializer = DriverCreateSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("email", serializer.errors)
+        self.assertIn("password", serializer.errors)
