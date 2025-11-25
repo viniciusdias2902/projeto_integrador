@@ -33,3 +33,13 @@ class BoardingPointModelTests(TestCase):
     def test_CT_03_str_representation(self):
         point = BoardingPoint.objects.create(name="Praça", route_order=5)
         self.assertEqual(str(point), "5: Praça")
+
+    # Funcionalidade 4
+    def test_CT_04_meta_ordering(self):
+        ponto_1 = BoardingPoint.objects.create(name="Ponto A", route_order=3)
+        ponto_2 = BoardingPoint.objects.create(name="Ponto B", route_order=1)
+        ponto_3 = BoardingPoint.objects.create(name="Ponto C", route_order=2)
+
+        pontos = BoardingPoint.objects.all()
+
+        self.assertEqual(list(pontos), [ponto_2, ponto_3, ponto_1])
