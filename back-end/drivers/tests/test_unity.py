@@ -70,3 +70,19 @@ class DriverModelTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("email", serializer.errors)
         self.assertIn("password", serializer.errors)
+
+    # Funcionalidade 5
+    def test_CT_05_get_email_returns_email(self):
+        from django.contrib.admin.sites import AdminSite
+        from drivers.admin import DriverModelAdmin
+
+        driver = Driver.objects.create(
+            user=self.user,
+            name="EmailTestDriver",
+            phone="1234567890",
+            shift="A",
+            dailyPaymentCents=15000,
+        )
+        admin = DriverModelAdmin(Driver, AdminSite())
+        email = admin.get_email(driver)
+        self.assertEqual(email, self.user.email)
