@@ -60,7 +60,7 @@ class BoardingPointModelTests(TestCase):
         self.assertEqual(pontos[1].route_order, 2)
         self.assertEqual(pontos[1].name, "Ponto 3")
 
-    # Funcionalidade 6
+    # Funcionalidade 5
     def test_CT_06_create_boarding_point_adjusts_order(self):
         ponto_1 = BoardingPoint.objects.create(name="Ponto 1", route_order=0)
         ponto_2 = BoardingPoint.objects.create(name="Ponto 2", route_order=0)

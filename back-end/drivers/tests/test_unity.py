@@ -3,6 +3,8 @@ from django.contrib.auth.models import User, Group
 from drivers.models import Driver
 from common.constants import SHIFT_CHOICES
 from drivers.serializers import DriverSerializer, DriverCreateSerializer
+from django.apps import apps
+from drivers.apps import DriversConfig
 
 
 class DriverModelTests(TestCase):
@@ -86,3 +88,8 @@ class DriverModelTests(TestCase):
         admin = DriverModelAdmin(Driver, AdminSite())
         email = admin.get_email(driver)
         self.assertEqual(email, self.user.email)
+
+    # Funcionalidade 6
+    def test_CT_06_app_config_name(self):
+        self.assertEqual(DriversConfig.name, "drivers")
+        self.assertEqual(apps.get_app_config("drivers").name, "drivers")
