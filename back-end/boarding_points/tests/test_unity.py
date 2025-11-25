@@ -43,3 +43,19 @@ class BoardingPointModelTests(TestCase):
         pontos = BoardingPoint.objects.all()
 
         self.assertEqual(list(pontos), [ponto_2, ponto_3, ponto_1])
+
+    # Funcionalidade 5
+    def test_CT_05_delete_boarding_point_reorders(self):
+        ponto_1 = BoardingPoint.objects.create(name="Ponto 1", route_order=1)
+        ponto_2 = BoardingPoint.objects.create(name="Ponto 2", route_order=2)
+        ponto_3 = BoardingPoint.objects.create(name="Ponto 3", route_order=3)
+
+        ponto_2.delete()
+
+        pontos = BoardingPoint.objects.all()
+
+        self.assertEqual(pontos[0].route_order, 1)
+        self.assertEqual(pontos[0].name, "Ponto 1")
+
+        self.assertEqual(pontos[1].route_order, 2)
+        self.assertEqual(pontos[1].name, "Ponto 3")
