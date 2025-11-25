@@ -71,7 +71,7 @@ class BoardingPointModelTests(TestCase):
         self.assertEqual(ponto_1.route_order, 1)
         self.assertEqual(ponto_2.route_order, 0)
 
-    # Funcionalidade 6
+    # Funcionalidade 5
     def test_CT_07_create_boarding_point_at_end(self):
         ponto_1 = BoardingPoint.objects.create(name="Garagem", route_order=0)
         ponto_2 = BoardingPoint.objects.create(name="Hotel Alvorada", route_order=1)
@@ -84,3 +84,16 @@ class BoardingPointModelTests(TestCase):
         self.assertEqual(ponto_1.route_order, 0)
         self.assertEqual(ponto_2.route_order, 1)
         self.assertEqual(ponto_3.route_order, 2)
+
+    def test_CT_08_insert_middle(self):
+        ponto_1 = BoardingPoint.objects.create(name="Ponto A", route_order=0)
+        ponto_2 = BoardingPoint.objects.create(name="Ponto B", route_order=1)
+
+        novo_ponto = BoardingPoint.objects.create(name="Ponto C", route_order=1)
+        ponto_1.refresh_from_db()
+        ponto_2.refresh_from_db()
+        novo_ponto.refresh_from_db()
+
+        assert ponto_1.route_order == 0
+        assert novo_ponto.route_order == 1
+        assert ponto_2.route_order == 2
