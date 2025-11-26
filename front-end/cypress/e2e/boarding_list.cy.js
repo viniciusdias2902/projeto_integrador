@@ -11,7 +11,7 @@ describe('Funcionalidade de Lista de Embarque', () => {
     });
   });
 
-  // CT-S10: Teste Positivo
+  // CT-10: Teste Positivo
   it('Deve exibir a lista de embarque com os pontos e alunos corretos', () => {
     // CONGELAR O TEMPO: Definir  uma data fixa
     const now = new Date('2025-11-24T10:00:00Z');
