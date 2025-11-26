@@ -91,6 +91,8 @@ describe('RF 11 - Gestão e Visualização de Viagens', () => {
       cy.contains('button', 'Iniciar').click(); 
       cy.wait('@startTrip');
 
+      cy.tick(1100); 
+
       
       cy.contains('Ponto A').should('be.visible');
 
@@ -100,6 +102,7 @@ describe('RF 11 - Gestão e Visualização de Viagens', () => {
       cy.contains('button', 'Próximo').click(); 
       cy.wait('@nextStop');
       
+      cy.tick(1100);
 
       cy.contains('Ponto B').should('be.visible');
 
@@ -151,6 +154,8 @@ describe('RF 11 - Gestão e Visualização de Viagens', () => {
 
       cy.wait('@getOutboundList');
       
+      cy.tick(1100);
+
       cy.contains('Ponto A').should('be.visible'); 
     });
   });
