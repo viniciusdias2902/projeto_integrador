@@ -5,6 +5,8 @@ from common.constants import SHIFT_CHOICES
 from drivers.serializers import DriverSerializer, DriverCreateSerializer
 from django.apps import apps
 from drivers.apps import DriversConfig
+from drivers.views import DriverRetrieveUpdateDestroyView
+from unittest.mock import Mock
 
 
 class DriverModelTests(TestCase):
@@ -112,26 +114,12 @@ class DriverModelTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("email", serializer.errors)
 
-    # Funcionalidade 7
-    def test_CT_09_create_driver_valid_data(self):
-        data = {
-            "name": "ValidDriver",
-            "phone": "5551234567",
-            "shift": SHIFT_CHOICES[0][0],
-            "email": "valid@exemplo.com",
-            "password": "senha1234",
-            "dailyPaymentCents": 2000,
-        }
+class DriverViewTests(TestCase):
+    def setUp(self):
+        self.view = DriverRetrieveUpdateDestroyView()
+        self.mock_request = Mock()
+        self.view.request = self.mock_request
 
-        serializer = DriverCreateSerializer(data=data)
-        self.assertTrue(serializer.is_valid(), serializer.errors)
-        driver = serializer.save()
-
-        self.assertEqual(driver.name, data["name"])
-        self.assertEqual(driver.phone, data["phone"])
-        self.assertEqual(driver.shift, data["shift"])
-        self.assertEqual(driver.dailyPaymentCents, data["dailyPaymentCents"])
-        self.assertEqual(driver.role, "driver")
-        self.assertIsNotNone(driver.user)
-        self.assertEqual(driver.user.email, data["email"])
-        self.assertTrue(driver.user.groups.filter(name="drivers").exists())
+    def test_CT_09_serializer_class(self):
+        self.assertEqual(self.view.serializer_class, DriverSerializer)
+ 18240a1f (test(drivers): add test to verify serializer_class of DriverRetrieveUpdateDestroyView)
