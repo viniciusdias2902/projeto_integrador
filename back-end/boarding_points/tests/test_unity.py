@@ -1,5 +1,8 @@
 from django.test import TestCase
+from rest_framework.test import APIRequestFactory
 from boarding_points.models import BoardingPoint
+from boarding_points.views import BoardingPointViewSet
+from boarding_points.serializers import BoardingPointSerializer
 
 
 class BoardingPointModelTests(TestCase):
@@ -97,3 +100,11 @@ class BoardingPointModelTests(TestCase):
         assert ponto_1.route_order == 0
         assert novo_ponto.route_order == 1
         assert ponto_2.route_order == 2
+
+
+class BoardingPointViewTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = BoardingPointViewSet()
+        self.view.serializer_class = BoardingPointSerializer
+        self.view.queryset = BoardingPoint.objects.all()
