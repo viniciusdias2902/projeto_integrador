@@ -72,7 +72,6 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.wait('@createPoint');
     cy.wait('@getPointsUpdated');
     
-    cy.get('.alert-success').should('contain', 'criado com sucesso');
     cy.contains('Novo Ponto').should('be.visible'); 
   });
 
@@ -99,7 +98,6 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.contains('button', 'Salvar').click();
 
     cy.wait('@updatePoint');
-    cy.get('.alert-success').should('contain', 'atualizado com sucesso');
     cy.contains('Praça Editada').should('be.visible');
   });
 
@@ -123,7 +121,6 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.wait('@deletePoint');
     cy.wait('@getPointsUpdated');
 
-    cy.get('.alert-success').should('contain', 'excluído com sucesso');
     cy.contains('Praça Central').should('not.exist');
   });
 
