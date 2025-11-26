@@ -164,3 +164,8 @@ class TripSerializerTests(TestCase):
         self.assertEqual(data["poll"], self.poll.id)
         self.assertEqual(data["trip_type"], "return")
         self.assertEqual(data["status"], "pending")
+
+    def test_CT_12_current_university_name_none(self):
+        self.trip.current_university = None
+        serializer = TripSerializer(self.trip)
+        self.assertIsNone(serializer.data["current_university_name"])
