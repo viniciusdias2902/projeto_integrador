@@ -2,9 +2,9 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import date
-
+from rest_framework.exceptions import ValidationError
 from trips.models import Trip
-from trips.serializers import TripSerializer
+from trips.serializers import TripSerializer, TripDetailSerializer
 from students.models import Student
 from polls.models import Poll, Vote
 from boarding_points.models import BoardingPoint
@@ -113,7 +113,19 @@ class TripModelLogicTests(TestCase):
 
 class TripSerializerTests(TestCase):
     def setUp(self):
+        self.user = User.objects.create(username="test_user")
         self.poll = Poll.objects.create(date=date.today())
+        self.bp1 = BoardingPoint.objects.create(name="Ponto 1", route_order=0)
+        self.bp2 = BoardingPoint.objects.create(name="Ponto 2", route_order=1)
+
+        self.student = Student.objects.create(
+            name="Tony",
+            user=self.user,
+            university="UESPI",
+            boarding_point=self.bp1,
+        )
+
+        Vote.objects.create(student=self.student, poll=self.poll, option="round_trip")
         self.trip = Trip.objects.create(poll=self.poll, trip_type="return")
 
     # Funcionalidade 3
@@ -144,3 +156,11 @@ class TripSerializerTests(TestCase):
 
         serializer = TripSerializer(trip_outbound)
         self.assertEqual(serializer.data["current_stop_index"], 0)
+
+    def test_CT_11_serializer_accepts_valid_data(self):
+        serializer = TripSerializer(instance=self.trip)
+        data = serializer.data
+
+        self.assertEqual(data["poll"], self.poll.id)
+        self.assertEqual(data["trip_type"], "return")
+        self.assertEqual(data["status"], "pending")
