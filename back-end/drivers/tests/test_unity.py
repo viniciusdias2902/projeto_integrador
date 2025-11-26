@@ -5,7 +5,7 @@ from common.constants import SHIFT_CHOICES
 from drivers.serializers import DriverSerializer, DriverCreateSerializer
 from django.apps import apps
 from drivers.apps import DriversConfig
-from drivers.views import DriverRetrieveUpdateDestroyView
+from drivers.views import DriverRetrieveUpdateDestroyView, DriverListCreateView
 from unittest.mock import Mock
 
 
@@ -100,6 +100,7 @@ class DriverModelTests(TestCase):
         config = apps.get_app_config("drivers")
         self.assertIsInstance(config, DriversConfig)
 
+    # Funcionalidade 7
     def test_CT_08_invalid_email(self):
         data = {
             "name": "José",
@@ -114,12 +115,21 @@ class DriverModelTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("email", serializer.errors)
 
+
 class DriverViewTests(TestCase):
     def setUp(self):
-        self.view = DriverRetrieveUpdateDestroyView()
+        self.retrieve_view = DriverRetrieveUpdateDestroyView()
+        self.view = DriverListCreateView()
         self.mock_request = Mock()
+        self.retrieve_view.request = self.mock_request
         self.view.request = self.mock_request
+        self.mock_request.method = "GET"
 
+    # Funcionalidade 8
     def test_CT_09_serializer_class(self):
-        self.assertEqual(self.view.serializer_class, DriverSerializer)
- 18240a1f (test(drivers): add test to verify serializer_class of DriverRetrieveUpdateDestroyView)
+        self.assertEqual(self.retrieve_view.serializer_class, DriverSerializer)
+
+    # Funcionalidade 9
+    def test_CT_10_get_serializer_class_get(self):
+        serializer_class = self.view.get_serializer_class()
+        self.assertEqual(serializer_class, DriverSerializer)
