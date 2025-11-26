@@ -111,3 +111,27 @@ class DriverModelTests(TestCase):
         serializer = DriverCreateSerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertIn("email", serializer.errors)
+
+    # Funcionalidade 7
+    def test_CT_09_create_driver_valid_data(self):
+        data = {
+            "name": "ValidDriver",
+            "phone": "5551234567",
+            "shift": SHIFT_CHOICES[0][0],
+            "email": "valid@exemplo.com",
+            "password": "senha1234",
+            "dailyPaymentCents": 2000,
+        }
+
+        serializer = DriverCreateSerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        driver = serializer.save()
+
+        self.assertEqual(driver.name, data["name"])
+        self.assertEqual(driver.phone, data["phone"])
+        self.assertEqual(driver.shift, data["shift"])
+        self.assertEqual(driver.dailyPaymentCents, data["dailyPaymentCents"])
+        self.assertEqual(driver.role, "driver")
+        self.assertIsNotNone(driver.user)
+        self.assertEqual(driver.user.email, data["email"])
+        self.assertTrue(driver.user.groups.filter(name="drivers").exists())
