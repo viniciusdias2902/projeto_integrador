@@ -97,3 +97,17 @@ class DriverModelTests(TestCase):
     def test_CT_07_app_config_class(self):
         config = apps.get_app_config("drivers")
         self.assertIsInstance(config, DriversConfig)
+
+    def test_CT_08_invalid_email(self):
+        data = {
+            "name": "José",
+            "phone": "9876543215",
+            "shift": SHIFT_CHOICES[1][0],
+            "email": "invalid-email",
+            "password": "senha123",
+            "dailyPaymentCents": 1000,
+        }
+
+        serializer = DriverCreateSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("email", serializer.errors)
