@@ -169,3 +169,7 @@ class TripSerializerTests(TestCase):
         self.trip.current_university = None
         serializer = TripSerializer(self.trip)
         self.assertIsNone(serializer.data["current_university_name"])
+
+    def test_CT_13_total_stops_outbound(self):
+        serializer = TripSerializer(self.trip)
+        self.assertEqual(serializer.data["total_stops"], 1)
