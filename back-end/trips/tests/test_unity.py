@@ -256,3 +256,16 @@ class TestTripStartView(TestsTripView):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["message"], "Return trip started")
         self.assertIn(response.data["current_university"], ["UESPI", "IFPI"])
+
+
+class TestTripCompleteView(TestsTripView):
+    def test_CT_19_complete_outbound(self):
+        self.outbound_trip.start_trip()
+        url = reverse("trip-complete", args=[self.outbound_trip.id])
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["message"],
+            "Outbound trip completed manually, return trip ready",
+        )
