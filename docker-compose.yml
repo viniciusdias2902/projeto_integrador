@@ -1,0 +1,106 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    container_name: unibus_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: projetointegrador
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d projetointegrador"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: unibus_backend
+    restart: always
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: "sua-chave-secreta-muito-segura-aqui"
+      ALLOWED_HOSTS: "SEU_IP,localhost,127.0.0.1"
+      DB_NAME: projetointegrador
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_HOST: db
+      DB_PORT: 5432
+      CORS_ALLOWED_ORIGINS: "http://SEU_IP,http://localhost"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - static_volume:/app/staticfiles
+
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: unibus_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  static_volume:
+```
+
+### 2.9 - .dockerignore para Backend (`back-end/.dockerignore`)
+```
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.log
+*.pot
+db.sqlite3
+.idea/
+.vscode/
+*.bak
+.coverage
+htmlcov/
+.pytest_cache/
+node_modules/
+```
+
+### 2.10 - .dockerignore para Frontend (`front-end/.dockerignore`)
+```
+node_modules
+dist
+.env
+.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+coverage
+.vscode
+.idea
+```
+
+## Passo 3: Atualizar .gitignore (raiz do projeto)
+
+Adicione ao `.gitignore` existente:
+```
+# Docker
+docker-compose.override.yml
+
+# Environment
+.env.production.local
