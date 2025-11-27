@@ -236,3 +236,32 @@ class PollDetailViewTests(TestCase):
 
         response = self.view(request, pk=self.poll.id)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PollAutoCloseTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = CleanOldPollsView.as_view()
+        self.today = timezone.localdate()
+
+        self.user = User.objects.create(username="admin")
+        self.poll_today = Poll.objects.create(date=self.today, status="open")
+        self.poll_old = Poll.objects.create(
+            date=self.today - timedelta(days=2), status="open"
+        )
+
+    @patch("polls.views.timezone.now")
+    def test_CT_15_close_old_polls(self, mock_now):
+        mock_now.return_value = timezone.make_aware(
+            timezone.datetime.combine(self.today, timezone.datetime.min.time())
+        )
+
+        request = self.factory.post("/polls/clean_old/")
+        force_authenticate(request, user=self.user)
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["deleted_count"], 1)
+        self.assertIn(str(self.poll_old.date), response.data["deleted_dates"])
+
+        self.assertTrue(Poll.objects.filter(pk=self.poll_today.pk).exists())
