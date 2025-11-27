@@ -108,3 +108,6 @@ class BoardingPointViewTests(TestCase):
         self.view = BoardingPointViewSet()
         self.view.serializer_class = BoardingPointSerializer
         self.view.queryset = BoardingPoint.objects.all()
+
+    def test_CT_09_serializer_class(self):
+        self.assertEqual(self.view.serializer_class, BoardingPointSerializer)
