@@ -12,6 +12,7 @@ from polls.views import (
     PollListView,
     CreateWeeklyPollsView,
     CleanOldPollsView,
+    VoteListView,
 )
 from students.models import Student
 from polls.serializers import StudentNestedSerializer
@@ -188,3 +189,22 @@ class TestCleanOldPollsView(TestCase):
         response = self.view(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["deleted_count"], 2)
+
+
+class TestVoteListView(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = VoteListView.as_view()
+
+    @patch("polls.views.Vote.objects")
+    def test_CT_12_list_votes(self, mock_objects):
+        mock_student = MagicMock()
+        mock_student.id = 1
+        mock_user = MagicMock()
+        mock_user.student = mock_student
+        mock_objects.filter.return_value = []
+
+        request = self.factory.get("/votes/")
+        force_authenticate(request, user=m)
+        response = self.view(request)
+        self.assertEqual(response.status_code, 200)
