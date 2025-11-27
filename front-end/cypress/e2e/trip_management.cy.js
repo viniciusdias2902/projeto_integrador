@@ -69,7 +69,7 @@ describe('RF 11 - Gestão e Visualização de Viagens', () => {
 
     //CT-13 crud de viagens
     it('Deve permitir iniciar, avançar e finalizar uma viagem', () => {
-      // --- MOCKS DE AÇÃO (POST) ---
+      //MOCKS DE AÇÃO (POST)
       cy.intercept('POST', '**/trips/100/start/', { statusCode: 200, body: { message: 'Iniciada', trip: mockTripInProgressA } }).as('startTrip');
       cy.intercept('POST', '**/trips/100/next_stop/', { statusCode: 200, body: { message: 'Avançado', trip: mockTripInProgressB } }).as('nextStop');
       cy.intercept('POST', '**/trips/100/complete/', { statusCode: 200, body: { message: 'Finalizada', trip: mockTripCompleted } }).as('completeTrip');
