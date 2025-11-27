@@ -1,13 +1,16 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.urls import reverse
 from datetime import date
 from rest_framework.exceptions import ValidationError
+from rest_framework import status
 from trips.models import Trip
 from trips.serializers import TripSerializer, TripDetailSerializer
 from students.models import Student
 from polls.models import Poll, Vote
 from boarding_points.models import BoardingPoint
+from rest_framework.test import APITestCase, APIClient
 
 
 class TripModelLogicTests(TestCase):
@@ -173,3 +176,45 @@ class TripSerializerTests(TestCase):
     def test_CT_13_total_stops_outbound(self):
         serializer = TripSerializer(self.trip)
         self.assertEqual(serializer.data["total_stops"], 1)
+
+
+class TestsTripView(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(username="test_user", password="testpass")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+        self.poll = Poll.objects.create(date=timezone.now().date(), status="open")
+
+        self.bp1 = BoardingPoint.objects.create(name="Ponto 1", route_order=1)
+        self.bp2 = BoardingPoint.objects.create(name="Ponto 2", route_order=2)
+
+        self.student1 = Student.objects.create(
+            user=User.objects.create(username="student1"),
+            name="Vito",
+            phone="999999999",
+            university="UESPI",
+            boarding_point=self.bp1,
+        )
+
+        self.student2 = Student.objects.create(
+            user=User.objects.create(username="student2"),
+            name="Connie",
+            phone="9999994579",
+            university="IFPI",
+            boarding_point=self.bp2,
+        )
+
+        Vote.objects.create(student=self.student1, poll=self.poll, option="round_trip")
+        Vote.objects.create(student=self.student2, poll=self.poll, option="outbound")
+
+        self.outbound_trip = Trip.objects.create(poll=self.poll, trip_type="outbound")
+        self.return_trip = Trip.objects.create(poll=self.poll, trip_type="return")
+
+    # Funcionalidade 4
+    def test_CT_14_list_all_trips(self):
+        url = reverse("trip-list")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
