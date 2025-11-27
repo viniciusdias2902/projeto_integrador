@@ -7,7 +7,7 @@ from unittest.mock import patch, MagicMock
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from polls.models import Poll, Vote
-from polls.views import PollDetailView, PollListView
+from polls.views import PollDetailView, PollListView, CreateWeeklyPollsView
 from students.models import Student
 from polls.serializers import StudentNestedSerializer
 from boarding_points.models import BoardingPoint
@@ -143,3 +143,21 @@ class PollListViewTests(TestCase):
 
         response = self.view(request)
         self.assertEqual(response.status_code, 200)
+
+
+class TestCreateWeeklyPollsView(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = CreateWeeklyPollsView.as_view()
+
+    @patch("polls.views.timezone.now")
+    @patch("polls.views.Poll.objects.get_or_create")
+    def test_CT_10_create_weekly_polls(self, mock_get_or_create, mock_now):
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 11, 26, 10, 0, 0))
+        mock_get_or_create.return_value = (MagicMock(), True)
+        request = self.factory.post("/polls/create_weekly/")
+        force_authenticate(request, user=MagicMock())
+        response = self.view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("created_polls", response.data)
