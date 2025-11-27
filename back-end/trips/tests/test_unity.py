@@ -218,3 +218,10 @@ class TestsTripView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
+
+    def test_CT_15_list_filter_by_poll(self):
+        url = reverse("trip-list") + f"?poll={self.poll.id}"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
