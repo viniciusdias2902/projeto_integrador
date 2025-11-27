@@ -7,7 +7,12 @@ from unittest.mock import patch, MagicMock
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from polls.models import Poll, Vote
-from polls.views import PollDetailView, PollListView, CreateWeeklyPollsView
+from polls.views import (
+    PollDetailView,
+    PollListView,
+    CreateWeeklyPollsView,
+    CleanOldPollsView,
+)
 from students.models import Student
 from polls.serializers import StudentNestedSerializer
 from boarding_points.models import BoardingPoint
@@ -161,3 +166,25 @@ class TestCreateWeeklyPollsView(TestCase):
         response = self.view(request)
         self.assertEqual(response.status_code, 200)
         self.assertIn("created_polls", response.data)
+
+
+class TestCleanOldPollsView(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = CleanOldPollsView.as_view()
+
+    @patch("polls.views.timezone.now")
+    @patch("polls.views.Poll.objects")
+    def test_CT_11_clean_old_polls(self, mock_objects, mock_now):
+
+        mock_now.return_value = timezone.make_aware(datetime(2025, 12, 1, 10, 0, 0))
+        queryset = MagicMock()
+        queryset.count.return_value = 2
+        queryset.values_list.return_value = [date(2025, 11, 29), date(2025, 11, 30)]
+        mock_objects.filter.return_value = queryset
+
+        request = self.factory.post("/polls/clean_old/")
+        force_authenticate(request, user=MagicMock())
+        response = self.view(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["deleted_count"], 2)
