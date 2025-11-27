@@ -227,7 +227,7 @@ class TestsTripView(APITestCase):
         self.assertEqual(len(response.data), 2)
 
 
-class TestTripDetailView(TestsTripView):
+class TestTripCreateView(TestsTripView):
     def test_CT_16_create_trip_sucess(self):
         url = reverse("trip-create")
         data = {"poll": self.poll.id, "trip_type": "return", "status": "pending"}
@@ -235,3 +235,15 @@ class TestTripDetailView(TestsTripView):
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class TestTripStartView(TestsTripView):
+    def test_CT_17_start_outbound_trip(self):
+        url = reverse("trip-start", args=[self.outbound_trip.id])
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.outbound_trip.refresh_from_db()
+        self.assertEqual(self.outbound_trip.status, "in_progress")
+        self.assertIsNotNone(self.outbound_trip.started_at)
