@@ -28,13 +28,13 @@ services:
     environment:
       DEBUG: "False"
       SECRET_KEY: "sua-chave-secreta-muito-segura-aqui"
-      ALLOWED_HOSTS: "SEU_IP,localhost,127.0.0.1"
+      ALLOWED_HOSTS: "170.245.33.221,localhost,127.0.0.1"
       DB_NAME: projetointegrador
       DB_USER: admin
       DB_PASSWORD: admin123
       DB_HOST: db
       DB_PORT: 5432
-      CORS_ALLOWED_ORIGINS: "http://SEU_IP,http://localhost"
+      CORS_ALLOWED_ORIGINS: "170.245.33.221"
     ports:
       - "8000:8000"
     depends_on:
