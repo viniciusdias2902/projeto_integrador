@@ -269,3 +269,13 @@ class TestTripCompleteView(TestsTripView):
             response.data["message"],
             "Outbound trip completed manually, return trip ready",
         )
+
+
+class TripCurrentStatusViewTests(TestsTripView):
+    def test_CT_20_current_status_in_progress(self):
+        self.outbound_trip.start_trip()
+        url = reverse("trip-status", args=[self.outbound_trip.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn("current_students", res.data)
+        self.assertGreaterEqual(res.data["current_student_count"], 1)
