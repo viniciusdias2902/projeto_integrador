@@ -1,6 +1,9 @@
 from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import User, Group
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.test import APITestCase
+from rest_framework import status
+from django.urls import reverse
 
 from admins.models import Admin
 from admins.admin import AdminModelAdmin
@@ -118,3 +121,23 @@ class AdminSiteTests(TestCase):
         self.assertTrue(user.groups.filter(name="admins").exists())
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+
+class AdminAuthenticationTests(APITestCase):
+    def setUp(self):
+        self.login_url = reverse("token_obtain_pair")
+        self.user = User.objects.create_user(username="user1", password="testpass123")
+
+        self.admin = User.objects.create_superuser(
+            username="admin1", password="senhaadmin123"
+        )
+
+    def test_CT_11_login_success(self):
+        response = self.client.post(
+            self.login_url,
+            {"username": "user1", "password": "senhaadmin123"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
+        self.assertIn("refresh", response.data)
