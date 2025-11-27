@@ -230,3 +230,9 @@ class PollDetailViewTests(TestCase):
         response = self.view(request, pk=self.poll.id)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
+
+    def test_CT_14_unauthenticated_detail(self):
+        request = self.factory.get(f"/polls/{self.poll.id}/")
+
+        response = self.view(request, pk=self.poll.id)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
