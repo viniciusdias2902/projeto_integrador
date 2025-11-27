@@ -13,6 +13,7 @@ from polls.views import (
     CreateWeeklyPollsView,
     CleanOldPollsView,
     VoteListView,
+    VoteUpdateView,
 )
 from students.models import Student
 from polls.serializers import StudentNestedSerializer
@@ -205,7 +206,7 @@ class TestVoteListView(TestCase):
         mock_objects.filter.return_value = []
 
         request = self.factory.get("/votes/")
-        force_authenticate(request, user=m)
+        force_authenticate(request, user=mock_user)
         response = self.view(request)
         self.assertEqual(response.status_code, 200)
 
