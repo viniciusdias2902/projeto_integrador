@@ -81,6 +81,25 @@ function getReceiptTooltip(student) {
 
   return 'Gerar recibo de pagamento'
 }
+
+function getDisabledBadgeClass(student) {
+  if (!student.monthly_payment_cents || student.monthly_payment_cents === 'não informado') {
+    return 'badge-warning'
+  }
+
+  if (!student.last_payment_date || student.last_payment_date === 'não informado') {
+    return 'badge-warning'
+  }
+
+  const status = getPaymentStatus(student)
+  if (status === 'late') {
+    return 'badge-error'
+  } else if (status === 'should_pay') {
+    return 'badge-warning'
+  }
+
+  return 'badge-ghost'
+}
 </script>
 
 <template>
@@ -117,10 +136,12 @@ function getReceiptTooltip(student) {
           </svg>
           Editar
         </button>
+
+        <!-- Versão habilitada do botão -->
         <button
+          v-if="canGenerateReceipt(student)"
           class="btn btn-ghost btn-sm text-info"
           @click="$emit('generate-receipt', student)"
-          :disabled="!canGenerateReceipt(student)"
           :title="getReceiptTooltip(student)"
         >
           <svg
@@ -139,7 +160,60 @@ function getReceiptTooltip(student) {
           </svg>
           Recibo
         </button>
+
+        <!-- Versão desabilitada do botão com indicação visual MUITO clara -->
+        <div v-else class="tooltip tooltip-left" :data-tip="getReceiptTooltip(student)">
+          <button class="btn btn-ghost btn-sm btn-disabled receipt-btn-disabled" disabled>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4 text-error"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <span class="text-base-content opacity-40">Recibo</span>
+            <span class="badge badge-sm ml-1" :class="getDisabledBadgeClass(student)">
+              Bloqueado
+            </span>
+          </button>
+        </div>
       </div>
     </td>
   </tr>
 </template>
+
+<style scoped>
+/* Efeito visual no botão desabilitado */
+.receipt-btn-disabled {
+  position: relative;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(239, 68, 68, 0.05) 10px,
+    rgba(239, 68, 68, 0.05) 20px
+  );
+}
+
+.receipt-btn-disabled:hover {
+  transform: none;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(239, 68, 68, 0.08) 10px,
+    rgba(239, 68, 68, 0.08) 20px
+  );
+}
+
+/* Tooltip mais visível */
+.tooltip:before {
+  max-width: 300px;
+  white-space: normal;
+}
+</style>
