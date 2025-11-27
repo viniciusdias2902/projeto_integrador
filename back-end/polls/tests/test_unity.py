@@ -3,9 +3,11 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db import IntegrityError
 from datetime import date, timedelta, datetime, time
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 from polls.models import Poll, Vote
+from polls.views import PollDetailView, PollListView
 from students.models import Student
 from polls.serializers import StudentNestedSerializer
 from boarding_points.models import BoardingPoint
@@ -125,3 +127,19 @@ class PollsSerializersTests(TestCase):
         self.assertEqual(data["id"], self.student.id)
         self.assertEqual(data["name"], "Teste Serializer")
         self.assertEqual(data["user_id"], self.user.id)
+
+
+class PollListViewTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = PollListView.as_view()
+
+    @patch("polls.views.Poll.objects")
+    def test_CT_09_list_polls(self, mock_objects):
+        request = self.factory.get("/polls/")
+        force_authenticate(request, user=MagicMock())
+
+        mock_objects.all.return_value.order_by.return_value = []
+
+        response = self.view(request)
+        self.assertEqual(response.status_code, 200)
