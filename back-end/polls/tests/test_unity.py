@@ -208,3 +208,4 @@ class TestVoteListView(TestCase):
         force_authenticate(request, user=m)
         response = self.view(request)
         self.assertEqual(response.status_code, 200)
+
