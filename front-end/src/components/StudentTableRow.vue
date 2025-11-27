@@ -1,6 +1,6 @@
 <script setup>
 import StudentPaymentStatus from './StudentPaymentStatus.vue'
-import { formatDateBR } from '@/utils/dateUtils'
+import { formatDateBR, parseLocalDate } from '@/utils/dateUtils'
 
 defineProps({
   student: {
@@ -24,6 +24,62 @@ function formatCurrency(cents) {
     return 'Não informado'
   }
   return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`
+}
+
+function getPaymentStatus(student) {
+  if (!student.last_payment_date || student.last_payment_date === 'não informado') {
+    return 'not_informed'
+  }
+
+  const lastPayment = parseLocalDate(student.last_payment_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const daysSincePayment = Math.floor((today - lastPayment) / (1000 * 60 * 60 * 24))
+
+  if (daysSincePayment > 35) {
+    return 'late'
+  } else if (daysSincePayment >= 30) {
+    return 'should_pay'
+  } else {
+    return 'up_to_date'
+  }
+}
+
+function canGenerateReceipt(student) {
+  // Verifica se tem valor de pagamento informado
+  if (!student.monthly_payment_cents || student.monthly_payment_cents === 'não informado') {
+    return false
+  }
+
+  // Verifica se tem data de pagamento informada
+  if (!student.last_payment_date || student.last_payment_date === 'não informado') {
+    return false
+  }
+
+  // Só permite gerar recibo se estiver em dia
+  const status = getPaymentStatus(student)
+  return status === 'up_to_date'
+}
+
+function getReceiptTooltip(student) {
+  if (!student.monthly_payment_cents || student.monthly_payment_cents === 'não informado') {
+    return 'Valor de pagamento não informado'
+  }
+
+  if (!student.last_payment_date || student.last_payment_date === 'não informado') {
+    return 'Data de pagamento não informada'
+  }
+
+  const status = getPaymentStatus(student)
+
+  if (status === 'late') {
+    return 'Pagamento atrasado - atualize a data de pagamento primeiro'
+  } else if (status === 'should_pay') {
+    return 'Deve pagar - atualize a data de pagamento primeiro'
+  }
+
+  return 'Gerar recibo de pagamento'
 }
 </script>
 
@@ -64,9 +120,8 @@ function formatCurrency(cents) {
         <button
           class="btn btn-ghost btn-sm text-info"
           @click="$emit('generate-receipt', student)"
-          :disabled="
-            student.monthly_payment_cents === 'não informado' || !student.monthly_payment_cents
-          "
+          :disabled="!canGenerateReceipt(student)"
+          :title="getReceiptTooltip(student)"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
