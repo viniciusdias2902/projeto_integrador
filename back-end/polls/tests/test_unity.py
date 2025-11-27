@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from datetime import date, timedelta, datetime, time
 from unittest.mock import patch, MagicMock
 from rest_framework.test import APIRequestFactory, force_authenticate
+from rest_framework import status
 
 from polls.models import Poll, Vote
 from polls.views import (
@@ -16,7 +17,7 @@ from polls.views import (
     VoteUpdateView,
 )
 from students.models import Student
-from polls.serializers import StudentNestedSerializer
+from polls.serializers import StudentNestedSerializer, PollSerializer
 from boarding_points.models import BoardingPoint
 
 
@@ -210,3 +211,22 @@ class TestVoteListView(TestCase):
         response = self.view(request)
         self.assertEqual(response.status_code, 200)
 
+
+class PollDetailViewTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.user = User.objects.create(username="Mateus", password="123")
+        self.view = PollDetailView.as_view()
+        self.poll = Poll.objects.create(
+            date=date.today(),
+            status="open",
+        )
+
+    def test_CT_13_authenticated_detail(self):
+        request = self.factory.get(f"/polls/{self.poll.id}/")
+        force_authenticate(request, user=self.user)
+
+        serializer = PollSerializer(instance=self.poll)
+        response = self.view(request, pk=self.poll.id)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
