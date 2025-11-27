@@ -247,3 +247,12 @@ class TestTripStartView(TestsTripView):
         self.outbound_trip.refresh_from_db()
         self.assertEqual(self.outbound_trip.status, "in_progress")
         self.assertIsNotNone(self.outbound_trip.started_at)
+
+    def test_CT_18_start_return_trip(self):
+        url = reverse("trip-start", args=[self.return_trip.id])
+
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["message"], "Return trip started")
+        self.assertIn(response.data["current_university"], ["UESPI", "IFPI"])
