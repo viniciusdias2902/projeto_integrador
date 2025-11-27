@@ -225,3 +225,13 @@ class TestsTripView(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
+
+
+class TestTripDetailView(TestsTripView):
+    def test_CT_16_create_trip_sucess(self):
+        url = reverse("trip-create")
+        data = {"poll": self.poll.id, "trip_type": "return", "status": "pending"}
+
+        response = self.client.post(url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
