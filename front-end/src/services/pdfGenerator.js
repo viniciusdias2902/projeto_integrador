@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import { numberToWords } from '@/utils/numberToWords'
+import { parseLocalDate } from '@/utils/dateUtils'
 import logoImage from '@/assets/images/recibo-logo.png'
 
 export async function generatePaymentReceipt(student) {
@@ -16,8 +17,16 @@ export async function generatePaymentReceipt(student) {
   const monthlyPaymentReais = student.monthly_payment_cents / 100
   const valueInWords = numberToWords(monthlyPaymentReais)
 
-  const today = new Date()
-  const day = String(today.getDate()).padStart(2, '0')
+  // Usar a data do último pagamento ao invés da data atual
+  let receiptDate
+  if (student.last_payment_date && student.last_payment_date !== 'não informado') {
+    receiptDate = parseLocalDate(student.last_payment_date)
+  } else {
+    // Fallback para data atual se não houver data de pagamento
+    receiptDate = new Date()
+  }
+
+  const day = String(receiptDate.getDate()).padStart(2, '0')
   const months = [
     'JANEIRO',
     'FEVEREIRO',
@@ -32,8 +41,8 @@ export async function generatePaymentReceipt(student) {
     'NOVEMBRO',
     'DEZEMBRO',
   ]
-  const month = months[today.getMonth()]
-  const year = today.getFullYear()
+  const month = months[receiptDate.getMonth()]
+  const year = receiptDate.getFullYear()
 
   doc.setFontSize(16)
   doc.setFont(undefined, 'bold')
