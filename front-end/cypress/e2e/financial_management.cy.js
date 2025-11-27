@@ -56,7 +56,7 @@ describe('Gestão Financeira', () => {
     cy.wait('@getStudents');
   });
 
-  // CT-15: Visualizar Tbela
+  // CT-15: Visualizar Tabela
   it('Deve visualizar a tabela com status financeiros calculados corretamente', () => {
     cy.contains('h1', 'Gestão de Estudantes').should('be.visible');
 
@@ -75,7 +75,7 @@ describe('Gestão Financeira', () => {
     });
   });
 
-  // CT-16: Atualizar Pagamento
+  // CT-16 Atualizar Pagamento
   it('Deve atualizar o pagamento de um aluno manualmente', () => {
 
     const updatedStudent = {
@@ -123,6 +123,43 @@ describe('Gestão Financeira', () => {
         cy.contains('Em dia').scrollIntoView().should('be.visible');
         cy.contains('24/11/2025').should('be.visible');
     });
+  });
+
+
+  // CT-17: Exportação CSV (US-14)
+  it('Deve permitir exportar os dados para CSV', () => {
+    cy.visit('/admin/estudantes', {
+      onBeforeLoad(win) {
+        cy.spy(win.URL, 'createObjectURL').as('createObjectUrl');
+      },
+    });
+    cy.wait('@getStudents');
+
+    cy.contains('button', 'Exportar como CSV').click();
+
+    cy.get('@createObjectUrl').should('have.been.called');
+  });
+
+  // CT-18: Gerar comprovante (teste positivo)
+  it('Deve gerar recibo com sucesso para aluno em dia', () => {
+    cy.contains('tr', 'Aluno Em Dia').within(() => {
+      cy.contains('button', 'Recibo').should('not.be.disabled').click();
+    });
+
+    cy.get('.alert-success', { timeout: 10000 })
+      .should('be.visible')
+      .and('contain.text', 'Recibo gerado com sucesso!');
+  });
+
+ // CT-19: Nao pode gerar comprovante (Teste negativo)
+  it('Deve impedir geração de recibo para aluno atrasado', () => {
+    cy.contains('tr', 'Aluno Atrasado').within(() => {
+      cy.get('button[disabled]').should('exist');
+      
+      cy.contains('.badge', 'Bloqueado').scrollIntoView().should('be.visible');
+    });
+
+    cy.get('.alert-success').should('not.exist');
   });
 
 });
