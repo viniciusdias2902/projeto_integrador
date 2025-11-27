@@ -135,9 +135,18 @@ class AdminAuthenticationTests(APITestCase):
     def test_CT_11_login_success(self):
         response = self.client.post(
             self.login_url,
-            {"username": "user1", "password": "senhaadmin123"},
+            {"username": "admin1", "password": "senhaadmin123"},
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
+
+    def test_CT_12_login_wrong_password(self):
+        response = self.client.post(
+            self.login_url,
+            {"username": "admin1", "password": "senhaincorreta12"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("detail", response.data)
