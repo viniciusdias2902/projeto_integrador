@@ -45,4 +45,7 @@ Frontend: HTML, CSS,  JavaScript, Vue.js
 
 [Casos de Teste(Back end)](https://docs.google.com/document/d/1livUT5aRegXL7iEeyBAEd9xWFEpRHaYQSTPqpIdtvTk/edit?usp=sharing)
 
+## Registros das reuniões
+
+[Google planilhas](https://docs.google.com/spreadsheets/d/1OyauOKC5uf6pExPMsKPDcoO3l9sLUDS9NbValmkUqcU/edit?usp=sharing)
 
