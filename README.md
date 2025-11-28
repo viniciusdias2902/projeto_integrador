@@ -22,6 +22,12 @@ Um sistema desenvolvido para gerenciar informações relacionadas ao transporte 
 -  **API REST**  
   Disponibiliza endpoints para que outros sistemas possam consultar dados ou interagir com o sistema automaticamente.  
 
+##  Testes
+
+- Testes de unidade no back end
+- Testes de integração com a requisições http
+- Testes de unidade/componentes no front end
+- Testes de sistema
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -34,5 +40,9 @@ Frontend: HTML, CSS,  JavaScript, Vue.js
 ## 📋 Documentação
 
 [Normas do Projeto](NORMAS.md)
+
+[Casos de Teste(Front end)](https://docs.google.com/document/d/1JDTtPFi30ChRynCc_jHY3cnKN220glXwMNlLzAFJwCE/edit?usp=sharing)
+
+[Casos de Teste(Back end)](https://docs.google.com/document/d/1livUT5aRegXL7iEeyBAEd9xWFEpRHaYQSTPqpIdtvTk/edit?usp=sharing)
 
 
