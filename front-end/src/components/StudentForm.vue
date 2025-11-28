@@ -57,7 +57,6 @@ async function fetchBoardingPoints() {
       label: point.name
     }))
     
-    // Define o primeiro ponto como padrão
     if (boardingPoints.value.length > 0) {
       form.value.boarding_point = boardingPoints.value[0].value
     }
@@ -137,6 +136,34 @@ function validateForm() {
   return valid
 }
 
+function translateBackendError(errorField, errorMessage) {
+  const translations = {
+    email: {
+      'This email is already in use': 'Este email já está em uso',
+      'user with this email already exists.': 'Usuário com este email já existe.',
+      'Enter a valid email address.': 'Insira um endereço de email válido.'
+    },
+    phone: {
+      'user with this phone already exists.': 'Usuário com este telefone já existe.',
+      'Enter a valid phone number.': 'Insira um número de telefone válido.'
+    },
+    password: {
+      'This password is too short. It must contain at least 8 characters.': 'Esta senha é muito curta. Deve conter pelo menos 8 caracteres.',
+      'This password is too common.': 'Esta senha é muito comum.',
+      'This password is entirely numeric.': 'Esta senha é inteiramente numérica.'
+    },
+    name: {
+      'This field may not be blank.': 'Este campo não pode estar vazio.'
+    }
+  }
+
+  if (translations[errorField] && translations[errorField][errorMessage]) {
+    return translations[errorField][errorMessage]
+  }
+
+  return errorMessage
+}
+
 async function submitForm() {
   if (!validateForm()) return
 
@@ -156,18 +183,18 @@ async function submitForm() {
     const result = await response.json()
 
     if (!response.ok) {
-      // Tratar erros específicos do backend
       if (result.email && Array.isArray(result.email)) {
         const message = result.email[0]
-        if (message === 'This email is already in use') {
-          errors.value.email = 'Esse email já está sendo usado por outro usuário.'
-        } else {
-          errors.value.email = message
-        }
+        errors.value.email = translateBackendError('email', message)
       } else if (result.phone && Array.isArray(result.phone)) {
-        errors.value.phone = result.phone[0]
+        const message = result.phone[0]
+        errors.value.phone = translateBackendError('phone', message)
       } else if (result.password && Array.isArray(result.password)) {
-        errors.value.password = result.password[0]
+        const message = result.password[0]
+        errors.value.password = translateBackendError('password', message)
+      } else if (result.name && Array.isArray(result.name)) {
+        const message = result.name[0]
+        errors.value.name = translateBackendError('name', message)
       } else {
         errorMessage.value = result.detail || 'Erro ao cadastrar aluno. Tente novamente.'
       }
@@ -177,7 +204,6 @@ async function submitForm() {
     successMessage.value = 'Cadastro realizado com sucesso! Você já pode fazer login.'
     resetForm()
     
-    // Limpar mensagem de sucesso após 5 segundos
     setTimeout(() => {
       successMessage.value = ''
     }, 5000)
@@ -286,7 +312,6 @@ onMounted(() => {
       <span>{{ isLoading ? 'Cadastrando...' : 'Cadastrar' }}</span>
     </button>
 
-    <!-- Mensagem de sucesso -->
     <div v-if="successMessage" class="alert alert-success">
       <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -294,7 +319,6 @@ onMounted(() => {
       <span>{{ successMessage }}</span>
     </div>
 
-    <!-- Mensagem de erro -->
     <div v-if="errorMessage" class="alert alert-error">
       <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
