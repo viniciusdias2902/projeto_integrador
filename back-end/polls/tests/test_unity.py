@@ -15,6 +15,7 @@ from polls.views import (
     CleanOldPollsView,
     VoteListView,
     VoteUpdateView,
+    PollBoardingListView,
 )
 from students.models import Student
 from polls.serializers import StudentNestedSerializer, PollSerializer
@@ -236,3 +237,89 @@ class PollDetailViewTests(TestCase):
 
         response = self.view(request, pk=self.poll.id)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PollAutoCloseTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = CleanOldPollsView.as_view()
+        self.today = timezone.localdate()
+
+        self.user = User.objects.create(username="admin")
+        self.poll_today = Poll.objects.create(date=self.today, status="open")
+        self.poll_old = Poll.objects.create(
+            date=self.today - timedelta(days=2), status="open"
+        )
+
+    @patch("polls.views.timezone.now")
+    def test_CT_15_close_old_polls(self, mock_now):
+        mock_now.return_value = timezone.make_aware(
+            timezone.datetime.combine(self.today, timezone.datetime.min.time())
+        )
+
+        request = self.factory.post("/polls/clean_old/")
+        force_authenticate(request, user=self.user)
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["deleted_count"], 1)
+        self.assertIn(str(self.poll_old.date), response.data["deleted_dates"])
+
+        self.assertTrue(Poll.objects.filter(pk=self.poll_today.pk).exists())
+
+
+class BoardingListGenerationTests(TestCase):
+    def setUp(self):
+        self.factory = APIRequestFactory()
+        self.view = PollBoardingListView.as_view()
+        self.admin_user = User.objects.create(username="admin")
+
+        self.bp1 = BoardingPoint.objects.create(name="Hotel Alvorada", route_order=1)
+        self.bp2 = BoardingPoint.objects.create(name="Rodoviária", route_order=2)
+
+        self.student1 = Student.objects.create(
+            user=User.objects.create(username="jr"),
+            name="Junior",
+            boarding_point=self.bp1,
+            university="UESPI",
+        )
+        self.student2 = Student.objects.create(
+            user=User.objects.create(username="paulo"),
+            name="Paulo",
+            boarding_point=self.bp2,
+            university="IFPI",
+        )
+        self.student3 = Student.objects.create(
+            user=User.objects.create(username="carol"),
+            name="Carol",
+            boarding_point=self.bp1,
+            university="CHRISFAPI",
+        )
+
+        self.poll = Poll.objects.create(date=timezone.localdate(), status="open")
+
+        Vote.objects.create(student=self.student1, poll=self.poll, option="round_trip")
+        Vote.objects.create(
+            student=self.student2, poll=self.poll, option="one_way_outbound"
+        )
+        Vote.objects.create(
+            student=self.student3, poll=self.poll, option="one_way_return"
+        )
+
+    def test_CT_16_generate_boarding_list_outbound(self):
+        request = self.factory.get(
+            f"/polls/{self.poll.id}/boarding_list/?trip_type=outbound"
+        )
+        force_authenticate(request, user=self.admin_user)
+
+        response = self.view(request, pk=self.poll.id)
+        self.assertEqual(response.status_code, 200)
+
+        points = [p["point"]["name"] for p in response.data]
+        self.assertIn("Hotel Alvorada", points)
+        self.assertIn("Rodoviária", points)
+
+        students_names = [s["name"] for p in response.data for s in p["students"]]
+        self.assertIn("Junior", students_names)
+        self.assertIn("Paulo", students_names)
+        self.assertNotIn("Carol", students_names)
