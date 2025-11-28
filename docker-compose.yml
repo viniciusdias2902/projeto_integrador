@@ -27,7 +27,7 @@ services:
     restart: always
     environment:
       DEBUG: "False"
-      SECRET_KEY: "sua-chave-secreta-muito-segura-aqui-2025"
+      SECRET_KEY: "django-insecure-j7e4%^ffc-b!_$3c9u^a)sus9bn4312*g5d-yyoo75&6@q!^j+"
       ALLOWED_HOSTS: "170.245.33.221,localhost,127.0.0.1"
       DB_NAME: projetointegrador
       DB_USER: admin
