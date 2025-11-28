@@ -12,7 +12,7 @@ describe('Funcionalidade de Votação nas Enquetes', () => {
     cy.wait(1500);
   });
 
-  //CT_5
+  //CT_7
   it('Deve permitir que um aluno vote em uma opção e mostrar sucesso', () => {
     cy.contains('fieldset', 'Sexta', { timeout: 10000 }).should('be.visible').within(() => {
       cy.contains('label', 'Ida e volta').find('input[type="radio"]').check();
@@ -24,7 +24,7 @@ describe('Funcionalidade de Votação nas Enquetes', () => {
     });
   });
 
-  //CT_6
+  //CT_8
   it('Deve permitir que o aluno altere o voto', () => {
      cy.contains('fieldset', 'Sexta', { timeout: 10000 }).should('be.visible').within(() => {
         cy.contains('label', 'Apenas ida').find('input[type="radio"]').check();

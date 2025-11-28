@@ -34,7 +34,7 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.wait('@getPoints');
   });
 
-  //CT-20: Listar pontos
+  //CT-22: Listar pontos
   it('Deve listar os pontos de embarque corretamente', () => {
     cy.contains('h1', 'Gestão de Pontos de Embarque').should('be.visible');
     
@@ -46,7 +46,7 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.contains('Centro').should('be.visible');
   });
 
-  // CT-21: Criar
+  // CT-23 Criar
   it('Deve criar um novo ponto de embarque com sucesso', () => {
     const newPoint = { id: 3, name: 'Novo Ponto', address_reference: 'Nova Rua', route_order: 3 };
 
@@ -75,7 +75,7 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.contains('Novo Ponto').should('be.visible'); 
   });
 
-  // CT-22: Editar
+  // CT-24: Editar
   it('Deve editar um ponto existente', () => {
     const updatedPoint = { ...mockPoints[0], name: 'Praça Editada' };
 
@@ -101,7 +101,7 @@ describe('Gestão de Pontos de Embarque (Admin)', () => {
     cy.contains('Praça Editada').should('be.visible');
   });
 
-  // CT-23: Deletar
+  // CT-25: Deletar
   it('Deve excluir um ponto', () => {
     cy.intercept('DELETE', '**/api/v1/boarding-points/1/', {
       statusCode: 204,

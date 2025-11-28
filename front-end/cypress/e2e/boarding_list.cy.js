@@ -11,7 +11,7 @@ describe('Funcionalidade de Lista de Embarque', () => {
     });
   });
 
-  // CT-10: Teste Positivo
+  // CT-12: Teste Positivo
   it('Deve exibir a lista de embarque com os pontos e alunos corretos', () => {
     // CONGELAR O TEMPO: Definir  uma data fixa
     const now = new Date('2025-11-24T10:00:00Z');
@@ -47,7 +47,7 @@ describe('Funcionalidade de Lista de Embarque', () => {
     cy.contains('Aluno Teste Cypress').should('be.visible');
   });
 
-  // CT-11: Sem Enquete
+  // CT-13: Sem Enquete
   it('Deve exibir mensagem quando não houver enquete para o dia', () => {
     
     cy.intercept('GET', '**/api/v1/polls/', {
@@ -62,7 +62,7 @@ describe('Funcionalidade de Lista de Embarque', () => {
     cy.contains('h2', 'Ida').should('not.exist');
   });
 
-  //CT-12: Erro na API
+  //CT-14: Erro na API
   it('Deve exibir erro se a API falhar', () => {
     cy.intercept('GET', '**/api/v1/polls/', {
       statusCode: 500,

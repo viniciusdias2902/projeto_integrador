@@ -33,6 +33,7 @@ describe('Funcionalidade de Login', () => {
     cy.url().should('not.include', '/enquetes');
   });
 
+  // CT_4
   it('Deve mostrar erro se tentar logar com campos vazios', () => {
      cy.contains('button', 'Login').click();
      cy.url().should('not.include', '/enquetes');

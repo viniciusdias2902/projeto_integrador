@@ -67,7 +67,7 @@ describe('RF 11 - Gestão e Visualização de Viagens', () => {
       cy.intercept('GET', '**/trips/*/status/', { statusCode: 200, body: { trip: mockTripPending } });
     });
 
-    //CT-13 crud de viagens
+    //CT-15 crud de viagens
     it('Deve permitir iniciar, avançar e finalizar uma viagem', () => {
       //MOCKS DE AÇÃO (POST)
       cy.intercept('POST', '**/trips/100/start/', { statusCode: 200, body: { message: 'Iniciada', trip: mockTripInProgressA } }).as('startTrip');
@@ -123,7 +123,7 @@ describe('RF 11 - Gestão e Visualização de Viagens', () => {
       window.localStorage.setItem('refresh', 'fake_refresh');
     });
 
-    // CT-14 visualizar viagem
+    // CT-16 visualizar viagem
     it('Deve exibir o status atual e o ponto do ônibus', () => {
       const activeTrip = mockTripInProgressA;
 

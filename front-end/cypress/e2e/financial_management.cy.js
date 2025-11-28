@@ -56,7 +56,7 @@ describe('Gestão Financeira', () => {
     cy.wait('@getStudents');
   });
 
-  // CT-15: Visualizar Tabela
+  // CT-17: Visualizar Tabela
   it('Deve visualizar a tabela com status financeiros calculados corretamente', () => {
     cy.contains('h1', 'Gestão de Estudantes').should('be.visible');
 
@@ -75,7 +75,7 @@ describe('Gestão Financeira', () => {
     });
   });
 
-  // CT-16 Atualizar Pagamento
+  // CT-18 Atualizar Pagamento
   it('Deve atualizar o pagamento de um aluno manualmente', () => {
 
     const updatedStudent = {
@@ -126,7 +126,7 @@ describe('Gestão Financeira', () => {
   });
 
 
-  // CT-17: Exportação CSV (US-14)
+  // CT-19: Exportação CSV
   it('Deve permitir exportar os dados para CSV', () => {
     cy.visit('/admin/estudantes', {
       onBeforeLoad(win) {
@@ -140,7 +140,7 @@ describe('Gestão Financeira', () => {
     cy.get('@createObjectUrl').should('have.been.called');
   });
 
-  // CT-18: Gerar comprovante (teste positivo)
+  // CT-20: Gerar comprovante (teste positivo)
   it('Deve gerar recibo com sucesso para aluno em dia', () => {
     cy.contains('tr', 'Aluno Em Dia').within(() => {
       cy.contains('button', 'Recibo').should('not.be.disabled').click();
@@ -151,7 +151,7 @@ describe('Gestão Financeira', () => {
       .and('contain.text', 'Recibo gerado com sucesso!');
   });
 
- // CT-19: Nao pode gerar comprovante (Teste negativo)
+ // CT-21: Nao pode gerar comprovante (Teste negativo)
   it('Deve impedir geração de recibo para aluno atrasado', () => {
     cy.contains('tr', 'Aluno Atrasado').within(() => {
       cy.get('button[disabled]').should('exist');

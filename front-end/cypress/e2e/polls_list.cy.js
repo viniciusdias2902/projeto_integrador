@@ -11,7 +11,7 @@ describe('RF 02 - Visualização de Enquetes Semanais', () => {
     });
   });
 
-  //CT_7
+  //CT_09
   it('Deve exibir a lista de enquetes da semana corretamente', () => {
     cy.visit('/enquetes');
 
@@ -24,7 +24,7 @@ describe('RF 02 - Visualização de Enquetes Semanais', () => {
     });
   });
 
-  //CT_8
+  //CT_10
   it('Deve exibir mensagem amigável quando não houver enquetes', () => {
     cy.intercept('GET', '**/api/v1/polls/', {
       statusCode: 200,
@@ -39,7 +39,7 @@ describe('RF 02 - Visualização de Enquetes Semanais', () => {
     cy.contains('Não há enquetes ativas no momento.').should('be.visible');
   });
 
-  //CT_9
+  //CT_11
   it('Deve exibir alerta de erro quando a API falhar', () => {
     cy.intercept('GET', '**/api/v1/polls/', {
       statusCode: 500,

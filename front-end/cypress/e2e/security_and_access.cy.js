@@ -15,7 +15,7 @@ describe('Segurança e Controle de Acesso', () => {
     cy.intercept('GET', '**/api/v1/trips/?*', { body: [] });
   });
 
-  // CT-24: Bloquear aluno
+  // CT-05: Bloquear aluno
   it('Deve redirecionar ALUNO tentando acessar área de ADMIN', () => {
     const token = createMockJwt('student');
     window.localStorage.setItem('access', token);
@@ -28,7 +28,7 @@ describe('Segurança e Controle de Acesso', () => {
     cy.url().should('not.include', '/admin');
   });
 
-  // CT-25: Bloquar Motorista
+  // CT-06: Bloquar Motorista
   it('[US-03] Deve redirecionar MOTORISTA tentando acessar área de ADMIN', () => {
     const token = createMockJwt('driver');
     window.localStorage.setItem('access', token);
